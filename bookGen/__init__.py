@@ -56,6 +56,9 @@ class bookGen(bpy.types.Operator):
     axis = bpy.props.EnumProperty(name="axis", items=(("0","x", "distribute along the x-axis"), ("1","y", "distribute along the y-axis"), ("2", "custom", "distribute along a custom axis")))
     angle = bpy.props.FloatProperty(name="angle", unit='ROTATION')
     
+    
+    alignment = bpy.props.EnumProperty(name="alignment", items=(("0", "spline", "align books at the spline (usually front in a shelf)"), ("1", "fore egde", "align books along there fore edge (usually back in a shelf)"), ("2", "center", "align along center")))
+    
 
     book_height = bpy.props.FloatProperty(name="height", default=3.0, min=.0, unit="LENGTH")
     rndm_book_height_factor = bpy.props.FloatProperty(name=" random", default=1, min=.0, soft_max=1, subtype="FACTOR")
@@ -155,6 +158,11 @@ class bookGen(bpy.types.Operator):
         hinge_width = self.scale*self.hinge_width * (1 + rndm_hinge_width)
         
         spacing = self.scale *  self.spacing * (1 + rndm_spacing)
+        
+        align_offset = -book_depth/2
+
+        
+        first = True
        
         
         while(self.cur_width + book_width < self.width*self.scale):
@@ -189,9 +197,15 @@ class bookGen(bpy.types.Operator):
                 angle = radians(90)
             elif(self.axis == "2"):
                 angle = self.angle
+
                 
             book.rotation_euler = [0,0, angle]
             book.location = bpy.context.scene.cursor_location + Vector((cos(angle)*self.cur_offset, sin(angle)*self.cur_offset, book_height/2))
+            
+            offset_dir = -1 if self.alignment == "1" else 1
+            
+            if(not first and not self.alignment == "2"):
+                book.location += Vector((-offset_dir*sin(angle)*(align_offset+book_depth/2), offset_dir*cos(angle)*(align_offset+book_depth/2),  0))
                 
             old_width = book_width  
                 
@@ -232,6 +246,8 @@ class bookGen(bpy.types.Operator):
             
             self.cur_width  += old_width + spacing
             self.cur_offset += book_width/2 + old_width/2 + spacing
+            
+            first = False
        
         
         
@@ -249,12 +265,19 @@ class bookGen(bpy.types.Operator):
         row.prop(self, "spacing")
         row.prop(self, "rndm_spacing_factor")
         
-        layout.separator()
         
+        
+        layout.separator()
+        layout.label("axis")
         layout.prop(self, "axis", expand =True)
         sub = layout.column()
         sub.active = self.axis =="2"
         sub.prop(self, "angle")
+        
+        layout.separator()
+        
+        layout.label("alignment")
+        layout.prop(self, "alignment", expand=True)
         
         layout.separator()
         
