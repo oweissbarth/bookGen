@@ -62,7 +62,7 @@ Below those boxes there are some additional options:
 
   - [ ] stacking of books with random z-axis-rotation
   - [x] distributing books along a custom axis
-  - [ ] control the alignment of books (e.g. align backs)
+  - [x] control the alignment of books (e.g. align backs)
   - [ ] allow leaning of books
 
 ##License:##
