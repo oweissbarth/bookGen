@@ -49,9 +49,12 @@ class bookGen(bpy.types.Operator):
         if(self.hinge_inset> self.cover_thickness):
             self.hinge_inset = self.cover_thickness-self.cover_thickness/8
 
+    mode = bpy.props.EnumProperty(name="mode", items=(('stack', "stack", "Generate a stack of books"), ('shelf', "shelf", "Generate a shelf of books")), default='shelf')
+    
     width = bpy.props.FloatProperty(name="width", default=1, min=0)
     scale = bpy.props.FloatProperty(name="scale", default=1, min=0)
     seed = bpy.props.IntProperty(name="seed", default=0)
+
     
     axis = bpy.props.EnumProperty(name="axis", items=(("0","x", "distribute along the x-axis"), ("1","y", "distribute along the y-axis"), ("2", "custom", "distribute along a custom axis")))
     angle = bpy.props.FloatProperty(name="angle", unit='ROTATION')
@@ -86,13 +89,18 @@ class bookGen(bpy.types.Operator):
     rndm_hinge_width_factor = bpy.props.FloatProperty(name="random", default=1, min=.0, soft_max=1, subtype="FACTOR")
     
     
-    
     spacing = bpy.props.FloatProperty(name="spacing", default=0.05, min=.0, unit="LENGTH")
     rndm_spacing_factor = bpy.props.FloatProperty(name="random", default=1, min=.0, soft_max=1, subtype="FACTOR")
     
     subsurf = bpy.props.BoolProperty(name="Add Subsurf-Modifier", default=False)
     smooth = bpy.props.BoolProperty(name="shade smooth", default=False)
     unwrap = bpy.props.BoolProperty(name="unwrap", default=True)
+    
+    #stack additions
+    
+    height = bpy.props.FloatProperty(name="height", default = 1, min=.0, )
+    rotation = bpy.props.FloatProperty(name="rotation", default=0, unit='ROTATION')
+    rndm_rotation_factor  = bpy.props.FloatProperty(name="random", default=1, min=.0, soft_max=1, subtype="FACTOR")
     
     
     cur_width = 0
@@ -117,15 +125,7 @@ class bookGen(bpy.types.Operator):
         return context.mode == 'OBJECT'
     
     
-    def run(self):
-        time_start = time.time()
-        
-        self.cur_width = 0
-        self.cur_offset = 0
-        
-        random.seed(self.seed)
-        
-        
+    def get_params(self):
         rndm_book_height = (random.random()*0.4-0.2)*self.rndm_book_height_factor
         rndm_book_width = (random.random()*0.4-0.2)*self.rndm_book_width_factor
         rndm_book_depth = (random.random()*0.4-0.2)*self.rndm_book_depth_factor
@@ -159,127 +159,144 @@ class bookGen(bpy.types.Operator):
         
         spacing = self.scale *  self.spacing * (1 + rndm_spacing)
         
-        align_offset = -book_depth/2
-
+        return (book_height,
+                cover_thickness,
+                book_depth,
+                textblock_height,
+                textblock_depth,
+                textblock_thickness,
+                spline_curl,
+                hinge_inset,
+                hinge_width,
+                spacing, 
+                book_width)
+                
+    def add_book(self, align_offset, first, book_height,cover_thickness,book_depth,textblock_height,textblock_depth,textblock_thickness,spline_curl,hinge_inset,hinge_width,spacing, book_width):
         
-        first = True
-       
-        
-        while(self.cur_width + book_width < self.width*self.scale):
-
-            book = create_book( book_height,
-                                cover_thickness,
-                                book_depth,
-                                textblock_height,
-                                textblock_depth,
-                                textblock_thickness,
-                                spline_curl,
-                                hinge_inset,
-                                hinge_width,
-                                unwrap = self.unwrap)
+        book = create_book( book_height,
+                            cover_thickness,
+                            book_depth,
+                            textblock_height,
+                            textblock_depth,
+                            textblock_thickness,
+                            spline_curl,
+                            hinge_inset,
+                            hinge_width,
+                            unwrap = self.unwrap)
             
            
             
-            book.select = True
+        book.select = True
+        
+        if(self.subsurf):
+            book.modifiers.new("subd", type='SUBSURF')
+            book.modifiers['subd'].levels = 1
+        if(self.smooth):
+            bpy.ops.object.shade_smooth()
             
+            
+        if(self.axis == "0"):
+            angle = radians(0)
+        elif(self.axis == "1"):
+            angle = radians(90)
+        elif(self.axis == "2"):
+            angle = self.angle
 
             
-            if(self.subsurf):
-                book.modifiers.new("subd", type='SUBSURF')
-                book.modifiers['subd'].levels = 1
-            if(self.smooth):
-                bpy.ops.object.shade_smooth()
-                
-                
-            if(self.axis == "0"):
-                angle = radians(0)
-            elif(self.axis == "1"):
-                angle = radians(90)
-            elif(self.axis == "2"):
-                angle = self.angle
+        book.rotation_euler = [0,0, angle]
+        book.location = bpy.context.scene.cursor_location + Vector((cos(angle)*self.cur_offset, sin(angle)*self.cur_offset, book_height/2))
+        
+        offset_dir = -1 if self.alignment == "1" else 1
+        
+        if(not first and not self.alignment == "2"):
+            book.location += Vector((-offset_dir*sin(angle)*(align_offset+book_depth/2), offset_dir*cos(angle)*(align_offset+book_depth/2),  0))
+        
+        return book_width 
+    
+    #TODO
+    def stack(self):
+        pass        
+    
+    def shelf(self):
+        self.cur_width = 0
+        self.cur_offset = 0
+        
+        random.seed(self.seed)
 
-                
-            book.rotation_euler = [0,0, angle]
-            book.location = bpy.context.scene.cursor_location + Vector((cos(angle)*self.cur_offset, sin(angle)*self.cur_offset, book_height/2))
-            
-            offset_dir = -1 if self.alignment == "1" else 1
-            
-            if(not first and not self.alignment == "2"):
-                book.location += Vector((-offset_dir*sin(angle)*(align_offset+book_depth/2), offset_dir*cos(angle)*(align_offset+book_depth/2),  0))
-                
-            old_width = book_width  
-                
-            rndm_book_height = (random.random()*0.4-0.2)*self.rndm_book_height_factor
-            rndm_book_width = (random.random()*0.4-0.2)*self.rndm_book_width_factor
-            rndm_book_depth = (random.random()*0.4-0.2)*self.rndm_book_depth_factor
-            
-            rndm_textblock_offset = (random.random()*0.4-0.2)*self.rndm_textblock_offset_factor
-            
-            rndm_cover_thickness = (random.random()*0.4-0.2)*self.rndm_cover_thickness_factor
-            
-            rndm_spline_curl = (random.random()*0.4-0.2)*self.rndm_spline_curl_factor
-            
-            rndm_hinge_inset = (random.random()*0.4-0.2)*self.rndm_hinge_inset_factor
-            rndm_hinge_width = (random.random()*0.4-0.2)*self.rndm_hinge_width_factor
-            
-            rndm_spacing = (random.random()*0.4-0.2)*self.rndm_spacing_factor
-            
-            
-            book_height = self.scale*self.book_height * ( 1 + rndm_book_height)
-            book_width  = self.scale*self.book_width * (1 + rndm_book_width)
-            book_depth  = self.scale*self.book_depth * (1 + rndm_book_depth)
-            
-            cover_thickness = self.scale*self.cover_thickness * (1 + rndm_cover_thickness)
 
-            textblock_height = book_height - self.scale*self.textblock_offset * (1 + rndm_textblock_offset)
-            textblock_depth = book_depth - self.scale*self.textblock_offset * (1 + rndm_textblock_offset)
-            textblock_thickness = book_width - 2 * cover_thickness
+        first = True
+        params = self.get_params()
 
-            spline_curl = self.scale*self.spline_curl * (1 + rndm_spline_curl)
+        align_offset = -params[2]/2
 
-            hinge_inset = self.scale*self.hinge_inset + self.scale*self.hinge_inset*rndm_hinge_inset if self.scale*self.hinge_inset + self.scale*self.hinge_inset*rndm_hinge_inset<=cover_thickness else cover_thickness
-            hinge_width = self.scale*self.hinge_width * (1 + rndm_hinge_width)
-            
-            spacing = self.scale *  self.spacing * (1 + rndm_spacing)
-            
-            
-            
-            self.cur_width  += old_width + spacing
-            self.cur_offset += book_width/2 + old_width/2 + spacing
+        
+        
+       
+        
+        while(self.cur_width + params[-1] < self.width*self.scale):
+            old_width = self.add_book(align_offset, first,  *params)
+            params = self.get_params()
+  
+            self.cur_width  += old_width +  params[-2]
+            self.cur_offset += params[-1]/2 + old_width/2 + params[-2]
             
             first = False
        
+
+    
+    def run(self):
+        time_start = time.time()
         
+        if(self.mode == 'shelf'):
+            self.shelf()
+        elif(self.mode == 'stack'):
+            self.stack()
         
-            
         print("Finished: %.4f sec" % (time.time() - time_start))
     
     def draw(self, context):
         layout = self.layout
+        #layout.prop(self, "mode")
+        #layout.separator()
+        if(self.mode == 'shelf'):
+            layout.prop(self, "width")
+            layout.prop(self, "scale")
+            layout.prop(self, "seed")
+            
+            row =  layout.row(align=True)
+            row.prop(self, "spacing")
+            row.prop(self, "rndm_spacing_factor")
+            
+            
+            
+            layout.separator()
+            layout.label("axis")
+            layout.prop(self, "axis", expand =True)
+            sub = layout.column()
+            sub.active = self.axis =="2"
+            sub.prop(self, "angle")
+            
+            layout.separator()
+            
+            layout.label("alignment")
+            layout.prop(self, "alignment", expand=True)
+            
+            layout.separator()
+            
+ 
         
-        layout.prop(self, "width")
-        layout.prop(self, "scale")
-        layout.prop(self, "seed")
-        
-        row =  layout.row(align=True)
-        row.prop(self, "spacing")
-        row.prop(self, "rndm_spacing_factor")
-        
-        
-        
-        layout.separator()
-        layout.label("axis")
-        layout.prop(self, "axis", expand =True)
-        sub = layout.column()
-        sub.active = self.axis =="2"
-        sub.prop(self, "angle")
-        
-        layout.separator()
-        
-        layout.label("alignment")
-        layout.prop(self, "alignment", expand=True)
-        
-        layout.separator()
+        """elif(self.mode == 'stack'):
+            layout.prop(self, "height")
+            layout.prop(self, "scale")
+            layout.prop(self, "seed")
+            
+            row =  layout.row(align=True)
+            row.prop(self, "rotation")
+            row.prop(self, "rndm_rotation_factor")
+            
+            layout.separator()
+        """    
+    
         
         proportions = layout.box()
         proportions.label("Proportions:")
@@ -327,7 +344,8 @@ class bookGen(bpy.types.Operator):
         layout.prop(self, "subsurf")
         layout.prop(self, "smooth")
         layout.prop(self, "unwrap")
-
+            
+            
 def menu_func(self, context):
     self.layout.operator("object.book_gen", text="Add Books", icon='PLUGIN')
 
