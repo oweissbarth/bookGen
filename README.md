@@ -64,7 +64,7 @@ Below those boxes there are some additional options:
   - [x] distributing books along a custom axis
   - [x] control the alignment of books (e.g. align backs)
   - [ ] allow leaning of books
-
+  - [ ] distribute books based on groundplanes
 ##License:##
 
 © Copyright Oliver Weissbarth 2014. This addon is licensed under GPLv3.
