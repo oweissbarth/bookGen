@@ -399,38 +399,117 @@ def create_book(cover_height, cover_thickness, cover_depth, page_height, page_de
                 
 
             ]
+            
+        seams = [
+                (4,25),
+                (15,87),
+                (16,65),
+                (36,45),
+                (27,30),
+                (21,62),
+                (58,59),
+                (17,63),
+                (6,27),
+                (56,57),
+                (67,71),
+                (30,47),
+                (77,79),
+                (7,119),
+                (19,59),
+                (12,33),
+                (18,69),
+                (25,28),
+                (6,119),
+                (20,60),
+                (28,45),
+                (65,69),
+                (19,55),
+                (5,118),
+                (18,53),
+                (19,71),
+                (18,57),
+                (35,38),
+                (15,115),
+                (17,67),
+                (7,79),
+                (12,114),
+                (33,36),
+                (85,87),
+                (5,77),
+                (53,55),
+                (13,85),
+                (23,58),
+                (13,114),
+                (22,56),
+                (14,115),
+                (60,61),
+                (16,61),
+                (38,47),
+                (14,35),
+                (62,63),
+                (4,118)
+        ]
+
+        def index_to_vert(face):
+            lst = []
+            for i in face:
+                lst.append(vert_ob[i])
+            return tuple(lst)
 
 
         mesh = bpy.data.meshes.new("book")
 
         object = bpy.data.objects.new("book", mesh)
 
-        verts = verts + verts_proximity
-
-        mesh.from_pydata(verts, [], faces)
-        mesh.update()
-
+        verts = verts + verts_proximity        
+        
         bpy.context.scene.objects.link(object)
 
-
+        
+        bm = bmesh.new()
+        bm.from_mesh(mesh)
+        vert_ob = []
+        for vert in verts:
+            vert_ob.append(bm.verts.new(vert))
+            
+        
+        bm.verts.index_update()
+        
+        try:
+            bm.verts.ensure_lookup_table()
+        except(AttributeError):
+            pass
+        
+        if(unwrap):
+            for seam in seams:
+                edge = bm.edges.new((bm.verts[seam[0]], bm.verts[seam[1]]))
+                edge.seam = True
+        
+        for face in faces:
+            bm.faces.new(index_to_vert(face))
+        
+        bm.faces.index_update()
+        
+        try:
+            bm.edges.ensure_lookup_table()
+        except(AttributeError):
+            pass
+        
+        bm.to_mesh(mesh)
+        bm.free()
+        
+        #recalculate normals
         bpy.context.scene.objects.active = object
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.mesh.normals_make_consistent(inside=False)
         bpy.ops.object.editmode_toggle()
-
+        
         if(unwrap):
-            bm = bmesh.new()
-            bm.from_mesh(mesh)
-            for i in [15, 28, 33, 37, 40, 47, 48, 51, 61, 64, 70, 71, 73, 74, 76, 79, 92, 93, 113, 114, 118, 126, 128, 133, 143, 156, 159, 165, 172, 181, 186, 194, 195, 198, 209, 237, 250, 251, 253, 261, 265, 267, 271, 279, 286, 289, 297]:
-                bm.edges[i].seam= True
-            bm.to_mesh(mesh)
             bpy.context.scene.objects.active = object
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.select_all(action='SELECT')
             bpy.ops.uv.unwrap(method='CONFORMAL', margin=0.05)
             bpy.ops.object.editmode_toggle()
-
-
 
         return object
