@@ -18,7 +18,7 @@
 import bpy
 from mathutils import Vector, Matrix
 
-from math import cos, tan, radians, sin, degrees
+from math import cos, tan, radians, sin, degrees, sqrt
 import random
 import logging
 
@@ -35,25 +35,26 @@ class Shelf:
     books = []
     log = logging.getLogger("bookGen.Shelf")
 
-    def __init__(self, name, origin, direction, width, parameters):
+    def __init__(self, name, start, end, parameters):
+        end = Vector(end)
+        start = Vector(start)
+        
+
         self.name = name
-        self.origin = origin
-        self.direction = direction
-        self.width = width
+        self.origin = start
+        self.direction = (end - start).normalized()
+        self.rotation = Vector([1,0,0]).rotation_difference(self.direction).to_euler()
+        self.width = (end - start).length
         self.parameters = parameters
         self.collection = get_shelf_collection(self.name)
 
     def add_book(self, book, first):
-
-        
 
         obj = book.to_object()
 
         self.collection.objects.link(obj)
 
         self.books.append(book)
-
-        #book.obj.select_set(True)
 
         if first:
             self.align_offset = book.depth / 2
@@ -76,14 +77,16 @@ class Shelf:
         book.obj.rotation_euler[1] = book.lean_angle
 
         # distribution
+
         book.obj.location += Vector((self.cur_offset, 0, 0))
-        book.obj.location = Matrix.Rotation(self.direction, 3, 'Z') @ book.obj.location
+        book.obj.location = self.rotation.to_matrix() @ book.obj.location
 
-        book.obj.rotation_euler[2] = self.direction
+        book.obj.rotation_euler = self.rotation
+        book.obj.rotation_euler[1] += book.lean_angle
 
-        book.obj.location += self.origin
+        book.obj.location += self.origin 
 
-        self.cur_width += book.width
+        self.cur_width += book.width # TODO this is only true if leaning is off
 
     def fill(self):
         self.cur_width = 0
@@ -97,7 +100,7 @@ class Shelf:
         current = Book(*(list(params.values())), self.parameters["unwrap"], self.parameters["subsurf"], self.parameters["smooth"])
         self.add_book(current, first)
 
-        while(self.cur_width < self.width * self.parameters["scale"]):  # TODO add current book width to cur_width
+        while(self.cur_width < self.width  ):  # TODO add current book width to cur_width
             self.log.debug("remaining width to be filled: %.3f"%(self.width - self.cur_width))
             params = self.apply_parameters()
             last = current

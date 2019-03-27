@@ -1,11 +1,13 @@
 import bpy
+import bpy_extras.view3d_utils
 from mathutils import Vector, Matrix
 import random
 import logging
 import time
-from math import pi, radians, sin, cos, tan, asin, degrees
+from math import pi, radians, sin, cos, tan, asin, degrees, sqrt
 
 from .shelf import Shelf
+from .utils import visible_objects_and_duplis, obj_ray_cast
 
 
 class OBJECT_OT_BookGen(bpy.types.Operator):
@@ -44,12 +46,6 @@ class OBJECT_OT_BookGen(bpy.types.Operator):
 
         time_start = time.time()
 
-        if(properties.axis == "0"):
-            angle = radians(0)
-        elif(properties.axis == "1"):
-            angle = radians(90)
-        elif(properties.axis == "2"):
-            angle = properties.angle
 
         parameters = {
             "scale": properties.scale,
@@ -84,8 +80,8 @@ class OBJECT_OT_BookGen(bpy.types.Operator):
 
         if not hasattr(properties, "shelfs"):
             self.log.debug("adding shelf")
-            properties.shelfs = [Shelf("shelf1",bpy.context.scene.cursor.location,
-                      angle, properties.width, parameters)]
+            properties.shelfs = [Shelf("shelf1", properties.start,
+                      properties.end, parameters)]
 
         shelf = properties.shelfs[0]
         shelf.clean()
@@ -97,18 +93,48 @@ class OBJECT_OT_BookGen(bpy.types.Operator):
 class BookGen_SelectShelf(bpy.types.Operator):
     bl_idname = "object.book_gen_select_shelf"
     bl_label = "Select BookGen Shelf"
-    log = logging.getLogger("bookgen.select_shelf")
+    log = logging.getLogger("bookGen.select_shelf")
+
+    def get_click_position(self, x,y):
+        view_layer = bpy.context.view_layer
+        region = bpy.context.region
+        regionData = bpy.context.space_data.region_3d
+
+        view_vector = bpy_extras.view3d_utils.region_2d_to_vector_3d(region, regionData, (x,y))
+        ray_origin = bpy_extras.view3d_utils.region_2d_to_origin_3d(region, regionData, (x,y))
+
+        ray_target = ray_origin + view_vector
+
+        best_length_squared = -1.0
+        closest_loc = None
+
+        for obj, matrix in visible_objects_and_duplis(bpy.context):
+            if obj.type == 'MESH':
+                hit = obj_ray_cast(obj, matrix, ray_origin, ray_target)
+                if hit is not None:
+                    hit_world = matrix @ hit
+                    length_squared = (hit_world - ray_origin).length_squared
+                    if closest_loc is None or length_squared < best_length_squared:
+                        best_length_squared = length_squared
+                        closest_loc = hit_world
+
+        self.log.debug("hit: %r" % hit)
+
+        return closest_loc
 
     def modal(self, context, event):
         if event.type == 'MOUSEMOVED':
             self.log.debug("mouse moved")
 
-        elif event.type == 'LEFTMOUSE':
+        elif event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
             if self.start is None:
-                self.start = Vector([0,0,0])
+                self.start = self.get_click_position(event.mouse_region_x, event.mouse_region_y)
                 return { 'RUNNING_MODAL' }
             else:
-                self.end = Vector([0,10,0])
+                self.end = self.get_click_position(event.mouse_region_x, event.mouse_region_y)
+                properties = bpy.context.collection.BookGenProperties
+                properties.start = self.start
+                properties.end = self.end
                 return { 'FINISHED' }
         elif event.type in { 'RIGHTMOUSE', 'ESC' }:
             return { 'CANCELED' }

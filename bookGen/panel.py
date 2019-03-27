@@ -11,20 +11,13 @@ class OBJECT_PT_BookGenPanel(bpy.types.Panel):
         properties = bpy.context.collection.BookGenProperties
         layout = self.layout
 
-        layout.prop(properties, "width", text="Width")
-        layout.prop(properties, "scale", text="Scale")
+        layout.prop(properties, "scale", text="scale")
         layout.prop(properties, "seed", text="Seed")
 
         row = layout.row(align=True)
         row.prop(properties, "spacing")
         row.prop(properties, "rndm_spacing_factor")
 
-        layout.separator()
-        layout.label(text="Axis")
-        layout.prop(properties, "axis", expand=True)
-        sub = layout.column()
-        sub.active = properties.axis == "2"
-        sub.prop(properties, "angle")
 
         layout.separator()
 
