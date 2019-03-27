@@ -81,8 +81,8 @@ class Shelf:
 
         book.obj.location += self.origin
 
-        self.cur_width += sin(book.lean_angle) * book.height + book.width
-        print(self.cur_width)
+        self.cur_width += book.width
+        print("current width")
 
     def fill(self):
         self.cur_width = 0
@@ -104,13 +104,13 @@ class Shelf:
 
             # gathering parameters for the next book
 
-            if last.lean_angle < 0:
+            if last.lean_angle <= 0:
                 print("case A")
                 last.corner_height_left = cos(last.lean_angle)*last.height
-                last.corner_height_right =  cos(last.lean_angle) * last.height + sin(last.lean_angle)*last.width
+                last.corner_height_right =  cos(last.lean_angle) * last.height + sin(abs(last.lean_angle))*last.width
             else:
                 print("case B")
-                last.corner_height_left =  cos(last.lean_angle) * last.height + sin(last.lean_angle)*last.width
+                last.corner_height_left =  cos(last.lean_angle) * last.height + sin(abs(last.lean_angle))*last.width
                 last.corner_height_right = cos(last.lean_angle)*last.height
 
             
@@ -118,51 +118,47 @@ class Shelf:
             if current.lean_angle < 0:
                 print("case B")
                 current.corner_height_left = cos(current.lean_angle)*current.height
-                current.corner_height_right = cos(current.lean_angle) * current.height + sin(current.lean_angle)*current.width
+                current.corner_height_right = cos(current.lean_angle) * current.height + sin(abs(current.lean_angle))*current.width
 
             else:
                 print("case A")
+                current.corner_height_left = cos(current.lean_angle) * current.height + sin(abs(current.lean_angle))*current.width
                 current.corner_height_right = cos(current.lean_angle)*current.height
-                current.corner_height_left = cos(current.lean_angle) * current.height + sin(current.lean_angle)*current.width
 
+            print("last - angle: %.3f left: %.3f   right: %.3f"%(degrees(last.lean_angle), last.corner_height_left, last.corner_height_right))
 
             print("current - angle: %.3f left: %.3f   right: %.3f"%(degrees(current.lean_angle), current.corner_height_left, current.corner_height_right))
 
+            same_dir = (last.lean_angle >= 0 and current.lean_angle >= 0) or (last.lean_angle < 0 and current.lean_angle < 0)
 
-            #old_corner_height = book.height * cos(book.lean_angle)
+            # mirror everything for leaning left
+            if same_dir and last.lean_angle < 0:
+                switched = True
+                last , current = current, last
+                last.corner_height_left, last.corner_height_right = last.corner_height_right, last.corner_height_left
+                current.corner_height_left, current.corner_height_right = current.corner_height_right, current.corner_height_left
 
-
-            #corner_height = cos(params["lean_angle"]) * (params["book_height"] + params["book_width"] / tan(radians(90) - params["lean_angle"]))
-
-
-            """if(old_corner_height <= corner_height and book.lean_angle >= params["lean_angle"]):
-                print("case 1 ")
-                self.cur_offset += sin(book.lean_angle) * book.height - cos(book.lean_angle) * book.height / (tan(radians(90) - params["lean_angle"])) + params["book_width"] / cos(params["lean_angle"])
-            elif(book.lean_angle < params["lean_angle"]):
-                print("case 2")
-                self.cur_offset += cos(params["lean_angle"]) * params["book_width"] + sin(params["lean_angle"]) * params["book_width"] / tan(radians(90) - book.lean_angle)
-            elif(old_corner_height > corner_height and book.lean_angle >= params["lean_angle"]):
-                print("case 3")
-                self.cur_offset += (cos(params["lean_angle"]) * params["book_height"] + sin(params["lean_angle"]) * params["book_width"]) / tan(radians(90) - book.lean_angle) + params["book_width"] / cos(params["lean_angle"]) - sin(params["lean_angle"]) * (params["book_height"] + params["book_width"] / tan(radians(90) - params["lean_angle"]))
             else:
-                print("doesn't fit a designed case")
-            """
-            #self.cur_offset += 1
+                switched = False
+            print("switched: ", switched)
             
-            if last.lean_angle >= current.lean_angle and last.corner_height_right < current.corner_height_left:
+            if same_dir and abs(last.lean_angle) >= abs(current.lean_angle) and last.corner_height_right < current.corner_height_left:
                 print("case 1")
-                self.cur_offset += sin(last.lean_angle) * last.height  - (tan(current.lean_angle)*last.corner_height_right - current.width/cos(current.lean_angle))
-            elif last.lean_angle >= current.lean_angle and last.corner_height_right > current.corner_height_left:
-                self.cur_offset += current.corner_height_left/tan(radians(90)-last.lean_angle) - (sin(current.lean_angle)*current.width)
-            elif last.lean_angle <= 0 and current.lean_angle >= 0:
-                print("case 4")
-                #self.cur_offset += sin(last.lean_angle) * last.width + cos()
+                self.cur_offset += sin(abs(last.lean_angle)) * last.height  - (tan(abs(current.lean_angle))*last.corner_height_right - current.width/cos(abs(current.lean_angle)))
+            elif same_dir and abs(last.lean_angle) >= abs(current.lean_angle) and last.corner_height_right > current.corner_height_left:
+                print("case 2")
+                self.cur_offset += current.corner_height_left/tan(radians(90)-abs(last.lean_angle)) - (current.corner_height_left/tan(radians(90)-abs(current.lean_angle))) + current.width/cos(abs(current.lean_angle))
+            elif same_dir and abs(last.lean_angle) < abs(current.lean_angle):
+                print("case 5")
+                self.cur_offset += (cos(current.lean_angle)*current.width) + (sin(current.lean_angle)*current.width/tan(radians(90)-last.lean_angle))
             else:
                 print("[WARNING] leaning hit a unusual case. This should not happen")
 
+            if switched:
+                last , current = current, last
+            
             self.add_book(current, first)
 
-            
             first = False
 
     def clean(self):
