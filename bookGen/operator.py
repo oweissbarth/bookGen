@@ -82,7 +82,7 @@ class OBJECT_OT_BookGen(bpy.types.Operator):
 
         if not hasattr(properties, "shelfs"):
             print("adding shelf")
-            properties.shelfs = [Shelf("shelf1",bpy.context.scene.cursor_location,
+            properties.shelfs = [Shelf("shelf1",bpy.context.scene.cursor.location,
                       angle, properties.width, parameters)]
 
         shelf = properties.shelfs[0]
