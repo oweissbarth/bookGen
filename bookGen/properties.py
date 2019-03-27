@@ -43,7 +43,7 @@ class BookGenProperties(bpy.types.PropertyGroup):
         name="lean direction", subtype="FACTOR", min=-1, max=1, default=0, update=update)
 
     lean_angle: FloatProperty(
-        name="lean angle", unit='ROTATION', min=.0, max=pi / 2.0, default=radians(30), update=update)
+        name="lean angle", unit='ROTATION', min=.0, soft_max=radians(30), max=pi / 2.0, default=radians(8), update=update)
     rndm_lean_angle_factor: FloatProperty(
         name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 

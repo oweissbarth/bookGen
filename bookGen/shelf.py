@@ -132,15 +132,20 @@ class Shelf:
 
             same_dir = (last.lean_angle >= 0 and current.lean_angle >= 0) or (last.lean_angle < 0 and current.lean_angle < 0)
 
-            # mirror everything for leaning left
-            if same_dir and last.lean_angle < 0:
-                switched = True
-                last , current = current, last
+            self.log.debug("same dir: %r" % same_dir)
+
+            switched = False
+
+            def switch(last, current):
                 last.corner_height_left, last.corner_height_right = last.corner_height_right, last.corner_height_left
                 current.corner_height_left, current.corner_height_right = current.corner_height_right, current.corner_height_left
+                return current, last
 
-            else:
-                switched = False
+            # mirror everything both books lean to the left
+            if same_dir and last.lean_angle < 0:
+                switched = True
+                current, last = switch(current, last)
+
             self.log.debug("switched: %r" % switched)
             
             if same_dir and abs(last.lean_angle) >= abs(current.lean_angle) and last.corner_height_right < current.corner_height_left:
@@ -149,6 +154,15 @@ class Shelf:
             elif same_dir and abs(last.lean_angle) >= abs(current.lean_angle) and last.corner_height_right > current.corner_height_left:
                 self.log.debug("case 2")
                 self.cur_offset += current.corner_height_left/tan(radians(90)-abs(last.lean_angle)) - (current.corner_height_left/tan(radians(90)-abs(current.lean_angle))) + current.width/cos(abs(current.lean_angle))
+            elif not same_dir and last.lean_angle > current.lean_angle:
+                self.log.debug("case 3")
+                if last.corner_height_right > current.corner_height_left:
+                    switched = True
+                    current, last = switch(current, last)
+                self.cur_offset += cos(radians(90) - abs(last.lean_angle))*last.height + last.corner_height_right/tan(radians(90)-abs(current.lean_angle)) 
+            elif not same_dir and last.lean_angle < current.lean_angle:
+                self.log.debug("case 4")
+                self.cur_offset += sin(radians(90)-abs(last.lean_angle)) * last.width  - (tan(abs(current.lean_angle))*sin(abs(last.lean_angle))*last.width - current.width/cos(abs(current.lean_angle)))
             elif same_dir and abs(last.lean_angle) < abs(current.lean_angle):
                 self.log.debug("case 5")
                 self.cur_offset += (cos(current.lean_angle)*current.width) + (sin(current.lean_angle)*current.width/tan(radians(90)-last.lean_angle))

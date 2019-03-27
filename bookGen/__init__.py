@@ -33,6 +33,7 @@ from .panel import OBJECT_PT_BookGenPanel, OBJECT_PT_BookGen_MainPanel
 from .properties import BookGenProperties
 
 
+
 classes = [
     BookGenProperties,
     OBJECT_OT_BookGen,
