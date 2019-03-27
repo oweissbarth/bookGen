@@ -1,6 +1,7 @@
 import bpy
 from mathutils import Vector, Matrix
 import random
+import logging
 import time
 from math import pi, radians, sin, cos, tan, asin, degrees
 
@@ -21,6 +22,7 @@ class OBJECT_OT_BookGen(bpy.types.Operator):
     cur_width = 0
 
     cur_offset = 0
+    log = logging.getLogger("bookGen.operator")
 
     def check(self, context):
         self.run()
@@ -81,7 +83,7 @@ class OBJECT_OT_BookGen(bpy.types.Operator):
         }
 
         if not hasattr(properties, "shelfs"):
-            print("adding shelf")
+            self.log.debug("adding shelf")
             properties.shelfs = [Shelf("shelf1",bpy.context.scene.cursor.location,
                       angle, properties.width, parameters)]
 
@@ -89,16 +91,17 @@ class OBJECT_OT_BookGen(bpy.types.Operator):
         shelf.clean()
         shelf.fill()
 
-        print("Finished: %.4f sec" % (time.time() - time_start))
+        self.log.info("Finished populating shelf in %.4f secs" % (time.time() - time_start))
 
 
 class BookGen_SelectShelf(bpy.types.Operator):
     bl_idname = "object.book_gen_select_shelf"
     bl_label = "Select BookGen Shelf"
+    log = logging.getLogger("bookgen.select_shelf")
 
     def modal(self, context, event):
         if event.type == 'MOUSEMOVED':
-            print("mouse moved")
+            self.log.debug("mouse moved")
 
         elif event.type == 'LEFTMOUSE':
             if self.start is None:

@@ -4,11 +4,14 @@ from bpy.props import FloatProperty, IntProperty, EnumProperty, BoolProperty
 from .utils import get_bookgen_collection
 
 from math import pi, radians
+import logging
 
 class BookGenProperties(bpy.types.PropertyGroup):
+    log = logging.getLogger("bookGen.properties")
+    
     def update(self, context):
         properties = bpy.context.collection.BookGenProperties
-        print("auto rebuild: ", properties.auto_rebuild)
+        self.log.debug("auto rebuild: %r" % properties.auto_rebuild)
         if properties.auto_rebuild:
             """col = get_bookgen_collection()
             for obj in col.objects:

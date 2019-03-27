@@ -20,6 +20,7 @@ from mathutils import Vector, Matrix
 
 from math import cos, tan, radians, sin, degrees
 import random
+import logging
 
 from .book import Book
 
@@ -32,6 +33,7 @@ class Shelf:
     width = 3.0
     parameters = {}
     books = []
+    log = logging.getLogger("bookGen.Shelf")
 
     def __init__(self, name, origin, direction, width, parameters):
         self.name = name
@@ -82,7 +84,6 @@ class Shelf:
         book.obj.location += self.origin
 
         self.cur_width += book.width
-        print("current width")
 
     def fill(self):
         self.cur_width = 0
@@ -97,7 +98,7 @@ class Shelf:
         self.add_book(current, first)
 
         while(self.cur_width < self.width * self.parameters["scale"]):  # TODO add current book width to cur_width
-            print("remaining width to be filled: %.3f"%(self.width - self.cur_width))
+            self.log.debug("remaining width to be filled: %.3f"%(self.width - self.cur_width))
             params = self.apply_parameters()
             last = current
             current = Book(*(list(params.values())), self.parameters["unwrap"], self.parameters["subsurf"], self.parameters["smooth"])
@@ -105,29 +106,29 @@ class Shelf:
             # gathering parameters for the next book
 
             if last.lean_angle <= 0:
-                print("case A")
+                self.log.debug("case A")
                 last.corner_height_left = cos(last.lean_angle)*last.height
                 last.corner_height_right =  cos(last.lean_angle) * last.height + sin(abs(last.lean_angle))*last.width
             else:
-                print("case B")
+                self.log.debug("case B")
                 last.corner_height_left =  cos(last.lean_angle) * last.height + sin(abs(last.lean_angle))*last.width
                 last.corner_height_right = cos(last.lean_angle)*last.height
 
             
 
             if current.lean_angle < 0:
-                print("case B")
+                self.log.debug("case B")
                 current.corner_height_left = cos(current.lean_angle)*current.height
                 current.corner_height_right = cos(current.lean_angle) * current.height + sin(abs(current.lean_angle))*current.width
 
             else:
-                print("case A")
+                self.log.debug("case A")
                 current.corner_height_left = cos(current.lean_angle) * current.height + sin(abs(current.lean_angle))*current.width
                 current.corner_height_right = cos(current.lean_angle)*current.height
 
-            print("last - angle: %.3f left: %.3f   right: %.3f"%(degrees(last.lean_angle), last.corner_height_left, last.corner_height_right))
+            self.log.debug("last - angle: %.3f left: %.3f   right: %.3f"%(degrees(last.lean_angle), last.corner_height_left, last.corner_height_right))
 
-            print("current - angle: %.3f left: %.3f   right: %.3f"%(degrees(current.lean_angle), current.corner_height_left, current.corner_height_right))
+            self.log.debug("current - angle: %.3f left: %.3f   right: %.3f"%(degrees(current.lean_angle), current.corner_height_left, current.corner_height_right))
 
             same_dir = (last.lean_angle >= 0 and current.lean_angle >= 0) or (last.lean_angle < 0 and current.lean_angle < 0)
 
@@ -140,19 +141,19 @@ class Shelf:
 
             else:
                 switched = False
-            print("switched: ", switched)
+            self.log.debug("switched: %r" % switched)
             
             if same_dir and abs(last.lean_angle) >= abs(current.lean_angle) and last.corner_height_right < current.corner_height_left:
-                print("case 1")
+                self.log.debug("case 1")
                 self.cur_offset += sin(abs(last.lean_angle)) * last.height  - (tan(abs(current.lean_angle))*last.corner_height_right - current.width/cos(abs(current.lean_angle)))
             elif same_dir and abs(last.lean_angle) >= abs(current.lean_angle) and last.corner_height_right > current.corner_height_left:
-                print("case 2")
+                self.log.debug("case 2")
                 self.cur_offset += current.corner_height_left/tan(radians(90)-abs(last.lean_angle)) - (current.corner_height_left/tan(radians(90)-abs(current.lean_angle))) + current.width/cos(abs(current.lean_angle))
             elif same_dir and abs(last.lean_angle) < abs(current.lean_angle):
-                print("case 5")
+                self.log.debug("case 5")
                 self.cur_offset += (cos(current.lean_angle)*current.width) + (sin(current.lean_angle)*current.width/tan(radians(90)-last.lean_angle))
             else:
-                print("[WARNING] leaning hit a unusual case. This should not happen")
+                self.log.warning("leaning hit a unusual case. This should not happen")
 
             if switched:
                 last , current = current, last
