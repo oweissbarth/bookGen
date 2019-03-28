@@ -1,5 +1,7 @@
 import bpy
 
+from .utils import get_bookgen_collection
+
 class OBJECT_PT_BookGenPanel(bpy.types.Panel):
     bl_label = "Shelf Properties"
     bl_space_type = 'VIEW_3D'
@@ -10,6 +12,7 @@ class OBJECT_PT_BookGenPanel(bpy.types.Panel):
     def draw(self, context):
         properties = bpy.context.collection.BookGenProperties
         layout = self.layout
+
 
         layout.prop(properties, "scale", text="scale")
         layout.prop(properties, "seed", text="Seed")
@@ -94,5 +97,8 @@ class OBJECT_PT_BookGen_MainPanel(bpy.types.Panel):
         properties = bpy.context.collection.BookGenProperties
         layout = self.layout
         layout.prop(properties, "auto_rebuild")
-        layout.operator("object.book_gen", text="rebuild")
+        layout.operator("object.book_gen_rebuild", text="rebuild")
+        layout.operator("object.book_gen_select_shelf", text="Add shelf")
+        layout.label(text="Shelves")
+        layout.template_list("BOOKGEN_UL_Shelves", "", get_bookgen_collection(), "children", bpy.context.collection.BookGenProperties, "active_shelf")
         

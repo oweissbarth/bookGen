@@ -6,6 +6,13 @@ from .utils import get_bookgen_collection
 from math import pi, radians
 import logging
 
+
+class BookGenShelfProperties(bpy.types.PropertyGroup):
+    start: FloatVectorProperty(name="start")
+    end: FloatVectorProperty(name="end")
+    normal: FloatVectorProperty(name="normal")
+    id: IntProperty(name="id")
+
 class BookGenProperties(bpy.types.PropertyGroup):
     log = logging.getLogger("bookGen.properties")
     
@@ -16,15 +23,15 @@ class BookGenProperties(bpy.types.PropertyGroup):
             """col = get_bookgen_collection()
             for obj in col.objects:
                 bpy.data.objects.remove(obj, do_unlink=True)"""
-            bpy.ops.object.book_gen()
+            bpy.ops.object.book_gen_rebuild()
 
     # general
     auto_rebuild: BoolProperty(name="auto rebuild", default=True)
+    active_shelf: IntProperty(name="active_shelf")
 
     #shelf
     scale: FloatProperty(name="scale", default=1,  update=update)
-    start: FloatVectorProperty(name="start", update=update)
-    end: FloatVectorProperty(name="end", update=update)
+
     seed: IntProperty(name="seed", default=0, update=update)
 
     alignment:  EnumProperty(name="alignment", items=(("0", "spline", "align books at the spline (usually front in a shelf)"), (

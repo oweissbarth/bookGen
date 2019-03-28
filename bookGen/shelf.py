@@ -35,15 +35,17 @@ class Shelf:
     books = []
     log = logging.getLogger("bookGen.Shelf")
 
-    def __init__(self, name, start, end, parameters):
+    def __init__(self, name, start, end, normal, parameters):
         end = Vector(end)
         start = Vector(start)
         
+        self.log.debug("normal: [%f, %f, %f]"% (normal[0], normal[1], normal[2]))
 
         self.name = name
         self.origin = start
         self.direction = (end - start).normalized()
-        self.rotation = Vector([1,0,0]).rotation_difference(self.direction).to_euler()
+        self.rotationMatrix = Matrix([self.direction, self.direction.cross(normal), normal]).transposed()
+        self.rotation = self.rotationMatrix.to_euler()
         self.width = (end - start).length
         self.parameters = parameters
         self.collection = get_shelf_collection(self.name)
@@ -79,7 +81,7 @@ class Shelf:
         # distribution
 
         book.obj.location += Vector((self.cur_offset, 0, 0))
-        book.obj.location = self.rotation.to_matrix() @ book.obj.location
+        book.obj.location = self.rotationMatrix @ book.obj.location
 
         book.obj.rotation_euler = self.rotation
         book.obj.rotation_euler[1] += book.lean_angle

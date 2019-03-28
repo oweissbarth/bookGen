@@ -19,7 +19,7 @@
 
 bl_info = {
     "name": "BookGen",
-    "description": "Generate books to fill shelfs",
+    "description": "Generate books to fill shelves",
     "author": "Oliver Weissbarth, Seojin Sim",
     "version": (0, 6),
     "blender": (2, 80, 0),
@@ -28,18 +28,21 @@ bl_info = {
     "wiki_url": "",
     "category": "Add Mesh"}
 
-from .operator import OBJECT_OT_BookGen, BookGen_SelectShelf
+from .operator import OBJECT_OT_BookGenRebuild, BookGen_SelectShelf
 from .panel import OBJECT_PT_BookGenPanel, OBJECT_PT_BookGen_MainPanel
-from .properties import BookGenProperties
+from .properties import BookGenProperties, BookGenShelfProperties
+from .shelf_list import BOOKGEN_UL_Shelves
 
 
 
 classes = [
     BookGenProperties,
-    OBJECT_OT_BookGen,
+    BookGenShelfProperties,
+    OBJECT_OT_BookGenRebuild,
     OBJECT_PT_BookGen_MainPanel,
     OBJECT_PT_BookGenPanel,
-    BookGen_SelectShelf
+    BookGen_SelectShelf,
+    BOOKGEN_UL_Shelves
 ]
 
 def register():
@@ -51,6 +54,7 @@ def register():
         register_class(cls)
 
     bpy.types.Collection.BookGenProperties = bpy.props.PointerProperty(type=BookGenProperties)
+    bpy.types.Collection.BookGenShelfProperties = bpy.props.PointerProperty(type=BookGenShelfProperties)
 
 
 def unregister():

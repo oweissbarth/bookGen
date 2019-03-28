@@ -7,11 +7,11 @@ import time
 from math import pi, radians, sin, cos, tan, asin, degrees, sqrt
 
 from .shelf import Shelf
-from .utils import visible_objects_and_duplis, obj_ray_cast
+from .utils import visible_objects_and_duplis, obj_ray_cast, get_bookgen_collection, get_shelf_parameters, get_shelf_collection
 
 
-class OBJECT_OT_BookGen(bpy.types.Operator):
-    bl_idname = "object.book_gen"
+class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
+    bl_idname = "object.book_gen_rebuild"
     bl_label = "BookGen"
     bl_options = {'REGISTER'}
 
@@ -19,11 +19,6 @@ class OBJECT_OT_BookGen(bpy.types.Operator):
         if(self.hinge_inset > self.cover_thickness):
             self.hinge_inset = self.cover_thickness - self.cover_thickness / 8"""
 
-    
-
-    cur_width = 0
-
-    cur_offset = 0
     log = logging.getLogger("bookGen.operator")
 
     def check(self, context):
@@ -42,50 +37,24 @@ class OBJECT_OT_BookGen(bpy.types.Operator):
         return context.mode == 'OBJECT'
 
     def run(self):
-        properties = bpy.context.collection.BookGenProperties
 
         time_start = time.time()
 
 
-        parameters = {
-            "scale": properties.scale,
-            "seed": properties.seed,
-            "alignment": properties.alignment,
-            "lean_amount": properties.lean_amount,
-            "lean_direction": properties.lean_direction,
-            "lean_angle": properties.lean_angle,
-            "rndm_lean_angle_factor": properties.rndm_lean_angle_factor,
-            "book_height": properties.book_height,
-            "rndm_book_height_factor": properties.rndm_book_height_factor,
-            "book_width": properties.book_width,
-            "rndm_book_width_factor": properties.rndm_book_width_factor,
-            "book_depth": properties.book_depth,
-            "rndm_book_depth_factor": properties.rndm_book_depth_factor,
-            "cover_thickness": properties.cover_thickness,
-            "rndm_cover_thickness_factor": properties.rndm_cover_thickness_factor,
-            "textblock_offset": properties.textblock_offset,
-            "rndm_textblock_offset_factor": properties.rndm_textblock_offset_factor,
-            "spline_curl": properties.spline_curl,
-            "rndm_spline_curl_factor": properties.rndm_spline_curl_factor,
-            "hinge_inset": properties.hinge_inset,
-            "rndm_hinge_inset_factor": properties.rndm_hinge_inset_factor,
-            "hinge_width": properties.hinge_width,
-            "rndm_hinge_width_factor": properties.rndm_hinge_width_factor,
-            "spacing": properties.spacing,
-            "rndm_spacing_factor": properties.rndm_spacing_factor,
-            "subsurf": properties.subsurf,
-            "smooth": properties.smooth,
-            "unwrap": properties.unwrap
-        }
+        parameters = get_shelf_parameters()
 
-        if not hasattr(properties, "shelfs"):
-            self.log.debug("adding shelf")
-            properties.shelfs = [Shelf("shelf1", properties.start,
-                      properties.end, parameters)]
+        properties = bpy.context.collection.BookGenProperties
 
-        shelf = properties.shelfs[0]
-        shelf.clean()
-        shelf.fill()
+        for shelf_collection in get_bookgen_collection().children:
+            shelf_props = shelf_collection.BookGenShelfProperties
+
+            parameters["seed"] += shelf_props.id
+
+            shelf = Shelf(shelf_collection.name, shelf_props.start, shelf_props.end, shelf_props.normal, parameters)
+            shelf.clean()
+            shelf.fill()
+
+            parameters["seed"] -= shelf_props.id
 
         self.log.info("Finished populating shelf in %.4f secs" % (time.time() - time_start))
 
@@ -96,7 +65,6 @@ class BookGen_SelectShelf(bpy.types.Operator):
     log = logging.getLogger("bookGen.select_shelf")
 
     def get_click_position(self, x,y):
-        view_layer = bpy.context.view_layer
         region = bpy.context.region
         regionData = bpy.context.space_data.region_3d
 
@@ -107,34 +75,48 @@ class BookGen_SelectShelf(bpy.types.Operator):
 
         best_length_squared = -1.0
         closest_loc = None
+        closest_normal = None
 
         for obj, matrix in visible_objects_and_duplis(bpy.context):
             if obj.type == 'MESH':
-                hit = obj_ray_cast(obj, matrix, ray_origin, ray_target)
+                hit, normal = obj_ray_cast(obj, matrix, ray_origin, ray_target)
                 if hit is not None:
                     hit_world = matrix @ hit
+                    normal_world = matrix @ normal
                     length_squared = (hit_world - ray_origin).length_squared
                     if closest_loc is None or length_squared < best_length_squared:
                         best_length_squared = length_squared
                         closest_loc = hit_world
+                        closest_normal = normal
 
         self.log.debug("hit: %r" % hit)
 
-        return closest_loc
+        return closest_loc, closest_normal
 
     def modal(self, context, event):
-        if event.type == 'MOUSEMOVED':
-            self.log.debug("mouse moved")
+        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
+            # allow navigation
+            return {'PASS_THROUGH'}
 
         elif event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
             if self.start is None:
-                self.start = self.get_click_position(event.mouse_region_x, event.mouse_region_y)
+                self.start, self.start_normal = self.get_click_position(event.mouse_region_x, event.mouse_region_y)
                 return { 'RUNNING_MODAL' }
             else:
-                self.end = self.get_click_position(event.mouse_region_x, event.mouse_region_y)
-                properties = bpy.context.collection.BookGenProperties
-                properties.start = self.start
-                properties.end = self.end
+                self.end, self.end_normal = self.get_click_position(event.mouse_region_x, event.mouse_region_y)
+                shelf_id = len(get_bookgen_collection().children)
+                parameters = get_shelf_parameters()
+                parameters["seed"] += shelf_id
+                shelf = Shelf("shelf_"+str(shelf_id), self.start, self.end, (self.start_normal  + self.end_normal)/2, parameters)
+                shelf.clean()
+                shelf.fill()
+                
+                # set properties for later rebuild
+                shelf_props = get_shelf_collection(shelf.name).BookGenShelfProperties
+                shelf_props.start = self.start
+                shelf_props.end = self.end
+                shelf_props.normal = (self.start_normal  + self.end_normal)/2
+                shelf_props.id = shelf_id
                 return { 'FINISHED' }
         elif event.type in { 'RIGHTMOUSE', 'ESC' }:
             return { 'CANCELED' }
