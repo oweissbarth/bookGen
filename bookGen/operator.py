@@ -13,6 +13,8 @@ from .utils import (visible_objects_and_instances,
                    get_shelf_collection,
                    get_click_position_on_object)
 
+from .ui_gizmo import BookGenShelfGizmo
+
 
 class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
     bl_idname = "object.book_gen_rebuild"
@@ -67,8 +69,15 @@ class BookGen_SelectShelf(bpy.types.Operator):
     def modal(self, context, event):
         context.area.header_text_set("Left click on a surface to place your shelf.")
         x, y = event.mouse_region_x, event.mouse_region_y
-        
-        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
+        if event.type == 'MOUSEMOVE':
+            #bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+            if self.start is not None:
+                loc, nrm = get_click_position_on_object(x, y)
+                if loc is not None:
+                    pass
+                    #self.gizmo.update(self.start, loc, nrm)
+                    #bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+        elif event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
             # allow navigation
             return {'PASS_THROUGH'}
         elif event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
@@ -92,9 +101,11 @@ class BookGen_SelectShelf(bpy.types.Operator):
                 shelf_props.normal = normal
                 shelf_props.id = shelf_id
                 context.area.header_text_set("")
+                #self.gizmo.remove()
                 return { 'FINISHED' }
         elif event.type in { 'RIGHTMOUSE', 'ESC' }:
             context.area.header_text_set("")
+            #self.gizmo.remove()
             return { 'CANCELLED' }
         return { 'RUNNING_MODAL' }
 
@@ -102,6 +113,8 @@ class BookGen_SelectShelf(bpy.types.Operator):
 
         self.start = None
         self.end = None
+
+        #self.gizmo =  BookGenShelfGizmo(self.start, self.end, None)
 
         context.window_manager.modal_handler_add(self)
         return { 'RUNNING_MODAL' }
