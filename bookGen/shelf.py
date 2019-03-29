@@ -88,8 +88,6 @@ class Shelf:
 
         book.obj.location += self.origin 
 
-        self.cur_width += book.width # TODO this is only true if leaning is off
-
     def fill(self):
         self.cur_width = 0
         self.cur_offset = 0
@@ -100,6 +98,10 @@ class Shelf:
 
         params = self.apply_parameters()
         current = Book(*(list(params.values())), self.parameters["unwrap"], self.parameters["subsurf"], self.parameters["smooth"])
+        if current.lean_angle >= 0:
+            self.cur_offset = cos(current.lean_angle)*current.width
+        else:
+            self.cur_offset = current.height * sin(abs(current.lean_angle))
         self.add_book(current, first)
 
         while(self.cur_width < self.width  ):  # TODO add current book width to cur_width
@@ -152,32 +154,49 @@ class Shelf:
                 current, last = switch(current, last)
 
             self.log.debug("switched: %r" % switched)
+
+            offset = 0
             
             if same_dir and abs(last.lean_angle) >= abs(current.lean_angle) and last.corner_height_right < current.corner_height_left:
                 self.log.debug("case 1")
-                self.cur_offset += sin(abs(last.lean_angle)) * last.height  - (tan(abs(current.lean_angle))*last.corner_height_right - current.width/cos(abs(current.lean_angle)))
+                offset = sin(abs(last.lean_angle)) * last.height  - (tan(abs(current.lean_angle))*last.corner_height_right - current.width/cos(abs(current.lean_angle)))
             elif same_dir and abs(last.lean_angle) >= abs(current.lean_angle) and last.corner_height_right > current.corner_height_left:
                 self.log.debug("case 2")
-                self.cur_offset += current.corner_height_left/tan(radians(90)-abs(last.lean_angle)) - (current.corner_height_left/tan(radians(90)-abs(current.lean_angle))) + current.width/cos(abs(current.lean_angle))
+                offset = current.corner_height_left/tan(radians(90)-abs(last.lean_angle)) - (current.corner_height_left/tan(radians(90)-abs(current.lean_angle))) + current.width/cos(abs(current.lean_angle))
             elif not same_dir and last.lean_angle > current.lean_angle:
                 self.log.debug("case 3")
                 if last.corner_height_right > current.corner_height_left:
                     switched = True
                     current, last = switch(current, last)
-                self.cur_offset += cos(radians(90) - abs(last.lean_angle))*last.height + last.corner_height_right/tan(radians(90)-abs(current.lean_angle)) 
+                offset = cos(radians(90) - abs(last.lean_angle))*last.height + last.corner_height_right/tan(radians(90)-abs(current.lean_angle)) 
             elif not same_dir and last.lean_angle < current.lean_angle:
                 self.log.debug("case 4")
-                self.cur_offset += sin(radians(90)-abs(last.lean_angle)) * last.width  - (tan(abs(current.lean_angle))*sin(abs(last.lean_angle))*last.width - current.width/cos(abs(current.lean_angle)))
+                offset = sin(radians(90)-abs(last.lean_angle)) * last.width  - (tan(abs(current.lean_angle))*sin(abs(last.lean_angle))*last.width - current.width/cos(abs(current.lean_angle)))
             elif same_dir and abs(last.lean_angle) < abs(current.lean_angle):
                 self.log.debug("case 5")
-                self.cur_offset += (cos(current.lean_angle)*current.width) + (sin(current.lean_angle)*current.width/tan(radians(90)-last.lean_angle))
+                offset = (cos(current.lean_angle)*current.width) + (sin(current.lean_angle)*current.width/tan(radians(90)-last.lean_angle))
             else:
                 self.log.warning("leaning hit a unusual case. This should not happen")
 
             if switched:
                 last , current = current, last
             
-            self.add_book(current, first)
+            # effective width of the book changes based on the lean angle.
+            if current.lean_angle > 0:
+                width = offset + sin(abs(current.lean_angle))*current.height
+            elif current.lean_angle < 0:
+                width = offset + cos(current.lean_angle)*current.width
+            else:
+                # books that don't lean are aligned right.
+                width = offset
+            
+
+            self.cur_width = self.cur_offset + width
+
+            self.cur_offset += offset
+
+            if self.cur_width < self.width:
+                self.add_book(current, first)
 
             first = False
 

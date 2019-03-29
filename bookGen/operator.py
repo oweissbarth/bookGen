@@ -94,6 +94,7 @@ class BookGen_SelectShelf(bpy.types.Operator):
         return closest_loc, closest_normal
 
     def modal(self, context, event):
+        context.area.header_text_set("Left click on a surface to place your shelf.")
         if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
             # allow navigation
             return {'PASS_THROUGH'}
@@ -117,9 +118,11 @@ class BookGen_SelectShelf(bpy.types.Operator):
                 shelf_props.end = self.end
                 shelf_props.normal = (self.start_normal  + self.end_normal)/2
                 shelf_props.id = shelf_id
+                context.area.header_text_set("")
                 return { 'FINISHED' }
         elif event.type in { 'RIGHTMOUSE', 'ESC' }:
-            return { 'CANCELED' }
+            context.area.header_text_set("")
+            return { 'CANCELLED' }
         return { 'RUNNING_MODAL' }
 
     def invoke(self, context, event):
