@@ -54,7 +54,7 @@ class BookGenProperties(bpy.types.PropertyGroup):
         name=" random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 
     book_width: FloatProperty(
-        name="width", default=0.03, min=.002, unit="LENGTH", update=update)
+        name="width", default=0.03, min=.002, step=0.005, unit="LENGTH", update=update)
     rndm_book_width_factor: FloatProperty(
         name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 

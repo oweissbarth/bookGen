@@ -1,4 +1,5 @@
 import bpy
+import bpy_extras.view3d_utils
 
 def get_bookgen_collection():
     for c in bpy.context.scene.collection.children:
@@ -19,7 +20,7 @@ def get_shelf_collection(name):
     bookgen.children.link(col)
     return col
 
-def visible_objects_and_duplis(context):
+def visible_objects_and_instances(context):
     """Loop over (object, matrix) pairs (mesh only)"""
 
     for obj in context.visible_objects:
@@ -85,3 +86,30 @@ def get_shelf_parameters():
         "unwrap": properties.unwrap
     }
     return parameters
+
+def get_click_position_on_object(x,y):
+    region = bpy.context.region
+    regionData = bpy.context.space_data.region_3d
+
+    view_vector = bpy_extras.view3d_utils.region_2d_to_vector_3d(region, regionData, (x,y))
+    ray_origin = bpy_extras.view3d_utils.region_2d_to_origin_3d(region, regionData, (x,y))
+
+    ray_target = ray_origin + view_vector
+
+    best_length_squared = -1.0
+    closest_loc = None
+    closest_normal = None
+
+    for obj, matrix in visible_objects_and_instances(bpy.context):
+        if obj.type == 'MESH':
+            hit, normal = obj_ray_cast(obj, matrix, ray_origin, ray_target)
+            if hit is not None:
+                hit_world = matrix @ hit
+                normal_world = matrix @ normal
+                length_squared = (hit_world - ray_origin).length_squared
+                if closest_loc is None or length_squared < best_length_squared:
+                    best_length_squared = length_squared
+                    closest_loc = hit_world
+                    closest_normal = normal
+
+    return closest_loc, closest_normal

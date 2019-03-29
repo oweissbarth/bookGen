@@ -1,5 +1,4 @@
 import bpy
-import bpy_extras.view3d_utils
 from mathutils import Vector, Matrix
 import random
 import logging
@@ -7,7 +6,12 @@ import time
 from math import pi, radians, sin, cos, tan, asin, degrees, sqrt
 
 from .shelf import Shelf
-from .utils import visible_objects_and_duplis, obj_ray_cast, get_bookgen_collection, get_shelf_parameters, get_shelf_collection
+from .utils import (visible_objects_and_instances,
+                   obj_ray_cast,
+                   get_bookgen_collection,
+                   get_shelf_parameters,
+                   get_shelf_collection,
+                   get_click_position_on_object)
 
 
 class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
@@ -39,11 +43,7 @@ class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
     def run(self):
 
         time_start = time.time()
-
-
         parameters = get_shelf_parameters()
-
-        properties = bpy.context.collection.BookGenProperties
 
         for shelf_collection in get_bookgen_collection().children:
             shelf_props = shelf_collection.BookGenShelfProperties
@@ -64,51 +64,24 @@ class BookGen_SelectShelf(bpy.types.Operator):
     bl_label = "Select BookGen Shelf"
     log = logging.getLogger("bookGen.select_shelf")
 
-    def get_click_position(self, x,y):
-        region = bpy.context.region
-        regionData = bpy.context.space_data.region_3d
-
-        view_vector = bpy_extras.view3d_utils.region_2d_to_vector_3d(region, regionData, (x,y))
-        ray_origin = bpy_extras.view3d_utils.region_2d_to_origin_3d(region, regionData, (x,y))
-
-        ray_target = ray_origin + view_vector
-
-        best_length_squared = -1.0
-        closest_loc = None
-        closest_normal = None
-
-        for obj, matrix in visible_objects_and_duplis(bpy.context):
-            if obj.type == 'MESH':
-                hit, normal = obj_ray_cast(obj, matrix, ray_origin, ray_target)
-                if hit is not None:
-                    hit_world = matrix @ hit
-                    normal_world = matrix @ normal
-                    length_squared = (hit_world - ray_origin).length_squared
-                    if closest_loc is None or length_squared < best_length_squared:
-                        best_length_squared = length_squared
-                        closest_loc = hit_world
-                        closest_normal = normal
-
-        self.log.debug("hit: %r" % hit)
-
-        return closest_loc, closest_normal
-
     def modal(self, context, event):
         context.area.header_text_set("Left click on a surface to place your shelf.")
+        x, y = event.mouse_region_x, event.mouse_region_y
+        
         if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
             # allow navigation
             return {'PASS_THROUGH'}
-
         elif event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
             if self.start is None:
-                self.start, self.start_normal = self.get_click_position(event.mouse_region_x, event.mouse_region_y)
+                self.start, self.start_normal = get_click_position_on_object(x, y)
                 return { 'RUNNING_MODAL' }
             else:
-                self.end, self.end_normal = self.get_click_position(event.mouse_region_x, event.mouse_region_y)
+                self.end, self.end_normal = get_click_position_on_object(x, y)
                 shelf_id = len(get_bookgen_collection().children)
                 parameters = get_shelf_parameters()
                 parameters["seed"] += shelf_id
-                shelf = Shelf("shelf_"+str(shelf_id), self.start, self.end, (self.start_normal  + self.end_normal)/2, parameters)
+                normal = (self.start_normal  + self.end_normal)/2
+                shelf = Shelf("shelf_"+str(shelf_id), self.start, self.end, normal, parameters)
                 shelf.clean()
                 shelf.fill()
                 
@@ -116,7 +89,7 @@ class BookGen_SelectShelf(bpy.types.Operator):
                 shelf_props = get_shelf_collection(shelf.name).BookGenShelfProperties
                 shelf_props.start = self.start
                 shelf_props.end = self.end
-                shelf_props.normal = (self.start_normal  + self.end_normal)/2
+                shelf_props.normal = normal
                 shelf_props.id = shelf_id
                 context.area.header_text_set("")
                 return { 'FINISHED' }
