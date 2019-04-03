@@ -67,16 +67,17 @@ class BookGen_SelectShelf(bpy.types.Operator):
     log = logging.getLogger("bookGen.select_shelf")
 
     def modal(self, context, event):
+        if context.area:
+            context.area.tag_redraw()
+
         context.area.header_text_set("Left click on a surface to place your shelf.")
         x, y = event.mouse_region_x, event.mouse_region_y
         if event.type == 'MOUSEMOVE':
-            #bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
             if self.start is not None:
                 loc, nrm = get_click_position_on_object(x, y)
                 if loc is not None:
-                    pass
-                    #self.gizmo.update(self.start, loc, nrm)
-                    #bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+                    self.gizmo.update(self.start, loc, nrm)
+
         elif event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
             # allow navigation
             return {'PASS_THROUGH'}
@@ -101,11 +102,11 @@ class BookGen_SelectShelf(bpy.types.Operator):
                 shelf_props.normal = normal
                 shelf_props.id = shelf_id
                 context.area.header_text_set("")
-                #self.gizmo.remove()
+                self.gizmo.remove()
                 return { 'FINISHED' }
         elif event.type in { 'RIGHTMOUSE', 'ESC' }:
             context.area.header_text_set("")
-            #self.gizmo.remove()
+            self.gizmo.remove()
             return { 'CANCELLED' }
         return { 'RUNNING_MODAL' }
 
@@ -114,7 +115,12 @@ class BookGen_SelectShelf(bpy.types.Operator):
         self.start = None
         self.end = None
 
-        #self.gizmo =  BookGenShelfGizmo(self.start, self.end, None)
+        args = (self, context)
+
+        props = get_shelf_parameters()
+
+
+        self.gizmo =  BookGenShelfGizmo(self.start, self.end, None, props["book_height"], props["book_depth"], args)
 
         context.window_manager.modal_handler_add(self)
         return { 'RUNNING_MODAL' }

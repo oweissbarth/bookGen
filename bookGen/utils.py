@@ -1,5 +1,6 @@
 import bpy
 import bpy_extras.view3d_utils
+from mathutils import Vector
 
 def get_bookgen_collection():
     for c in bpy.context.scene.collection.children:
@@ -113,3 +114,7 @@ def get_click_position_on_object(x,y):
                     closest_normal = normal
 
     return closest_loc, closest_normal
+
+
+def vector_scale(veca, vecb):
+    return Vector(x * y for x, y in zip(veca, vecb))
