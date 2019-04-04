@@ -28,7 +28,7 @@ bl_info = {
     "wiki_url": "",
     "category": "Add Mesh"}
 
-from .operator import OBJECT_OT_BookGenRebuild, BookGen_SelectShelf
+from .operator import OBJECT_OT_BookGenRebuild, BookGen_SelectShelf, OBJECT_OT_BookGenRemoveShelf
 from .panel import OBJECT_PT_BookGenPanel, OBJECT_PT_BookGen_MainPanel
 from .properties import BookGenProperties, BookGenShelfProperties
 from .shelf_list import BOOKGEN_UL_Shelves
@@ -39,6 +39,7 @@ classes = [
     BookGenProperties,
     BookGenShelfProperties,
     OBJECT_OT_BookGenRebuild,
+    OBJECT_OT_BookGenRemoveShelf,
     OBJECT_PT_BookGen_MainPanel,
     OBJECT_PT_BookGenPanel,
     BookGen_SelectShelf,

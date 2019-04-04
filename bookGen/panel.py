@@ -100,5 +100,7 @@ class OBJECT_PT_BookGen_MainPanel(bpy.types.Panel):
         layout.operator("object.book_gen_rebuild", text="rebuild")
         layout.operator("object.book_gen_select_shelf", text="Add shelf")
         layout.label(text="Shelves")
-        layout.template_list("BOOKGEN_UL_Shelves", "", get_bookgen_collection(), "children", bpy.context.collection.BookGenProperties, "active_shelf")
-        
+        row = layout.row()
+        row.template_list("BOOKGEN_UL_Shelves", "", get_bookgen_collection(), "children", bpy.context.collection.BookGenProperties, "active_shelf")
+        col = row.column(align=True)
+        props = col.operator("object.book_gen_remove_shelf", icon="REMOVE", text="")

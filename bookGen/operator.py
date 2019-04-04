@@ -61,6 +61,39 @@ class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
         self.log.info("Finished populating shelf in %.4f secs" % (time.time() - time_start))
 
 
+class OBJECT_OT_BookGenRemoveShelf(bpy.types.Operator):
+    bl_idname = "object.book_gen_remove_shelf"
+    bl_label = "BookGen"
+    bl_options = {'REGISTER'}
+
+
+    log = logging.getLogger("bookGen.operator")
+
+    def check(self, context):
+        self.run()
+
+    def invoke(self, context, event):
+        self.run()
+        return {'FINISHED'}
+
+    def execute(self, context):
+        self.run()
+        return {'FINISHED'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'OBJECT'
+
+    def run(self):
+        active = bpy.context.collection.BookGenProperties.active_shelf
+        collection = get_bookgen_collection().children[active]
+        for obj in collection.objects:
+            collection.objects.unlink(obj)
+            bpy.data.meshes.remove(obj.data)
+        get_bookgen_collection().children.unlink(collection)
+        bpy.data.collections.remove(collection)
+
+
 class BookGen_SelectShelf(bpy.types.Operator):
     bl_idname = "object.book_gen_select_shelf"
     bl_label = "Select BookGen Shelf"
@@ -70,7 +103,6 @@ class BookGen_SelectShelf(bpy.types.Operator):
         if context.area:
             context.area.tag_redraw()
 
-        context.area.header_text_set("Left click on a surface to place your shelf.")
         x, y = event.mouse_region_x, event.mouse_region_y
         if event.type == 'MOUSEMOVE':
             if self.start is not None:
@@ -101,11 +133,9 @@ class BookGen_SelectShelf(bpy.types.Operator):
                 shelf_props.end = self.end
                 shelf_props.normal = normal
                 shelf_props.id = shelf_id
-                context.area.header_text_set("")
                 self.gizmo.remove()
                 return { 'FINISHED' }
         elif event.type in { 'RIGHTMOUSE', 'ESC' }:
-            context.area.header_text_set("")
             self.gizmo.remove()
             return { 'CANCELLED' }
         return { 'RUNNING_MODAL' }
