@@ -81,10 +81,10 @@ class BookGenShelfGizmo():
 
         self.bookstand_batch = batch_for_shader(self.bookstand_shader, 'TRIS', {"pos": bookstand_verts})
 
-        offset = nrm * 0.0001
+        offset = nrm * 0.0001 + start
 
-        lines = [Vector((start[0], start[1]+self.depth/2, start[2]))+offset, Vector((end[0], end[1]+self.depth/2, end[2]))+offset,\
-             Vector((start[0], start[1]-self.depth/2, start[2]))+offset, Vector((end[0], end[1]-self.depth/2, end[2]))+offset]
+        lines = [rotationMatrix@Vector((0, self.depth/2, 0))+offset, rotationMatrix@Vector((width, self.depth/2, 0))+offset,\
+             rotationMatrix@Vector((0, -self.depth/2, 0))+offset, rotationMatrix@Vector((width, -self.depth/2, 0))+offset]
 
         arc_length = [0, width, 0, width]
 
