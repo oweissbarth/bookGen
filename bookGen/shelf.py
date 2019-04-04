@@ -39,8 +39,6 @@ class Shelf:
         end = Vector(end)
         start = Vector(start)
         
-        self.log.debug("normal: [%f, %f, %f]"% (normal[0], normal[1], normal[2]))
-
         self.name = name
         self.origin = start
         self.direction = (end - start).normalized()
