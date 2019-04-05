@@ -10,7 +10,7 @@ class OBJECT_PT_BookGenPanel(bpy.types.Panel):
     bl_options = set()
 
     def draw(self, context):
-        properties = bpy.context.collection.BookGenProperties
+        properties = get_bookgen_collection().BookGenProperties
         layout = self.layout
 
 
@@ -94,7 +94,7 @@ class OBJECT_PT_BookGen_MainPanel(bpy.types.Panel):
     bl_options = set()
 
     def draw(self, context):
-        properties = bpy.context.collection.BookGenProperties
+        properties = get_bookgen_collection().BookGenProperties
         layout = self.layout
         layout.prop(properties, "auto_rebuild")
         layout.operator("object.book_gen_rebuild", text="rebuild")
