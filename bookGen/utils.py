@@ -118,3 +118,14 @@ def get_click_position_on_object(x,y):
 
 def vector_scale(veca, vecb):
     return Vector(x * y for x, y in zip(veca, vecb))
+
+def get_free_shelf_id():
+    shelves = get_bookgen_collection().children
+
+    names = list(map(lambda x: x.name, shelves))
+    nameFound = False
+    shelf_id = 0
+    while not nameFound:
+        if "shelf_"+str(shelf_id) not in names:
+            return shelf_id
+        shelf_id += 1

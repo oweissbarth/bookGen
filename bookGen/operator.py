@@ -11,7 +11,8 @@ from .utils import (visible_objects_and_instances,
                    get_bookgen_collection,
                    get_shelf_parameters,
                    get_shelf_collection,
-                   get_click_position_on_object)
+                   get_click_position_on_object,
+                   get_free_shelf_id)
 
 from .ui_gizmo import BookGenShelfGizmo
 
@@ -119,7 +120,7 @@ class BookGen_SelectShelf(bpy.types.Operator):
                 return { 'RUNNING_MODAL' }
             else:
                 self.end, self.end_normal = get_click_position_on_object(x, y)
-                shelf_id = len(get_bookgen_collection().children)
+                shelf_id = get_free_shelf_id()
                 parameters = get_shelf_parameters()
                 parameters["seed"] += shelf_id
                 normal = (self.start_normal  + self.end_normal)/2
