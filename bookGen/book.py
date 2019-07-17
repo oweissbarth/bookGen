@@ -30,22 +30,19 @@ from .data.creases import get_creases
 
 class Book:
 
-    def __init__(self, cover_height, cover_thickness, cover_depth, page_height, page_depth, page_thickness, spline_curl, hinge_inset, hinge_width, spacing, book_width, lean, lean_angle, unwrap, subsurf, smooth):
+    def __init__(self, cover_height, cover_thickness, cover_depth, page_height, page_depth, page_thickness, spine_curl, hinge_inset, hinge_width, book_width, lean, lean_angle, subsurf):
         self.height = cover_height
         self.width = page_thickness + 2 * cover_thickness
         self.depth = cover_depth
-        self.spacing = spacing
         self.lean_angle = lean_angle
         self.lean = lean
-        self.smooth = smooth
-        self.unwrap = unwrap
         self.subsurf = subsurf
 
 
-        self.verts = get_verts(page_thickness, page_height, cover_depth, cover_height, cover_thickness, page_depth, hinge_inset, hinge_width, spline_curl)
+        self.verts = get_verts(page_thickness, page_height, cover_depth, cover_height, cover_thickness, page_depth, hinge_inset, hinge_width, spine_curl)
         self.faces = get_faces()
         self.creases = get_creases()
-        self.uvs = get_uvs(page_thickness, page_height, cover_depth, cover_height, cover_thickness, page_depth, hinge_inset, hinge_width, spline_curl)
+        self.uvs = get_uvs(page_thickness, page_height, cover_depth, cover_height, cover_thickness, page_depth, hinge_inset, hinge_width, spine_curl)
 
     def to_object(self):
         def index_to_vert(face):

@@ -74,17 +74,13 @@ def get_shelf_parameters():
         "rndm_cover_thickness_factor": properties.rndm_cover_thickness_factor,
         "textblock_offset": properties.textblock_offset,
         "rndm_textblock_offset_factor": properties.rndm_textblock_offset_factor,
-        "spline_curl": properties.spline_curl,
-        "rndm_spline_curl_factor": properties.rndm_spline_curl_factor,
+        "spine_curl": properties.spine_curl,
+        "rndm_spine_curl_factor": properties.rndm_spine_curl_factor,
         "hinge_inset": properties.hinge_inset,
         "rndm_hinge_inset_factor": properties.rndm_hinge_inset_factor,
         "hinge_width": properties.hinge_width,
         "rndm_hinge_width_factor": properties.rndm_hinge_width_factor,
-        "spacing": properties.spacing,
-        "rndm_spacing_factor": properties.rndm_spacing_factor,
         "subsurf": properties.subsurf,
-        "smooth": properties.smooth,
-        "unwrap": properties.unwrap
     }
     return parameters
 

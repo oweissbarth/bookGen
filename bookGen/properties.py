@@ -30,12 +30,12 @@ class BookGenProperties(bpy.types.PropertyGroup):
     active_shelf: IntProperty(name="active_shelf")
 
     #shelf
-    scale: FloatProperty(name="scale", default=1,  update=update)
+    scale: FloatProperty(name="scale", min=0.1, default=1,  update=update)
 
     seed: IntProperty(name="seed", default=0, update=update)
 
-    alignment:  EnumProperty(name="alignment", items=(("0", "spline", "align books at the spline (usually front in a shelf)"), (
-        "1", "fore egde", "align books along there fore edge (usually back in a shelf)"), ("2", "center", "align along center")), update=update)
+    alignment:  EnumProperty(name="alignment", items=(("0", "fore edge", "align books at the fore edge"), (
+        "1", "spine", "align books at the spine"), ("2", "center", "align at center")), update=update)
 
     lean_amount:  FloatProperty(
         name="lean amount", subtype="FACTOR", min=.0, soft_max=1.0, update=update)
@@ -69,13 +69,13 @@ class BookGenProperties(bpy.types.PropertyGroup):
         name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 
     textblock_offset: FloatProperty(
-        name="textblock offset", default=0.005, min=.0, unit="LENGTH", update=update)
+        name="textblock offset", default=0.005, min=.0, step=.001, unit="LENGTH", update=update)
     rndm_textblock_offset_factor: FloatProperty(
         name="randon", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 
-    spline_curl: FloatProperty(
-        name="spline curl", default=0.002, step=.002, min=.0, unit="LENGTH", update=update)
-    rndm_spline_curl_factor: FloatProperty(
+    spine_curl: FloatProperty(
+        name="spine curl", default=0.002, step=.002, min=.0, unit="LENGTH", update=update)
+    rndm_spine_curl_factor: FloatProperty(
         name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 
     hinge_inset: FloatProperty(
@@ -88,12 +88,5 @@ class BookGenProperties(bpy.types.PropertyGroup):
     rndm_hinge_width_factor: FloatProperty(
         name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 
-    spacing: FloatProperty(
-        name="spacing", default=0.0025, min=.0, unit="LENGTH", update=update)
-    rndm_spacing_factor: FloatProperty(
-        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
-
     subsurf: BoolProperty(
         name="Add Subsurf-Modifier", default=False, update=update)
-    smooth: BoolProperty(name="shade smooth", default=False, update=update)
-    unwrap: BoolProperty(name="unwrap", default=True, update=update)

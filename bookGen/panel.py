@@ -17,10 +17,6 @@ class OBJECT_PT_BookGenPanel(bpy.types.Panel):
         layout.prop(properties, "scale", text="scale")
         layout.prop(properties, "seed", text="Seed")
 
-        row = layout.row(align=True)
-        row.prop(properties, "spacing")
-        row.prop(properties, "rndm_spacing_factor")
-
 
         layout.separator()
 
@@ -68,8 +64,8 @@ class OBJECT_PT_BookGenPanel(bpy.types.Panel):
         row.prop(properties, "rndm_cover_thickness_factor")
 
         row = details_box.row(align=True)
-        row.prop(properties, "spline_curl")
-        row.prop(properties, "rndm_spline_curl_factor")
+        row.prop(properties, "spine_curl")
+        row.prop(properties, "rndm_spine_curl_factor")
 
         row = details_box.row(align=True)
         row.prop(properties, "hinge_inset")
@@ -82,8 +78,6 @@ class OBJECT_PT_BookGenPanel(bpy.types.Panel):
         layout.separator()
 
         layout.prop(properties, "subsurf")
-        layout.prop(properties, "smooth")
-        layout.prop(properties, "unwrap")
 
 
 class OBJECT_PT_BookGen_MainPanel(bpy.types.Panel):

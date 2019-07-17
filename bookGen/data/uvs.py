@@ -1,4 +1,4 @@
-def get_uvs(page_thickness, page_height, cover_depth, cover_height, cover_thickness, page_depth, hinge_inset, hinge_width, spline_curl, margin=0.02):
+def get_uvs(page_thickness, page_height, cover_depth, cover_height, cover_thickness, page_depth, hinge_inset, hinge_width, spine_curl, margin=0.02):
 
     #generate all islands starting at left bottom corner (0,0)
     top_face = 0

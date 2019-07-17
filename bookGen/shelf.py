@@ -95,7 +95,7 @@ class Shelf:
         first = True
 
         params = self.apply_parameters()
-        current = Book(*(list(params.values())), self.parameters["unwrap"], self.parameters["subsurf"], self.parameters["smooth"])
+        current = Book(*(list(params.values())), self.parameters["subsurf"])
         if current.lean_angle >= 0:
             self.cur_offset = cos(current.lean_angle)*current.width
         else:
@@ -106,7 +106,7 @@ class Shelf:
             self.log.debug("remaining width to be filled: %.3f"%(self.width - self.cur_width))
             params = self.apply_parameters()
             last = current
-            current = Book(*(list(params.values())), self.parameters["unwrap"], self.parameters["subsurf"], self.parameters["smooth"])
+            current = Book(*(list(params.values())), self.parameters["subsurf"])
 
             # gathering parameters for the next book
 
@@ -218,12 +218,10 @@ class Shelf:
 
         rndm_cover_thickness = (random.random() * 0.4 - 0.2) * p["rndm_cover_thickness_factor"]
 
-        rndm_spline_curl = (random.random() * 0.4 - 0.2) * p["rndm_spline_curl_factor"]
+        rndm_spine_curl = (random.random() * 0.4 - 0.2) * p["rndm_spine_curl_factor"]
 
         rndm_hinge_inset = (random.random() * 0.4 - 0.2) * p["rndm_hinge_inset_factor"]
         rndm_hinge_width = (random.random() * 0.4 - 0.2) * p["rndm_hinge_width_factor"]
-
-        rndm_spacing = random.random() * p["rndm_spacing_factor"]
 
         rndm_lean_angle = (random.random() * 0.8 - 0.4) * p["rndm_lean_angle_factor"]
 
@@ -237,12 +235,10 @@ class Shelf:
         textblock_depth = book_depth - p["scale"] * p["textblock_offset"] * (1 + rndm_textblock_offset)
         textblock_thickness = book_width - 2 * cover_thickness
 
-        spline_curl = p["scale"] * p["spline_curl"] * (1 + rndm_spline_curl)
+        spine_curl = p["scale"] * p["spine_curl"] * (1 + rndm_spine_curl)
 
         hinge_inset = p["scale"] * p["hinge_inset"] * (1 + rndm_hinge_inset)
         hinge_width = p["scale"] * p["hinge_width"] * (1 + rndm_hinge_width)
-
-        spacing = p["scale"] * p["spacing"] * (1 + rndm_spacing)
 
         lean = p["lean_amount"] > random.random()
 
@@ -256,10 +252,9 @@ class Shelf:
                 "textblock_height": textblock_height,
                 "textblock_depth": textblock_depth,
                 "textblock_thickness": textblock_thickness,
-                "spline_curl": spline_curl,
+                "spine_curl": spine_curl,
                 "hinge_inset": hinge_inset,
                 "hinge_width": hinge_width,
-                "spacing": spacing,
                 "book_width": book_width,
                 "lean": lean,
                 "lean_angle": lean_angle}
