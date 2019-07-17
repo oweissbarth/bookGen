@@ -18,6 +18,7 @@ from .ui_gizmo import BookGenShelfGizmo
 
 
 class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
+    """Regenerate all books"""
     bl_idname = "object.book_gen_rebuild"
     bl_label = "BookGen"
     bl_options = {'REGISTER'}
@@ -63,6 +64,7 @@ class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
 
 
 class OBJECT_OT_BookGenRemoveShelf(bpy.types.Operator):
+    """Delete the selected shelf"""
     bl_idname = "object.book_gen_remove_shelf"
     bl_label = "BookGen"
     bl_options = {'REGISTER'}
@@ -96,6 +98,7 @@ class OBJECT_OT_BookGenRemoveShelf(bpy.types.Operator):
 
 
 class BookGen_SelectShelf(bpy.types.Operator):
+    """Define where books should be generated.\nClick on a surface where the generation should start. Click again to set the end point"""
     bl_idname = "object.book_gen_select_shelf"
     bl_label = "Select BookGen Shelf"
     log = logging.getLogger("bookGen.select_shelf")
