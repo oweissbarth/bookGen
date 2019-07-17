@@ -2,6 +2,91 @@ import bpy
 
 from .utils import get_bookgen_collection
 
+
+class OBJECT_PT_BookGen_LeaningPanel(bpy.types.Panel):
+    bl_label = "Leaning"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "BookGen"
+    bl_options = set()
+    bl_parent_id = "OBJECT_PT_BookGenPanel"
+
+    def draw(self, context):
+        properties = get_bookgen_collection().BookGenProperties
+        layout = self.layout
+        layout.use_property_split = True
+
+
+        layout.prop(properties, "lean_amount")
+        layout.prop(properties, "lean_direction")
+        col = layout.column(align=True)
+        col.prop(properties, "lean_angle")
+        col.prop(properties, "rndm_lean_angle_factor")
+
+class OBJECT_PT_BookGen_ProportionsPanel(bpy.types.Panel):
+    bl_label = "Proportions"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "BookGen"
+    bl_options = set()
+    bl_parent_id = "OBJECT_PT_BookGenPanel"
+
+    def draw(self, context):
+        properties = get_bookgen_collection().BookGenProperties
+        layout = self.layout
+        layout.use_property_split = True
+
+        col = layout.column(align=True)
+        col.prop(properties, "book_height")
+        col.prop(properties, "rndm_book_height_factor")
+
+        col = layout.column(align=True)
+        col.prop(properties, "book_depth")
+        col.prop(properties, "rndm_book_depth_factor")
+
+        col = layout.column(align=True)
+        col.prop(properties, "book_width")
+        col.prop(properties, "rndm_book_width_factor")
+
+class OBJECT_PT_BookGen_DetailsPanel(bpy.types.Panel):
+    bl_label = "Details"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "BookGen"
+    bl_options = set()
+    bl_parent_id = "OBJECT_PT_BookGenPanel"
+
+    def draw(self, context):
+        properties = get_bookgen_collection().BookGenProperties
+        layout = self.layout
+        layout.use_property_split = True
+
+
+        col = layout.column(align=True)
+        col.prop(properties, "textblock_offset")
+        col.prop(properties, "rndm_textblock_offset_factor")
+
+        col = layout.column(align=True)
+        col.prop(properties, "cover_thickness")
+        col.prop(properties, "rndm_cover_thickness_factor")
+
+        col = layout.column(align=True)
+        col.prop(properties, "spine_curl")
+        col.prop(properties, "rndm_spine_curl_factor")
+
+        col = layout.column(align=True)
+        col.prop(properties, "hinge_inset")
+        col.prop(properties, "rndm_hinge_inset_factor")
+
+        col = layout.column(align=True)
+        col.prop(properties, "hinge_width")
+        col.prop(properties, "rndm_hinge_width_factor")
+
+        layout.separator()
+
+        layout.prop(properties, "subsurf")
+
+
 class OBJECT_PT_BookGenPanel(bpy.types.Panel):
     bl_label = "Shelf Properties"
     bl_space_type = 'VIEW_3D'
@@ -12,73 +97,14 @@ class OBJECT_PT_BookGenPanel(bpy.types.Panel):
     def draw(self, context):
         properties = get_bookgen_collection().BookGenProperties
         layout = self.layout
-
+        layout.use_property_split = True
 
         layout.prop(properties, "scale", text="scale")
         layout.prop(properties, "seed", text="Seed")
 
+        layout.prop(properties, "alignment")
 
-        layout.separator()
-
-        layout.label(text="alignment")
-        layout.prop(properties, "alignment", expand=True)
-
-        layout.separator()
-
-        leaning = layout.box()
-        leaning.label(text="leaning")
-        leaning.prop(properties, "lean_amount")
-        leaning.prop(properties, "lean_direction")
-        row = leaning.row(align=True)
-        row.prop(properties, "lean_angle")
-        row.prop(properties, "rndm_lean_angle_factor")
-
-        layout.separator()
-
-        proportions = layout.box()
-        proportions.label(text="Proportions:")
-
-        row = proportions.row(align=True)
-        row.prop(properties, "book_height")
-        row.prop(properties, "rndm_book_height_factor")
-
-        row = proportions.row(align=True)
-        row.prop(properties, "book_depth")
-        row.prop(properties, "rndm_book_depth_factor")
-
-        row = proportions.row(align=True)
-        row.prop(properties, "book_width")
-        row.prop(properties, "rndm_book_width_factor")
-
-        layout.separator()
-
-        details_box = layout.box()
-        details_box.label(text="Details:")
-
-        row = details_box.row(align=True)
-        row.prop(properties, "textblock_offset")
-        row.prop(properties, "rndm_textblock_offset_factor")
-
-        row = details_box.row(align=True)
-        row.prop(properties, "cover_thickness")
-        row.prop(properties, "rndm_cover_thickness_factor")
-
-        row = details_box.row(align=True)
-        row.prop(properties, "spine_curl")
-        row.prop(properties, "rndm_spine_curl_factor")
-
-        row = details_box.row(align=True)
-        row.prop(properties, "hinge_inset")
-        row.prop(properties, "rndm_hinge_inset_factor")
-
-        row = details_box.row(align=True)
-        row.prop(properties, "hinge_width")
-        row.prop(properties, "rndm_hinge_width_factor")
-
-        layout.separator()
-
-        layout.prop(properties, "subsurf")
-
+ 
 
 class OBJECT_PT_BookGen_MainPanel(bpy.types.Panel):
     bl_label = "Main"
