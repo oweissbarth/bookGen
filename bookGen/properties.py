@@ -17,7 +17,7 @@ class BookGenProperties(bpy.types.PropertyGroup):
     log = logging.getLogger("bookGen.properties")
     
     def update(self, context):
-        properties = bpy.context.collection.BookGenProperties
+        properties = get_bookgen_collection().BookGenProperties
         self.log.debug("auto rebuild: %r" % properties.auto_rebuild)
         if properties.auto_rebuild:
             """col = get_bookgen_collection()

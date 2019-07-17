@@ -54,7 +54,7 @@ def obj_ray_cast(obj, matrix, ray_origin, ray_target):
         return None, None
 
 def get_shelf_parameters():
-    properties = bpy.context.collection.BookGenProperties
+    properties = get_bookgen_collection().BookGenProperties
 
     parameters = {
         "scale": properties.scale,

@@ -24,7 +24,7 @@ from math import radians
 from .utils import get_bookgen_collection 
 from .data.verts import get_verts
 from .data.faces import get_faces
-from .data.uvs import get_seams
+from .data.uvs import get_uvs
 from .data.creases import get_creases
 
 
@@ -45,7 +45,7 @@ class Book:
         self.verts = get_verts(page_thickness, page_height, cover_depth, cover_height, cover_thickness, page_depth, hinge_inset, hinge_width, spline_curl)
         self.faces = get_faces()
         self.creases = get_creases()
-        self.seams = get_seams()
+        self.uvs = get_uvs(page_thickness, page_height, cover_depth, cover_height, cover_thickness, page_depth, hinge_inset, hinge_width, spline_curl)
 
     def to_object(self):
         def index_to_vert(face):
@@ -79,10 +79,16 @@ class Book:
         bm.faces.index_update()
         bm.edges.ensure_lookup_table()
 
+        uv_layer = bm.loops.layers.uv.verify()
+        for (f, uvs) in zip(bm.faces, self.uvs):
+            for (l, uv) in zip(f.loops, uvs):
+                loop_uv = l[uv_layer]
+                loop_uv.uv.x = uv[0]
+                loop_uv.uv.y = uv[1]
+
         bm.normal_update()
         bm.to_mesh(mesh)
         bm.free()
-
 
         mesh.use_auto_smooth = True
         mesh.auto_smooth_angle = radians(50)
