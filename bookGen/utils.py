@@ -21,6 +21,12 @@ def get_shelf_collection(name):
     bookgen.children.link(col)
     return col
 
+def get_shelf_collection_by_index(index):
+    bookgen = get_bookgen_collection()
+    if index < 0 or index >= len(bookgen.children):
+        return None
+    return bookgen.children[index]
+
 def visible_objects_and_instances(context):
     """Loop over (object, matrix) pairs (mesh only)"""
 

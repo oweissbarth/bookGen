@@ -2,7 +2,6 @@ import bpy
 
 from .utils import get_bookgen_collection
 
-
 class OBJECT_PT_BookGen_LeaningPanel(bpy.types.Panel):
     bl_label = "Leaning"
     bl_space_type = 'VIEW_3D'
@@ -88,7 +87,7 @@ class OBJECT_PT_BookGen_DetailsPanel(bpy.types.Panel):
 
 
 class OBJECT_PT_BookGenPanel(bpy.types.Panel):
-    bl_label = "Shelf Properties"
+    bl_label = "Global Properties"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "BookGen"
@@ -121,6 +120,7 @@ class OBJECT_PT_BookGen_MainPanel(bpy.types.Panel):
         layout.operator("object.book_gen_select_shelf", text="Add shelf")
         layout.label(text="Shelves")
         row = layout.row()
-        row.template_list("BOOKGEN_UL_Shelves", "", get_bookgen_collection(), "children", bpy.context.collection.BookGenProperties, "active_shelf")
+        row.template_list("BOOKGEN_UL_Shelves", "", get_bookgen_collection(), "children", get_bookgen_collection().BookGenProperties, "active_shelf")
         col = row.column(align=True)
-        props = col.operator("object.book_gen_remove_shelf", icon="REMOVE", text="")
+        props = col.operator("object.book_gen_remove_shelf", icon="X", text="")
+        col.prop(properties, "outline_active", toggle=True, icon="SHADING_BBOX", icon_only=True)

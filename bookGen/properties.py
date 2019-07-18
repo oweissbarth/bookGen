@@ -2,6 +2,7 @@ import bpy
 from bpy.props import FloatProperty, IntProperty, EnumProperty, BoolProperty, FloatVectorProperty
 
 from .utils import get_bookgen_collection
+from .ui_outline import BookGenShelfOutline
 
 from math import pi, radians
 import logging
@@ -15,19 +16,29 @@ class BookGenShelfProperties(bpy.types.PropertyGroup):
 
 class BookGenProperties(bpy.types.PropertyGroup):
     log = logging.getLogger("bookGen.properties")
+    outline = BookGenShelfOutline()
     
     def update(self, context):
         properties = get_bookgen_collection().BookGenProperties
         self.log.debug("auto rebuild: %r" % properties.auto_rebuild)
         if properties.auto_rebuild:
-            """col = get_bookgen_collection()
-            for obj in col.objects:
-                bpy.data.objects.remove(obj, do_unlink=True)"""
             bpy.ops.object.book_gen_rebuild()
+
+    def update_outline_active(self, context):
+        properties = get_bookgen_collection().BookGenProperties
+        if properties.outline_active:
+            self.outline.enable_outline(properties.active_shelf, context)
+        else:
+            self.outline.disable_outline()
+
+    def update_active_shelf(self, context):
+        properties = get_bookgen_collection().BookGenProperties
+        self.outline.update(properties.active_shelf, context)
 
     # general
     auto_rebuild: BoolProperty(name="auto rebuild", default=True)
-    active_shelf: IntProperty(name="active_shelf")
+    active_shelf: IntProperty(name="active_shelf", update=update_active_shelf)
+    outline_active: BoolProperty(name="outline active shelf", default=False, update=update_outline_active)
 
     #shelf
     scale: FloatProperty(name="scale", min=0.1, default=1,  update=update)
@@ -71,7 +82,7 @@ class BookGenProperties(bpy.types.PropertyGroup):
     textblock_offset: FloatProperty(
         name="textblock offset", default=0.005, min=.0, step=.001, unit="LENGTH", update=update)
     rndm_textblock_offset_factor: FloatProperty(
-        name="randon", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
+        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 
     spine_curl: FloatProperty(
         name="spine curl", default=0.002, step=.002, min=.0, unit="LENGTH", update=update)

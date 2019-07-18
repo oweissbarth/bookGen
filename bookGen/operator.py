@@ -88,13 +88,20 @@ class OBJECT_OT_BookGenRemoveShelf(bpy.types.Operator):
         return context.mode == 'OBJECT'
 
     def run(self):
-        active = bpy.context.collection.BookGenProperties.active_shelf
-        collection = get_bookgen_collection().children[active]
+        parent = get_bookgen_collection() 
+        active = parent.BookGenProperties.active_shelf
+        if active < 0 or active >= len(parent.children):
+            return
+        collection = parent.children[active]
+
         for obj in collection.objects:
             collection.objects.unlink(obj)
             bpy.data.meshes.remove(obj.data)
-        get_bookgen_collection().children.unlink(collection)
+        parent.children.unlink(collection)
         bpy.data.collections.remove(collection)
+
+        if active == len(parent.children):
+            parent.BookGenProperties.active_shelf -= 1 
 
 
 class BookGen_SelectShelf(bpy.types.Operator):
