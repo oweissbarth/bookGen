@@ -85,6 +85,8 @@ class OBJECT_PT_BookGen_DetailsPanel(bpy.types.Panel):
 
         layout.prop(properties, "subsurf")
 
+        layout.prop(properties, "material")
+
 
 class OBJECT_PT_BookGenPanel(bpy.types.Panel):
     bl_label = "Global Properties"

@@ -1,5 +1,5 @@
 import bpy
-from bpy.props import FloatProperty, IntProperty, EnumProperty, BoolProperty, FloatVectorProperty
+from bpy.props import FloatProperty, IntProperty, EnumProperty, BoolProperty, FloatVectorProperty, PointerProperty
 
 from .utils import get_bookgen_collection
 from .ui_outline import BookGenShelfOutline
@@ -101,3 +101,6 @@ class BookGenProperties(bpy.types.PropertyGroup):
 
     subsurf: BoolProperty(
         name="Add Subsurf-Modifier", default=False, update=update)
+
+
+    material: PointerProperty(name="Material", type=bpy.types.Material)

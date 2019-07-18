@@ -30,13 +30,14 @@ from .data.creases import get_creases
 
 class Book:
 
-    def __init__(self, cover_height, cover_thickness, cover_depth, page_height, page_depth, page_thickness, spine_curl, hinge_inset, hinge_width, book_width, lean, lean_angle, subsurf):
+    def __init__(self, cover_height, cover_thickness, cover_depth, page_height, page_depth, page_thickness, spine_curl, hinge_inset, hinge_width, book_width, lean, lean_angle, subsurf, material):
         self.height = cover_height
         self.width = page_thickness + 2 * cover_thickness
         self.depth = cover_depth
         self.lean_angle = lean_angle
         self.lean = lean
         self.subsurf = subsurf
+        self.material = material
 
 
         self.verts = get_verts(page_thickness, page_height, cover_depth, cover_height, cover_thickness, page_depth, hinge_inset, hinge_width, spine_curl)
@@ -93,6 +94,13 @@ class Book:
         if(self.subsurf):
             self.obj.modifiers.new("subd", type='SUBSURF')
             self.obj.modifiers['subd'].levels = 1
+
+
+        if(self.material):
+            if self.obj.data.materials:
+                self.obj.data.materials[0] = self.material
+            else:
+                self.obj.data.materials.append(self.material)
 
         return self.obj
 
