@@ -85,7 +85,6 @@ class OBJECT_PT_BookGen_DetailsPanel(bpy.types.Panel):
 
         layout.prop(properties, "subsurf")
 
-        layout.prop(properties, "material")
 
 
 class OBJECT_PT_BookGenPanel(bpy.types.Panel):
@@ -104,6 +103,8 @@ class OBJECT_PT_BookGenPanel(bpy.types.Panel):
         layout.prop(properties, "seed", text="Seed")
 
         layout.prop(properties, "alignment")
+
+        layout.prop(properties, "material")
 
  
 
