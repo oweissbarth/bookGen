@@ -19,7 +19,7 @@
 import bpy
 import bmesh
 
-from math import radians
+from math import radians, degrees, atan
 
 from .utils import get_bookgen_collection 
 from .data.verts import get_verts
@@ -88,8 +88,15 @@ class Book:
         bm.to_mesh(mesh)
         bm.free()
 
+        # calculate auto smooth angle based on spine
+        center = self.verts[-1]
+        side = self.verts[-5]
+        curl = abs(center[1] - side[1])
+        width = abs(center[0] - side[0])
+        spine_angle = atan(width/curl)*2
+        normal_angle = radians(180) - spine_angle + radians(1) # add 1 deg to account for fp
         mesh.use_auto_smooth = True
-        mesh.auto_smooth_angle = radians(50)
+        mesh.auto_smooth_angle = normal_angle
 
         if(self.subsurf):
             self.obj.modifiers.new("subd", type='SUBSURF')

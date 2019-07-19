@@ -3,7 +3,7 @@ from math import atan, cos, tan
 def get_verts(page_thickness, page_height, cover_depth, cover_height, cover_thickness, page_depth, hinge_inset, hinge_width, spine_curl):
     
     spine_angle = atan(spine_curl/cover_thickness)
-    spine_offset_center = cover_thickness/cos(spine_angle)
+    spine_offset_center = cover_thickness*cos(spine_angle)
     spine_offset_side = tan(spine_angle/2)*cover_thickness
 
     return [
