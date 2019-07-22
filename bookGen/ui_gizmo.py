@@ -33,9 +33,10 @@ class BookGenShelfGizmo():
         self.line_batch = None
 
         self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, args, 'WINDOW', 'POST_VIEW')
-        self.draw_event = args[1].window_manager.event_timer_add(0.1, window=args[1].window)
 
         self.bookstand_color = bpy.context.preferences.themes[0].view_3d.face_select
+
+        self.args = args
 
 
 
@@ -60,6 +61,7 @@ class BookGenShelfGizmo():
 
 
     def update(self, start, end, nrm):
+
         dir = end - start
         width = dir.length
         dir.normalize()
@@ -90,7 +92,13 @@ class BookGenShelfGizmo():
 
         self.line_batch = batch_for_shader(self.line_shader, "LINES", {"pos": lines, "arcLength": arc_length})
 
+        if self.draw_handler is None:
+            self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, self.args, 'WINDOW', 'POST_VIEW')
+
+
+
     def remove(self):
         self.log.debug("removing draw handler")
-        bpy.context.window_manager.event_timer_remove(self.draw_event)
-        bpy.types.SpaceView3D.draw_handler_remove(self.draw_handler, 'WINDOW')
+        if self.draw_handler is not None:
+            bpy.types.SpaceView3D.draw_handler_remove(self.draw_handler, 'WINDOW')
+            self.draw_handler = None

@@ -117,9 +117,12 @@ class BookGen_SelectShelf(bpy.types.Operator):
         x, y = event.mouse_region_x, event.mouse_region_y
         if event.type == 'MOUSEMOVE':
             if self.start is not None:
-                loc, nrm = get_click_position_on_object(x, y)
-                if loc is not None:
-                    self.gizmo.update(self.start, loc, nrm)
+                self.end, self.end_normal = get_click_position_on_object(x, y)
+                if self.end is not None:
+                    normal = (self.start_normal  + self.end_normal)/2
+                    self.gizmo.update(self.start, self.end, normal)
+                else:
+                    self.gizmo.remove()
 
         elif event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
             # allow navigation
@@ -129,7 +132,8 @@ class BookGen_SelectShelf(bpy.types.Operator):
                 self.start, self.start_normal = get_click_position_on_object(x, y)
                 return { 'RUNNING_MODAL' }
             else:
-                self.end, self.end_normal = get_click_position_on_object(x, y)
+                if self.end is None:
+                    return { 'RUNNING_MODAL' }
                 shelf_id = get_free_shelf_id()
                 parameters = get_shelf_parameters()
                 parameters["seed"] += shelf_id
