@@ -16,7 +16,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # ======================= END GPL LICENSE BLOCK ========================
 import bpy
-from mathutils import Vector, Matrix
+from mathutils import Vector, Matrix, Quaternion
 
 from math import cos, tan, radians, sin, degrees, sqrt
 import random
@@ -24,16 +24,16 @@ import logging
 
 from .book import Book
 
-from .utils import get_shelf_collection
+from .utils import get_shelf_collection, get_bookgen_collection
 
 
 class Shelf:
+    log = logging.getLogger("bookGen.Shelf")
     origin = Vector((0, 0, 0))
     direction = Vector((1, 0, 0))
     width = 3.0
     parameters = {}
     books = []
-    log = logging.getLogger("bookGen.Shelf")
 
     def __init__(self, name, start, end, normal, parameters):
         end = Vector(end)
@@ -43,16 +43,16 @@ class Shelf:
         self.origin = start
         self.direction = (end - start).normalized()
         self.rotationMatrix = Matrix([self.direction, self.direction.cross(normal), normal]).transposed()
-        self.rotation = self.rotationMatrix.to_euler()
+        self.rotation = self.rotationMatrix.to_quaternion()
         self.width = (end - start).length
         self.parameters = parameters
-        self.collection = get_shelf_collection(self.name)
+        self.collection = None
+        self.books = []
+
+
+
 
     def add_book(self, book, first):
-
-        obj = book.to_object()
-
-        self.collection.objects.link(obj)
 
         self.books.append(book)
 
@@ -63,28 +63,32 @@ class Shelf:
         offset_dir = -1 if self.parameters["alignment"] == "1" else 1
         if(not first and not self.parameters["alignment"] == "2"):
             # location alignment
-            book.obj.location += Vector((0, offset_dir * (book.depth / 2 - self.align_offset), 0))
+            book.location += Vector((0, offset_dir * (book.depth / 2 - self.align_offset), 0))
 
-        book.obj.location += Vector((0, 0, book.height / 2))
+        book.location += Vector((0, 0, book.height / 2))
 
         # leaning
         if book.lean_angle < 0:
-                book.obj.location += Vector((book.width / 2, 0, 0))
+            book.location += Vector((book.width / 2, 0, 0))
         else:
-            book.obj.location += Vector((-book.width / 2, 0, 0))
-        book.obj.location = Matrix.Rotation(book.lean_angle, 3, 'Y') @ book.obj.location
-
-        book.obj.rotation_euler[1] = book.lean_angle
+            book.location += Vector((-book.width / 2, 0, 0))
+        book.location = Matrix.Rotation(book.lean_angle, 3, 'Y') @ book.location
 
         # distribution
 
-        book.obj.location += Vector((self.cur_offset, 0, 0))
-        book.obj.location = self.rotationMatrix @ book.obj.location
+        book.location += Vector((self.cur_offset, 0, 0))
+        book.location = self.rotationMatrix @ book.location
 
-        book.obj.rotation_euler = self.rotation
-        book.obj.rotation_euler[1] += book.lean_angle
+        book.rotation = self.rotation @ Quaternion((0,1,0), book.lean_angle) 
 
-        book.obj.location += self.origin 
+        book.location += self.origin
+
+
+    def to_collection(self):
+        self.collection = get_shelf_collection(self.name)
+        for b in self.books:
+            obj = b.to_object()
+            self.collection.objects.link(obj)
 
     def fill(self):
         self.cur_width = 0
@@ -199,11 +203,34 @@ class Shelf:
             first = False
 
     def clean(self):
-        col = self.collection
+        col = None
+        if self.collection is not None:
+            col = self.collection
+        else:
+            bookgen = get_bookgen_collection()
+            for c in bookgen.children:
+                if c.name == self.name:
+                    col = c
+        if col is None:
+            return
         for obj in col.objects:
             col.objects.unlink(obj)
             bpy.data.meshes.remove(obj.data)
 
+
+    def get_geometry(self):
+        index_offset = 0
+        verts = []
+        faces = []
+
+        for b in self.books:
+            b_verts, b_faces = b.get_geometry()
+            verts += b_verts
+            offset_faces = map(lambda f: [f[0]+index_offset, f[1]+index_offset, f[2]+index_offset, f[3]+index_offset], b_faces)
+            faces += offset_faces
+            index_offset = len(verts)
+
+        return verts, faces
 
     def apply_parameters(self):
         """Return book parameters with all randomization applied"""

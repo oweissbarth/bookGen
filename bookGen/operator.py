@@ -15,6 +15,7 @@ from .utils import (visible_objects_and_instances,
                    get_free_shelf_id)
 
 from .ui_gizmo import BookGenShelfGizmo
+from .ui_outline import BookGenShelfOutline
 
 
 class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
@@ -59,6 +60,8 @@ class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
             shelf.fill()
 
             parameters["seed"] -= shelf_props.id
+
+            shelf.to_collection()
 
         self.log.info("Finished populating shelf in %.4f secs" % (time.time() - time_start))
 
@@ -120,9 +123,15 @@ class BookGen_SelectShelf(bpy.types.Operator):
                 self.end, self.end_normal = get_click_position_on_object(x, y)
                 if self.end is not None:
                     normal = (self.start_normal  + self.end_normal)/2
+                    shelf_id = get_free_shelf_id()
+                    parameters = get_shelf_parameters(shelf_id)
+                    shelf = Shelf("shelf_"+str(shelf_id), self.start, self.end, normal, parameters)
+                    shelf.fill()
+                    self.outline.enable_outline(*shelf.get_geometry(), context)
                     self.gizmo.update(self.start, self.end, normal)
                 else:
                     self.gizmo.remove()
+                    self.outline.disable_outline()
 
         elif event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
             # allow navigation
@@ -149,9 +158,12 @@ class BookGen_SelectShelf(bpy.types.Operator):
                 shelf_props.normal = normal
                 shelf_props.id = shelf_id
                 self.gizmo.remove()
+                self.outline.disable_outline()
+                shelf.to_collection()
                 return { 'FINISHED' }
         elif event.type in { 'RIGHTMOUSE', 'ESC' }:
             self.gizmo.remove()
+            self.outline.disable_outline()
             return { 'CANCELLED' }
         return { 'RUNNING_MODAL' }
 
@@ -166,6 +178,7 @@ class BookGen_SelectShelf(bpy.types.Operator):
 
 
         self.gizmo =  BookGenShelfGizmo(self.start, self.end, None, props["book_height"], props["book_depth"], args)
+        self.outline = BookGenShelfOutline()
 
         context.window_manager.modal_handler_add(self)
         return { 'RUNNING_MODAL' }

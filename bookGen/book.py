@@ -18,6 +18,7 @@
 
 import bpy
 import bmesh
+from mathutils import Vector, Euler
 
 from math import radians, degrees, atan
 
@@ -38,6 +39,8 @@ class Book:
         self.lean = lean
         self.subsurf = subsurf
         self.material = material
+        self.location =  Vector([0,0,0])
+        self.rotation =  Vector([0,0,0])
 
 
         self.verts = get_verts(page_thickness, page_height, cover_depth, cover_height, cover_thickness, page_depth, hinge_inset, hinge_width, spine_curl)
@@ -109,6 +112,14 @@ class Book:
             else:
                 self.obj.data.materials.append(self.material)
 
+        self.obj.location = self.location
+        self.obj.rotation_euler = self.rotation.to_euler()
+
         return self.obj
+
+
+    def get_geometry(self):
+        transformed_verts = map(lambda v: self.rotation.to_matrix() @ Vector(v) + self.location, self.verts)
+        return transformed_verts, self.faces
 
 

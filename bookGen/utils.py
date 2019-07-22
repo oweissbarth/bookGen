@@ -59,12 +59,12 @@ def obj_ray_cast(obj, matrix, ray_origin, ray_target):
     else:
         return None, None
 
-def get_shelf_parameters():
+def get_shelf_parameters(shelf_id=0):
     properties = get_bookgen_collection().BookGenProperties
 
     parameters = {
         "scale": properties.scale,
-        "seed": properties.seed,
+        "seed": properties.seed + shelf_id,
         "alignment": properties.alignment,
         "lean_amount": properties.lean_amount,
         "lean_direction": properties.lean_direction,

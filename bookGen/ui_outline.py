@@ -15,30 +15,23 @@ class BookGenShelfOutline:
         self.outline_color = (col_ref[0], col_ref[1], col_ref[2], 0.1)
         self.batch = None 
 
-    def update(self, shelf_id, context):
-        verts = []
-        col = get_shelf_collection_by_index(shelf_id)
-        if col is not None:
-            for obj in col.objects:
-                for f in obj.data.polygons:
-                    # we know that all faces are quads
-                    verts.append(obj.matrix_world @ obj.data.vertices[f.vertices[0]].co)
-                    verts.append(obj.matrix_world @ obj.data.vertices[f.vertices[1]].co)
-                    verts.append(obj.matrix_world @ obj.data.vertices[f.vertices[2]].co)
+    def update(self, verts, faces, context):
+        indices = []
+        for f in faces:
+            indices.append((f[0], f[1], f[2]))
+            indices.append((f[0], f[2], f[3]))
 
-                    verts.append(obj.matrix_world @ obj.data.vertices[f.vertices[0]].co)
-                    verts.append(obj.matrix_world @ obj.data.vertices[f.vertices[2]].co)
-                    verts.append(obj.matrix_world @ obj.data.vertices[f.vertices[3]].co)
+        self.batch = batch_for_shader(self.shader, "TRIS", {"pos": verts}, indices=indices)
 
-        self.batch = batch_for_shader(self.shader, "TRIS", {"pos": verts})
-
-    def enable_outline(self, shelf_id, context):
-        self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw_outline, (self,context), 'WINDOW', 'POST_VIEW')
-        self.update(shelf_id, context)
+    def enable_outline(self, verts, faces, context):
+        if self.draw_handler is None:
+            self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw_outline, (self,context), 'WINDOW', 'POST_VIEW')
+        self.update(verts, faces, context)
 
     def disable_outline(self):
         if self.draw_handler is not None:
             bpy.types.SpaceView3D.draw_handler_remove(self.draw_handler, 'WINDOW')
+            self.draw_handler = None
 
 
     def draw_outline(self, op, context):

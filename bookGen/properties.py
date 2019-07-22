@@ -1,7 +1,8 @@
 import bpy
 from bpy.props import FloatProperty, IntProperty, EnumProperty, BoolProperty, FloatVectorProperty, PointerProperty
 
-from .utils import get_bookgen_collection
+from .utils import get_bookgen_collection, get_shelf_collection_by_index, get_shelf_parameters
+from .shelf import Shelf
 from .ui_outline import BookGenShelfOutline
 
 from math import pi, radians
@@ -26,14 +27,18 @@ class BookGenProperties(bpy.types.PropertyGroup):
 
     def update_outline_active(self, context):
         properties = get_bookgen_collection().BookGenProperties
-        if properties.outline_active:
-            self.outline.enable_outline(properties.active_shelf, context)
+        if properties.outline_active and properties.active_shelf != -1:
+            shelf_collection = get_shelf_collection_by_index(properties.active_shelf)
+            shelf_props = shelf_collection.BookGenShelfProperties
+            parameters = get_shelf_parameters(shelf_props.id)
+            shelf = Shelf(shelf_collection.name, shelf_props.start, shelf_props.end, shelf_props.normal, parameters)
+            shelf.fill()
+            self.outline.enable_outline(*shelf.get_geometry(), context)
         else:
             self.outline.disable_outline()
 
     def update_active_shelf(self, context):
-        properties = get_bookgen_collection().BookGenProperties
-        self.outline.update(properties.active_shelf, context)
+        self.update_outline_active(context)
 
     # general
     auto_rebuild: BoolProperty(name="auto rebuild", default=True)
