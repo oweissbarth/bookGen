@@ -4,7 +4,6 @@ from gpu_extras.batch import batch_for_shader
 import bgl
 
 from .utils import get_shelf_collection_by_index
-
 class BookGenShelfOutline:
     draw_handler = None
     batch = None

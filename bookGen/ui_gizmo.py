@@ -34,7 +34,9 @@ class BookGenShelfGizmo():
 
         self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, args, 'WINDOW', 'POST_VIEW')
 
-        self.bookstand_color = bpy.context.preferences.themes[0].view_3d.face_select
+        color_ref = bpy.context.preferences.themes[0].user_interface.gizmo_primary
+        self.bookstand_color = [color_ref[0], color_ref[1],color_ref[2], 0.6]
+
 
         self.args = args
 
@@ -46,11 +48,11 @@ class BookGenShelfGizmo():
             return
 
         self.bookstand_shader.bind()
-        self.bookstand_shader.uniform_float("color", self.bookstand_color)
-
         bgl.glEnable(bgl.GL_BLEND)
+        self.bookstand_shader.uniform_float("color", self.bookstand_color)
         self.bookstand_batch.draw(self.bookstand_shader)
         bgl.glDisable(bgl.GL_BLEND)
+
 
         bgl.glLineWidth(3)
         matrix = bpy.context.region_data.perspective_matrix

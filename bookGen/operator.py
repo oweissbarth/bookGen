@@ -103,8 +103,11 @@ class OBJECT_OT_BookGenRemoveShelf(bpy.types.Operator):
         parent.children.unlink(collection)
         bpy.data.collections.remove(collection)
 
-        if active == len(parent.children):
-            parent.BookGenProperties.active_shelf -= 1 
+        parent.BookGenProperties.active_shelf -= 1 
+
+        if active != len(parent.children):
+             parent.BookGenProperties.active_shelf += 1 
+
 
 
 class BookGen_SelectShelf(bpy.types.Operator):
