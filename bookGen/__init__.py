@@ -31,10 +31,11 @@ bl_info = {
 from bpy.app.handlers import persistent
 
 from .operator import OBJECT_OT_BookGenRebuild, BookGen_SelectShelf, OBJECT_OT_BookGenRemoveShelf
-from .panel import OBJECT_PT_BookGenPanel, OBJECT_PT_BookGen_MainPanel, OBJECT_PT_BookGen_LeaningPanel, OBJECT_PT_BookGen_ProportionsPanel, OBJECT_PT_BookGen_DetailsPanel
+from .panel import OBJECT_PT_BookGenPanel, OBJECT_PT_BookGen_MainPanel, OBJECT_PT_BookGen_LeaningPanel, OBJECT_PT_BookGen_ProportionsPanel, OBJECT_PT_BookGen_DetailsPanel, OBJECT_PT_BookGen_ShelfOverridePanel
 from .properties import BookGenProperties, BookGenShelfProperties
 from .shelf_list import BOOKGEN_UL_Shelves
 from .utils import get_bookgen_collection
+
 
 
 classes = [

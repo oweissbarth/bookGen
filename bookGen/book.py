@@ -18,7 +18,7 @@
 
 import bpy
 import bmesh
-from mathutils import Vector, Euler
+from mathutils import Vector, Euler, Matrix
 
 from math import radians, degrees, atan
 
@@ -111,15 +111,14 @@ class Book:
                 self.obj.data.materials[0] = self.material
             else:
                 self.obj.data.materials.append(self.material)
-
-        self.obj.location = self.location
-        self.obj.rotation_euler = self.rotation.to_euler()
+        
+        self.obj.matrix_world = Matrix.Translation(self.location) @ self.rotation.to_4x4()
 
         return self.obj
 
 
     def get_geometry(self):
-        transformed_verts = map(lambda v: self.rotation.to_matrix() @ Vector(v) + self.location, self.verts)
+        transformed_verts = map(lambda v: self.rotation @ Vector(v) + self.location, self.verts)
         return transformed_verts, self.faces
 
 

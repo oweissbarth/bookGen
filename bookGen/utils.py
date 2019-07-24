@@ -59,6 +59,12 @@ def obj_ray_cast(obj, matrix, ray_origin, ray_target):
     else:
         return None, None
 
+import os
+
+bookGen_directory = os.path.dirname(os.path.realpath(__file__))
+
+
+
 def get_shelf_parameters(shelf_id=0):
     properties = get_bookgen_collection().BookGenProperties
 
@@ -109,12 +115,12 @@ def get_click_position_on_object(x,y):
             hit, normal = obj_ray_cast(obj, matrix, ray_origin, ray_target)
             if hit is not None:
                 hit_world = matrix @ hit
-                normal_world = matrix @ normal
+                normal_world = matrix.to_3x3() @ normal
                 length_squared = (hit_world - ray_origin).length_squared
                 if closest_loc is None or length_squared < best_length_squared:
                     best_length_squared = length_squared
                     closest_loc = hit_world
-                    closest_normal = normal
+                    closest_normal = normal_world
 
     return closest_loc, closest_normal
 

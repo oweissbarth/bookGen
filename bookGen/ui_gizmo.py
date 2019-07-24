@@ -12,6 +12,8 @@ from .data.gizmo_verts import bookstand_verts_start, bookstand_verts_end
 from .utils import vector_scale
 import logging
 
+from .utils import bookGen_directory
+
 class BookGenShelfGizmo():
 
     log = logging.getLogger("bookGen.gizmo")
@@ -21,10 +23,10 @@ class BookGenShelfGizmo():
         self.height = height
         self.depth = depth
 
-        with open("shaders/dotted_line.vert") as fp:
+        with open(bookGen_directory+"/shaders/dotted_line.vert") as fp:
             vertex_shader = fp.read()
 
-        with open("shaders/dotted_line.frag") as fp:
+        with open(bookGen_directory+"/shaders/dotted_line.frag") as fp:
             fragment_shader = fp.read()
 
         self.bookstand_shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
@@ -64,11 +66,13 @@ class BookGenShelfGizmo():
 
     def update(self, start, end, nrm):
 
+        print("gizmo normal", nrm)
+
         dir = end - start
         width = dir.length
         dir.normalize()
         rotationMatrix = Matrix([dir, dir.cross(nrm), nrm]).transposed()
-        
+        print("gizmo rotation matrix", rotationMatrix)
         verts_start= []
         for v in bookstand_verts_start:
             scaled = vector_scale(v, [1, self.depth, self.height])

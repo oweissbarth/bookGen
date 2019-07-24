@@ -15,12 +15,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # ======================= END GPL LICENSE BLOCK ========================
-import bpy
-from mathutils import Vector, Matrix, Quaternion
 
-from math import cos, tan, radians, sin, degrees, sqrt
 import random
 import logging
+from math import cos, tan, radians, sin, degrees
+
+import bpy
+from mathutils import Vector, Matrix
 
 from .book import Book
 
@@ -38,18 +39,16 @@ class Shelf:
     def __init__(self, name, start, end, normal, parameters):
         end = Vector(end)
         start = Vector(start)
-        
+
         self.name = name
         self.origin = start
         self.direction = (end - start).normalized()
-        self.rotationMatrix = Matrix([self.direction, self.direction.cross(normal), normal]).transposed()
-        self.rotation = self.rotationMatrix.to_quaternion()
+        self.rotation_matrix = Matrix([self.direction, -self.direction.cross(normal), normal]).transposed()
         self.width = (end - start).length
         self.parameters = parameters
         self.collection = None
         self.books = []
-
-
+        self.align_offset = 0
 
 
     def add_book(self, book, first):
@@ -77,9 +76,9 @@ class Shelf:
         # distribution
 
         book.location += Vector((self.cur_offset, 0, 0))
-        book.location = self.rotationMatrix @ book.location
+        book.location = self.rotation_matrix @ book.location
 
-        book.rotation = self.rotation @ Quaternion((0,1,0), book.lean_angle) 
+        book.rotation =  self.rotation_matrix @ Matrix.Rotation(book.lean_angle, 3, 'Y')
 
         book.location += self.origin
 
