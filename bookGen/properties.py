@@ -1,13 +1,24 @@
+from math import pi, radians
+import logging
+import time
+import functools
 import bpy
 from bpy.props import FloatProperty, IntProperty, EnumProperty, BoolProperty, FloatVectorProperty, PointerProperty
 
 from .utils import get_bookgen_collection, get_shelf_collection_by_index, get_shelf_parameters
 from .shelf import Shelf
 from .ui_outline import BookGenShelfOutline
+from .ui_preview import BookGenShelfPreview
+from .profiling import Profiler
 
-from math import pi, radians
-import logging
+partial = None
 
+def remove_previews(previews):
+    for p in previews:
+        p.remove()
+
+    bpy.ops.object.book_gen_rebuild()
+    return None
 
 class BookGenShelfProperties(bpy.types.PropertyGroup):
     start: FloatVectorProperty(name="start")
@@ -18,12 +29,45 @@ class BookGenShelfProperties(bpy.types.PropertyGroup):
 class BookGenProperties(bpy.types.PropertyGroup):
     log = logging.getLogger("bookGen.properties")
     outline = BookGenShelfOutline()
-    
+    previews = {}
+    f = None
+
     def update(self, context):
+        global partial
+        time_start = time.time()
+        parameters = get_shelf_parameters()
+
+
+
+        for shelf_collection in get_bookgen_collection().children:
+            shelf_props = shelf_collection.BookGenShelfProperties
+
+            parameters["seed"] += shelf_props.id
+
+            shelf = Shelf(shelf_collection.name, shelf_props.start, shelf_props.end, shelf_props.normal, parameters)
+            shelf.clean()
+            shelf.fill()
+
+            parameters["seed"] -= shelf_props.id
+
+            if not shelf_props.id in self.previews.keys():
+                preview = BookGenShelfPreview()
+                self.previews.update({shelf_props.id: preview})
+            else:
+                preview = self.previews[shelf_props.id]
+
+            preview.update(*shelf.get_geometry(), context)
+            
+
+        self.log.info("Finished populating shelf in %.4f secs" % (time.time() - time_start))
         properties = get_bookgen_collection().BookGenProperties
-        self.log.debug("auto rebuild: %r" % properties.auto_rebuild)
-        if properties.auto_rebuild:
-            bpy.ops.object.book_gen_rebuild()
+        
+        if partial is not None and bpy.app.timers.is_registered(partial):
+            bpy.app.timers.unregister(partial)
+
+        partial = functools.partial(remove_previews, self.previews.values())
+        bpy.app.timers.register(partial, first_interval=1.0)
+
 
     def update_outline_active(self, context):
         properties = get_bookgen_collection().BookGenProperties

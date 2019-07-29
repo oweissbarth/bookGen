@@ -27,7 +27,6 @@ from .book import Book
 
 from .utils import get_shelf_collection, get_bookgen_collection
 
-
 class Shelf:
     log = logging.getLogger("bookGen.Shelf")
     origin = Vector((0, 0, 0))
@@ -81,7 +80,6 @@ class Shelf:
         book.rotation =  self.rotation_matrix @ Matrix.Rotation(book.lean_angle, 3, 'Y')
 
         book.location += self.origin
-
 
     def to_collection(self):
         self.collection = get_shelf_collection(self.name)
@@ -228,7 +226,7 @@ class Shelf:
             offset_faces = map(lambda f: [f[0]+index_offset, f[1]+index_offset, f[2]+index_offset, f[3]+index_offset], b_faces)
             faces += offset_faces
             index_offset = len(verts)
-
+        
         return verts, faces
 
     def apply_parameters(self):

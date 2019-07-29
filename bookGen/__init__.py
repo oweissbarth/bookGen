@@ -35,6 +35,9 @@ from .panel import OBJECT_PT_BookGenPanel, OBJECT_PT_BookGen_MainPanel, OBJECT_P
 from .properties import BookGenProperties, BookGenShelfProperties
 from .shelf_list import BOOKGEN_UL_Shelves
 from .utils import get_bookgen_collection
+from .profiling import Profiler
+from os.path import splitext  
+
 
 
 
@@ -72,6 +75,9 @@ def unregister():
     for cls in reversed(classes):
         unregister_class(cls)
     bpy.app.handlers.load_post.remove(bookGen_startup)
+
+    Profiler.profile.dump_stats(splitext(__file__)[0]+'.prof')  
+
 
     
 

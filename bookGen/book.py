@@ -28,6 +28,7 @@ from .data.faces import get_faces
 from .data.uvs import get_uvs
 from .data.creases import get_creases
 
+from .profiling import Profiler
 
 class Book:
 
@@ -37,6 +38,15 @@ class Book:
         self.depth = cover_depth
         self.lean_angle = lean_angle
         self.lean = lean
+        self.page_thickness = page_thickness
+        self.page_height = page_height
+        self.page_depth = page_depth
+        self.cover_depth = cover_depth
+        self.cover_height = cover_height
+        self.cover_thickness = cover_thickness
+        self.hinge_inset = hinge_inset
+        self.hinge_width = hinge_width
+        self.spine_curl = spine_curl
         self.subsurf = subsurf
         self.material = material
         self.location =  Vector([0,0,0])
@@ -45,9 +55,7 @@ class Book:
 
         self.verts = get_verts(page_thickness, page_height, cover_depth, cover_height, cover_thickness, page_depth, hinge_inset, hinge_width, spine_curl)
         self.faces = get_faces()
-        self.creases = get_creases()
-        self.uvs = get_uvs(page_thickness, page_height, cover_depth, cover_height, cover_thickness, page_depth, hinge_inset, hinge_width, spine_curl)
-
+   
     def to_object(self):
         def index_to_vert(face):
             lst = []
@@ -56,6 +64,10 @@ class Book:
             return tuple(lst)
 
         mesh = bpy.data.meshes.new("book")
+
+        self.creases = get_creases()
+        self.uvs = get_uvs(self.page_thickness, self.page_height, self.cover_depth, self.cover_height, self.cover_thickness, self.page_depth, self.hinge_inset, self.hinge_width, self.spine_curl)
+
 
         self.obj = bpy.data.objects.new("book", mesh)
 
