@@ -65,14 +65,10 @@ class BookGenShelfGizmo():
 
 
     def update(self, start, end, nrm):
-
-        print("gizmo normal", nrm)
-
         dir = end - start
         width = dir.length
         dir.normalize()
         rotationMatrix = Matrix([dir, dir.cross(nrm), nrm]).transposed()
-        print("gizmo rotation matrix", rotationMatrix)
         verts_start= []
         for v in bookstand_verts_start:
             scaled = vector_scale(v, [1, self.depth, self.height])

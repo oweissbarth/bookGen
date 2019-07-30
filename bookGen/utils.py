@@ -114,8 +114,9 @@ def get_click_position_on_object(x,y):
         if obj.type == 'MESH':
             hit, normal = obj_ray_cast(obj, matrix, ray_origin, ray_target)
             if hit is not None:
+                _, rot, _ = matrix.decompose()
                 hit_world = matrix @ hit
-                normal_world = matrix.to_3x3() @ normal
+                normal_world = rot.to_matrix() @ normal
                 length_squared = (hit_world - ray_origin).length_squared
                 if closest_loc is None or length_squared < best_length_squared:
                     best_length_squared = length_squared
