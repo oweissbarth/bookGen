@@ -9,7 +9,6 @@ from .utils import get_bookgen_collection, get_shelf_collection_by_index, get_sh
 from .shelf import Shelf
 from .ui_outline import BookGenShelfOutline
 from .ui_preview import BookGenShelfPreview
-from .profiling import Profiler
 
 partial = None
 

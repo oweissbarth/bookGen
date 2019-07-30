@@ -28,8 +28,6 @@ from .data.faces import get_faces
 from .data.uvs import get_uvs
 from .data.creases import get_creases
 
-from .profiling import Profiler
-
 class Book:
 
     def __init__(self, cover_height, cover_thickness, cover_depth, page_height, page_depth, page_thickness, spine_curl, hinge_inset, hinge_width, book_width, lean, lean_angle, subsurf, material):
