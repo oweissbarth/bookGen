@@ -21,10 +21,10 @@ bl_info = {
     "name": "BookGen",
     "description": "Generate books to fill shelves",
     "author": "Oliver Weissbarth, Seojin Sim",
-    "version": (0, 6),
+    "version": (0, 9, 0),
     "blender": (2, 80, 0),
     "location": "View3D > Add > Mesh",
-    "warning": "Alpha",
+    "warning": "Beta",
     "wiki_url": "",
     "category": "Add Mesh"}
 
