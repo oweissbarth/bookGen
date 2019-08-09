@@ -18,6 +18,7 @@ class BookGen_ShelfSettings(bpy.types.Panel):
         properties = get_bookgen_collection().BookGenProperties
         layout = self.layout
         layout.use_property_split = True
+        layout.use_property_decorate = False
 
         layout.prop(properties, "scale", text="Scale")
         layout.prop(properties, "seed", text="Seed")
