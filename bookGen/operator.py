@@ -6,8 +6,7 @@ import time
 from math import pi, radians, sin, cos, tan, asin, degrees, sqrt
 
 from .shelf import Shelf
-from .utils import (visible_objects_and_instances,
-                   obj_ray_cast,
+from .utils import (obj_ray_cast,
                    get_bookgen_collection,
                    get_shelf_parameters,
                    get_shelf_collection,

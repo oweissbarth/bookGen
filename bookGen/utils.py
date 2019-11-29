@@ -27,19 +27,17 @@ def get_shelf_collection_by_index(index):
         return None
     return bookgen.children[index]
 
-def visible_objects_and_instances(context):
-    """Loop over (object, matrix) pairs (mesh only)"""
+def visible_objects_and_duplis():
+        """Loop over (object, matrix) pairs (mesh only)"""
 
-    for obj in context.visible_objects:
-        if obj.type == 'MESH':
-            yield (obj, obj.matrix_world.copy())
-
-        if obj.instance_type != 'NONE':
-            obj.dupli_list_create(context.scene)
-            for dob in obj.dupli_list:
-                obj_dupli = dob.object
-                if obj_dupli.type == 'MESH':
-                    yield (obj_dupli, dob.matrix.copy())
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+        for dup in depsgraph.object_instances:
+            if dup.is_instance:  # Real dupli instance
+                obj = dup.instance_object
+                yield (obj, dup.matrix_world.copy())
+            else:  # Usual object
+                obj = dup.object
+                yield (obj, obj.matrix_world.copy())
 
 
 def obj_ray_cast(obj, matrix, ray_origin, ray_target):
@@ -110,7 +108,7 @@ def get_click_position_on_object(x,y):
     closest_loc = None
     closest_normal = None
 
-    for obj, matrix in visible_objects_and_instances(bpy.context):
+    for obj, matrix in visible_objects_and_duplis():
         if obj.type == 'MESH':
             hit, normal = obj_ray_cast(obj, matrix, ray_origin, ray_target)
             if hit is not None:
