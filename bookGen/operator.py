@@ -15,6 +15,7 @@ from .utils import (obj_ray_cast,
 
 from .ui_gizmo import BookGenShelfGizmo
 from .ui_outline import BookGenShelfOutline
+from .ui_limit_line import BookGenLimitLine
 
 
 class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
@@ -124,13 +125,12 @@ class BookGen_SelectShelf(bpy.types.Operator):
             if self.start is not None:
                 self.end, self.end_normal = get_click_position_on_object(x, y)
                 if self.end is not None:
-                    normal = (self.start_normal  + self.end_normal)/2
-                    shelf_id = get_free_shelf_id()
-                    parameters = get_shelf_parameters(shelf_id)
-                    shelf = Shelf("shelf_"+str(shelf_id), self.start, self.end, normal, parameters)
-                    shelf.fill()
-                    self.outline.enable_outline(*shelf.get_geometry(), context)
-                    self.gizmo.update(self.start, self.end, normal)
+                    self.end_original = self.end.copy()
+
+                    
+                    self.apply_limits(context)
+                    self.refresh_preview(context)
+
                 else:
                     self.gizmo.remove()
                     self.outline.disable_outline()
@@ -161,18 +161,46 @@ class BookGen_SelectShelf(bpy.types.Operator):
                 shelf_props.id = shelf_id
                 self.gizmo.remove()
                 self.outline.disable_outline()
+                self.limit_line.remove()
                 shelf.to_collection()
                 return { 'FINISHED' }
         elif event.type in { 'RIGHTMOUSE', 'ESC' }:
             self.gizmo.remove()
             self.outline.disable_outline()
+            self.limit_line.remove()
             return { 'CANCELLED' }
+        elif event.type == 'X' and event.value == 'PRESS':
+            if self.limit == 'X':
+                self.limit = 'None'
+            else:
+                self.limit = 'X'
+            self.apply_limits(context)
+            self.refresh_preview(context)
+
+        elif event.type == 'Y' and event.value == 'PRESS':
+            if self.limit == 'Y':
+                self.limit = 'None'
+            else:
+                self.limit = 'Y'
+            self.apply_limits(context)
+            self.refresh_preview(context)
+
+        elif event.type == 'Z' and event.value == 'PRESS':
+            if self.limit == 'Z':
+                self.limit = 'None'
+            else:
+                self.limit = 'Z'
+            self.apply_limits(context)
+            self.refresh_preview(context)
         return { 'RUNNING_MODAL' }
 
     def invoke(self, context, event):
 
         self.start = None
         self.end = None
+        self.end_original = None
+        self.limit = "None"
+
 
         args = (self, context)
 
@@ -181,6 +209,35 @@ class BookGen_SelectShelf(bpy.types.Operator):
 
         self.gizmo =  BookGenShelfGizmo(self.start, self.end, None, props["book_height"], props["book_depth"], args)
         self.outline = BookGenShelfOutline()
+        self.limit_line = BookGenLimitLine(self.start, self.limit, args)
+
 
         context.window_manager.modal_handler_add(self)
         return { 'RUNNING_MODAL' }
+
+
+    def refresh_preview(self, context):
+        normal = (self.start_normal  + self.end_normal)/2
+        shelf_id = get_free_shelf_id()
+        parameters = get_shelf_parameters(shelf_id)
+        shelf = Shelf("shelf_"+str(shelf_id), self.start, self.end, normal, parameters)
+        shelf.fill()
+        self.outline.enable_outline(*shelf.get_geometry(), context)
+        self.gizmo.update(self.start, self.end, normal)
+        self.limit_line.update(self.start, self.limit)
+
+    def apply_limits(self, context):
+        if self.limit == 'None' and self.end_original is not None:
+            self.end = self.end_original.copy()
+            return
+
+        self.end = self.end_original.copy()
+        if self.limit == 'X':
+            self.end[1] = self.start[1]
+            self.end[2] = self.start[2]
+        if self.limit == 'Y':
+            self.end[0] = self.start[0]
+            self.end[2] = self.start[2]
+        if self.limit == 'Z':
+            self.end[0] = self.start[0]
+            self.end[1] = self.start[1]
