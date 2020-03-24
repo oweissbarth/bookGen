@@ -2,13 +2,15 @@ import bpy
 import bpy_extras.view3d_utils
 from mathutils import Vector
 
-def get_bookgen_collection():
+def get_bookgen_collection(create=True):
     for c in bpy.context.scene.collection.children:
         if c.name == "BookGen":
             return c
-
-    col = bpy.data.collections.new("BookGen")
-    bpy.context.scene.collection.children.link(col)
+    if create:
+        col = bpy.data.collections.new("BookGen")
+        bpy.context.scene.collection.children.link(col)
+    else:
+        col = None
     return col
 
 def get_shelf_collection(name):

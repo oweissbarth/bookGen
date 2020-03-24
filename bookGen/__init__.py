@@ -79,5 +79,6 @@ def unregister():
 
 @persistent
 def bookGen_startup(scene):
-    properties = get_bookgen_collection().BookGenProperties
-    properties.outline_active = False
+    collection = get_bookgen_collection(create=False)
+    if collection is not None:
+        collection.BookGenProperties.outline_active = False
