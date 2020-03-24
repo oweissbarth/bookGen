@@ -165,4 +165,6 @@ class BookGenProperties(bpy.types.PropertyGroup):
         name="Add Subsurf-Modifier", default=False, update=update_immediate)
 
 
-    material: PointerProperty(name="Material", type=bpy.types.Material, update=update_immediate)
+    cover_material: PointerProperty(name="Cover Material", type=bpy.types.Material, update=update_immediate)
+
+    page_material: PointerProperty(name="Page Material", type=bpy.types.Material, update=update_immediate)

@@ -25,7 +25,8 @@ class BookGen_ShelfSettings(bpy.types.Panel):
 
         layout.prop(properties, "alignment", text="Alignment")
 
-        layout.prop(properties, "material", text="Material")
+        layout.prop(properties, "cover_material", text="Cover Material")
+        layout.prop(properties, "page_material", text="Page Material")
 
 
 class OBJECT_PT_BookGen_LeaningPanel(bpy.types.Panel):

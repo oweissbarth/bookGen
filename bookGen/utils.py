@@ -91,7 +91,8 @@ def get_shelf_parameters(shelf_id=0):
         "hinge_width": properties.hinge_width,
         "rndm_hinge_width_factor": properties.rndm_hinge_width_factor,
         "subsurf": properties.subsurf,
-        "material": properties.material
+        "cover_material": properties.cover_material,
+        "page_material": properties.page_material
     }
     return parameters
 

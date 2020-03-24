@@ -9,12 +9,12 @@ class BookGenShelfOutline:
     batch = None
 
     def __init__(self):
-        self.shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
         col_ref = bpy.context.preferences.themes[0].view_3d.face_select
         self.outline_color = (col_ref[0], col_ref[1], col_ref[2], 0.1)
         self.batch = None 
 
     def update(self, verts, faces, context):
+        self.shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
         indices = []
         for f in faces:
             indices.append((f[0], f[1], f[2]))

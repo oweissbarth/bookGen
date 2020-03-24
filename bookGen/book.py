@@ -30,7 +30,7 @@ from .data.creases import get_creases
 
 class Book:
 
-    def __init__(self, cover_height, cover_thickness, cover_depth, page_height, page_depth, page_thickness, spine_curl, hinge_inset, hinge_width, book_width, lean, lean_angle, subsurf, material):
+    def __init__(self, cover_height, cover_thickness, cover_depth, page_height, page_depth, page_thickness, spine_curl, hinge_inset, hinge_width, book_width, lean, lean_angle, subsurf, cover_material, page_material):
         self.height = cover_height
         self.width = page_thickness + 2 * cover_thickness
         self.depth = cover_depth
@@ -46,7 +46,8 @@ class Book:
         self.hinge_width = hinge_width
         self.spine_curl = spine_curl
         self.subsurf = subsurf
-        self.material = material
+        self.cover_material = cover_material
+        self.page_material = page_material
         self.location =  Vector([0,0,0])
         self.rotation =  Vector([0,0,0])
 
@@ -98,8 +99,6 @@ class Book:
                 loop_uv.uv.y = uv[1]
 
         bm.normal_update()
-        bm.to_mesh(mesh)
-        bm.free()
 
         # calculate auto smooth angle based on spine
         center = self.verts[-1]
@@ -116,13 +115,27 @@ class Book:
             self.obj.modifiers['subd'].levels = 1
 
 
-        if(self.material):
+        if(self.cover_material):
             if self.obj.data.materials:
-                self.obj.data.materials[0] = self.material
+                self.obj.data.materials[0] = self.cover_material
             else:
-                self.obj.data.materials.append(self.material)
+                self.obj.data.materials.append(self.cover_material)
+
+        
+        if(self.page_material):
+            self.obj.data.materials.append(self.page_material)
+            bm.faces.ensure_lookup_table()
+            bm.faces[0].material_index = 1
+            bm.faces[1].material_index = 1
+            bm.faces[2].material_index = 1
+            bm.faces[3].material_index = 1
+
+
         
         self.obj.matrix_world = Matrix.Translation(self.location) @ self.rotation.to_4x4()
+
+        bm.to_mesh(mesh)
+        bm.free()
 
         return self.obj
 

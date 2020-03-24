@@ -96,7 +96,7 @@ class Shelf:
         first = True
 
         params = self.apply_parameters()
-        current = Book(*(list(params.values())), self.parameters["subsurf"], self.parameters["material"])
+        current = Book(*(list(params.values())), self.parameters["subsurf"], self.parameters["cover_material"], self.parameters["page_material"])
         if current.lean_angle >= 0:
             self.cur_offset = cos(current.lean_angle)*current.width
         else:
@@ -107,7 +107,7 @@ class Shelf:
             self.log.debug("remaining width to be filled: %.3f"%(self.width - self.cur_width))
             params = self.apply_parameters()
             last = current
-            current = Book(*(list(params.values())), self.parameters["subsurf"], self.parameters["material"])
+            current = Book(*(list(params.values())), self.parameters["subsurf"], self.parameters["cover_material"], self.parameters["page_material"])
 
             # gathering parameters for the next book
 
