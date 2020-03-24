@@ -1,3 +1,5 @@
+# If you are a user: Do not dowload the zip here. It will not work. Download from https://ow3d.de/bookGen
+
 # bookGen
 
 
