@@ -1,4 +1,5 @@
 import os
+
 import bpy
 import bpy_extras.view3d_utils
 from mathutils import Vector
@@ -65,8 +66,14 @@ def obj_ray_cast(obj, matrix, ray_origin, ray_target):
         return None, None, None
 
 
-bookGen_directory = os.path.dirname(os.path.realpath(__file__))
+def project_to_screen(context, world_space_point):
+    """ Returns the 2d location of a world space point inside the 3D viewport """
+    region = context.region
+    rv3d = context.space_data.region_3d
+    return bpy_extras.view3d_utils.location_3d_to_region_2d(region, rv3d, world_space_point, (0, 0))
 
+
+bookGen_directory = os.path.dirname(os.path.realpath(__file__))
 
 
 def get_shelf_parameters(shelf_id=0):
@@ -105,10 +112,10 @@ def get_shelf_parameters(shelf_id=0):
 
 def ray_cast(x, y):
     region = bpy.context.region
-    regionData = bpy.context.space_data.region_3d
+    region_data = bpy.context.space_data.region_3d
 
-    view_vector = bpy_extras.view3d_utils.region_2d_to_vector_3d(region, regionData, (x, y))
-    ray_origin = bpy_extras.view3d_utils.region_2d_to_origin_3d(region, regionData, (x, y))
+    view_vector = bpy_extras.view3d_utils.region_2d_to_vector_3d(region, region_data, (x, y))
+    ray_origin = bpy_extras.view3d_utils.region_2d_to_origin_3d(region, region_data, (x, y))
 
     ray_target = ray_origin + view_vector
 
@@ -137,12 +144,12 @@ def ray_cast(x, y):
 
 
 def get_click_face(x, y):
-    closest_loc, closest_normal, closest_face, closest_obj = ray_cast(x, y)
+    _, _, closest_face, closest_obj = ray_cast(x, y)
     return closest_obj, closest_face
 
 
 def get_click_position_on_object(x, y):
-    closest_loc, closest_normal, closest_face, closest_obj = ray_cast(x, y)
+    closest_loc, closest_normal, _, _ = ray_cast(x, y)
 
     return closest_loc, closest_normal
 
@@ -155,9 +162,9 @@ def get_free_shelf_id():
     shelves = get_bookgen_collection().children
 
     names = list(map(lambda x: x.name, shelves))
-    nameFound = False
+    name_found = False
     shelf_id = 0
-    while not nameFound:
+    while not name_found:
         if "shelf_" + str(shelf_id) not in names:
             return shelf_id
         shelf_id += 1

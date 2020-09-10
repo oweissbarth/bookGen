@@ -2,5 +2,6 @@ import bpy
 
 
 class BOOKGEN_UL_Shelves(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+    @staticmethod
+    def draw_item(_context, layout, _data, item, _icon, _active_data, _active_propname):
         layout.prop(item, "name", text="", emboss=False)

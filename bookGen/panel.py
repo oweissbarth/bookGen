@@ -132,6 +132,8 @@ class OBJECT_PT_BookGen_MainPanel(bpy.types.Panel):
         properties = get_bookgen_collection().BookGenProperties
         layout = self.layout
         layout.operator("object.book_gen_select_shelf", text="Add shelf")
+        layout.operator("object.book_gen_select_shelf_faces", text="Add shelf face")
+        layout.operator("object.book_gen_select_stack", text="Add stack")
         layout.operator("object.book_gen_rebuild", text="rebuild")
         layout.prop(properties, "auto_rebuild")
         layout.label(text="Shelves")
@@ -150,7 +152,7 @@ class OBJECT_PT_BookGen_ShelfOverridePanel(BookGen_ShelfSettings):
     bl_category = "BookGen"
     bl_options = {"DEFAULT_CLOSED"}
 
-    def draw_header(self, context):
+    def draw_header(self, _context):
         properties = get_bookgen_collection().BookGenProperties
         self.layout.prop(properties, "auto_rebuild", text="")
 

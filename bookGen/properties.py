@@ -2,6 +2,7 @@ from math import pi, radians
 import logging
 import time
 import functools
+
 import bpy
 from bpy.props import FloatProperty, IntProperty, EnumProperty, BoolProperty, FloatVectorProperty, PointerProperty
 
@@ -34,14 +35,14 @@ class BookGenProperties(bpy.types.PropertyGroup):
     previews = {}
     f = None
 
-    def update_immediate(self, context):
+    def update_immediate(self, _context):
         time_start = time.time()
         properties = get_bookgen_collection().BookGenProperties
 
         if properties.auto_rebuild:
             bpy.ops.object.book_gen_rebuild()
 
-        self.log.info("Finished populating shelf in %.4f secs" % (time.time() - time_start))
+        self.log.info("Finished populating shelf in %.4f secs", (time.time() - time_start))
 
     def update_delayed(self, context):
         global partial
@@ -71,7 +72,7 @@ class BookGenProperties(bpy.types.PropertyGroup):
 
             preview.update(*shelf.get_geometry(), context)
 
-        self.log.info("Finished populating shelf in %.4f secs" % (time.time() - time_start))
+        self.log.info("Finished populating shelf in %.4f secs", (time.time() - time_start))
         properties = get_bookgen_collection().BookGenProperties
 
         if partial is not None and bpy.app.timers.is_registered(partial):

@@ -1,17 +1,15 @@
-import bpy
-from mathutils import Vector, Matrix
-import random
 import logging
 import time
-from math import pi, radians, sin, cos, tan, asin, degrees, sqrt
+
+import bpy
 
 from .shelf import Shelf
 from .utils import (obj_ray_cast,
-                   get_bookgen_collection,
-                   get_shelf_parameters,
-                   get_shelf_collection,
-                   get_click_position_on_object,
-                   get_free_shelf_id)
+                    get_bookgen_collection,
+                    get_shelf_parameters,
+                    get_shelf_collection,
+                    get_click_position_on_object,
+                    get_free_shelf_id)
 
 from .ui_gizmo import BookGenShelfGizmo
 from .ui_outline import BookGenShelfOutline
@@ -30,14 +28,14 @@ class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
 
     log = logging.getLogger("bookGen.operator")
 
-    def check(self, context):
+    def check(self, _context):
         self.run()
 
-    def invoke(self, context, event):
+    def invoke(self, _context, _event):
         self.run()
         return {'FINISHED'}
 
-    def execute(self, context):
+    def execute(self, _context):
         self.run()
         return {'FINISHED'}
 
@@ -64,8 +62,7 @@ class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
 
             shelf.to_collection()
 
-        self.log.info("Finished populating shelf in %.4f secs" %
-                      (time.time() - time_start))
+        self.log.info("Finished populating shelf in %.4f secs", (time.time() - time_start))
 
 
 class OBJECT_OT_BookGenRemoveShelf(bpy.types.Operator):
@@ -74,17 +71,16 @@ class OBJECT_OT_BookGenRemoveShelf(bpy.types.Operator):
     bl_label = "BookGen"
     bl_options = {'REGISTER'}
 
-
     log = logging.getLogger("bookGen.operator")
 
-    def check(self, context):
+    def check(self, _context):
         self.run()
 
-    def invoke(self, context, event):
+    def invoke(self, _context, _event):
         self.run()
         return {'FINISHED'}
 
-    def execute(self, context):
+    def execute(self, _context):
         self.run()
         return {'FINISHED'}
 
@@ -93,7 +89,7 @@ class OBJECT_OT_BookGenRemoveShelf(bpy.types.Operator):
         return context.mode == 'OBJECT'
 
     def run(self):
-        parent = get_bookgen_collection() 
+        parent = get_bookgen_collection()
         active = parent.BookGenProperties.active_shelf
         if active < 0 or active >= len(parent.children):
             return
@@ -105,11 +101,10 @@ class OBJECT_OT_BookGenRemoveShelf(bpy.types.Operator):
         parent.children.unlink(collection)
         bpy.data.collections.remove(collection)
 
-        parent.BookGenProperties.active_shelf -= 1 
+        parent.BookGenProperties.active_shelf -= 1
 
         if active != len(parent.children):
-             parent.BookGenProperties.active_shelf += 1 
-
+            parent.BookGenProperties.active_shelf += 1
 
 
 class BookGen_SelectShelf(bpy.types.Operator):
@@ -117,6 +112,18 @@ class BookGen_SelectShelf(bpy.types.Operator):
     bl_idname = "object.book_gen_select_shelf"
     bl_label = "Select BookGen Shelf"
     log = logging.getLogger("bookGen.select_shelf")
+
+    def __init__(self):
+        self.start = None
+        self.end = None
+        self.end_original = None
+        self.end_normal = None
+        self.start_normal = None
+        self.limit = "None"
+
+        self.gizmo = None
+        self.outline = None
+        self.limit_line = None
 
     def modal(self, context, event):
         if context.area:
@@ -128,7 +135,6 @@ class BookGen_SelectShelf(bpy.types.Operator):
                 self.end, self.end_normal = get_click_position_on_object(x, y)
                 if self.end is not None:
                     self.end_original = self.end.copy()
-
 
                     self.apply_limits(context)
                     self.refresh_preview(context)
@@ -151,12 +157,12 @@ class BookGen_SelectShelf(bpy.types.Operator):
                 shelf_id = get_free_shelf_id()
                 parameters = get_shelf_parameters()
                 parameters["seed"] += shelf_id
-                normal = (self.start_normal + self.end_normal)/2
-                shelf = Shelf("shelf_"+str(shelf_id), self.start,
+                normal = (self.start_normal + self.end_normal) / 2
+                shelf = Shelf("shelf_" + str(shelf_id), self.start,
                               self.end, normal, parameters)
                 shelf.clean()
                 shelf.fill()
-                
+
                 # set properties for later rebuild
                 shelf_props = get_shelf_collection(
                     shelf.name).BookGenShelfProperties
@@ -199,13 +205,7 @@ class BookGen_SelectShelf(bpy.types.Operator):
             self.refresh_preview(context)
         return {'RUNNING_MODAL'}
 
-    def invoke(self, context, event):
-
-        self.start = None
-        self.end = None
-        self.end_original = None
-        self.limit = "None"
-
+    def invoke(self, context, _event):
 
         args = (self, context)
 
@@ -219,17 +219,17 @@ class BookGen_SelectShelf(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
     def refresh_preview(self, context):
-        normal = (self.start_normal + self.end_normal)/2
+        normal = (self.start_normal + self.end_normal) / 2
         shelf_id = get_free_shelf_id()
         parameters = get_shelf_parameters(shelf_id)
-        shelf = Shelf("shelf_"+str(shelf_id), self.start,
+        shelf = Shelf("shelf_" + str(shelf_id), self.start,
                       self.end, normal, parameters)
         shelf.fill()
         self.outline.enable_outline(*shelf.get_geometry(), context)
         self.gizmo.update(self.start, self.end, normal)
         self.limit_line.update(self.start, self.limit)
 
-    def apply_limits(self, context):
+    def apply_limits(self, _context):
         if self.limit == 'None' and self.end_original is not None:
             self.end = self.end_original.copy()
             return

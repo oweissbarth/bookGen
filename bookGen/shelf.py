@@ -74,7 +74,7 @@ class Shelf:
 
         # distribution
 
-        book.location += Vector((self.cur_offset, 0, 0))
+        book.location += Vector((cur_offset, 0, 0))
         book.location = self.rotation_matrix @ book.location
 
         book.rotation = self.rotation_matrix @ Matrix.Rotation(book.lean_angle, 3, 'Y')
@@ -88,8 +88,8 @@ class Shelf:
             self.collection.objects.link(obj)
 
     def fill(self):
-        self.cur_width = 0
-        self.cur_offset = 0
+        cur_width = 0
+        cur_offset = 0
 
         random.seed(self.parameters["seed"])
 
@@ -101,13 +101,13 @@ class Shelf:
                        self.parameters["cover_material"],
                        self.parameters["page_material"])
         if current.lean_angle >= 0:
-            self.cur_offset = cos(current.lean_angle) * current.width
+            cur_offset = cos(current.lean_angle) * current.width
         else:
-            self.cur_offset = current.height * sin(abs(current.lean_angle))
+            cur_offset = current.height * sin(abs(current.lean_angle))
         self.add_book(current, first)
 
-        while(self.cur_width < self.width):  # TODO add current book width to cur_width
-            self.log.debug("remaining width to be filled: %.3f" % (self.width - self.cur_width))
+        while cur_width < self.width:  # TODO add current book width to cur_width
+            self.log.debug("remaining width to be filled: %.3f", (self.width - cur_width))
             params = self.apply_parameters()
             last = current
             current = Book(*(list(params.values())),
@@ -138,31 +138,31 @@ class Shelf:
                     sin(abs(current.lean_angle)) * current.width
                 current.corner_height_right = cos(current.lean_angle) * current.height
 
-            self.log.debug("last - angle: %.3f left: %.3f   right: %.3f" %
-                           (degrees(last.lean_angle), last.corner_height_left, last.corner_height_right))
+            self.log.debug("last - angle: %.3f left: %.3f   right: %.3f",
+                           degrees(last.lean_angle), last.corner_height_left, last.corner_height_right)
 
-            self.log.debug("current - angle: %.3f left: %.3f   right: %.3f" %
-                           (degrees(current.lean_angle), current.corner_height_left, current.corner_height_right))
+            self.log.debug("current - angle: %.3f left: %.3f   right: %.3f",
+                           degrees(current.lean_angle), current.corner_height_left, current.corner_height_right)
 
             same_dir = (
                 last.lean_angle >= 0 and current.lean_angle >= 0) or (
                 last.lean_angle < 0 and current.lean_angle < 0)
 
-            self.log.debug("same dir: %r" % same_dir)
+            self.log.debug("same dir: %r", same_dir)
 
             switched = False
 
-            def switch(last, current):
-                last.corner_height_left, last.corner_height_right = last.corner_height_right, last.corner_height_left
-                current.corner_height_left, current.corner_height_right = current.corner_height_right, current.corner_height_left
-                return current, last
+            def switch(a, b):
+                a.corner_height_left, a.corner_height_right = a.corner_height_right, a.corner_height_left
+                b.corner_height_left, b.corner_height_right = b.corner_height_right, b.corner_height_left
+                return b, a
 
             # mirror everything both books lean to the left
             if same_dir and last.lean_angle < 0:
                 switched = True
                 current, last = switch(current, last)
 
-            self.log.debug("switched: %r" % switched)
+            self.log.debug("switched: %r", switched)
 
             offset = 0
 
@@ -206,11 +206,11 @@ class Shelf:
                 # books that don't lean are aligned right.
                 width = offset
 
-            self.cur_width = self.cur_offset + width
+            cur_width = cur_offset + width
 
-            self.cur_offset += offset
+            cur_offset += offset
 
-            if self.cur_width < self.width:
+            if cur_width < self.width:
                 self.add_book(current, first)
 
             first = False
