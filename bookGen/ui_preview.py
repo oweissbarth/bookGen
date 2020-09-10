@@ -13,27 +13,24 @@ import logging
 
 from .utils import bookGen_directory
 
+
 class BookGenShelfPreview():
 
     log = logging.getLogger("bookGen.preview")
 
-
     def __init__(self):
-        with open(bookGen_directory+"/shaders/simple_flat.vert") as fp:
+        with open(bookGen_directory + "/shaders/simple_flat.vert") as fp:
             vertex_shader = fp.read()
 
-        with open(bookGen_directory+"/shaders/simple_flat.frag") as fp:
+        with open(bookGen_directory + "/shaders/simple_flat.frag") as fp:
             fragment_shader = fp.read()
-        
-        
+
         self.shader = gpu.types.GPUShader(vertex_shader, fragment_shader)
-        
+
         self.batch = None
 
         self.draw_handler = None
         self.color = [0.8, 0.8, 0.8]
-
-
 
     def draw(self, op, context):
         if self.batch is None:
@@ -51,7 +48,6 @@ class BookGenShelfPreview():
         self.batch.draw(self.shader)
         bgl.glDisable(bgl.GL_DEPTH_TEST)
 
-
     def update(self, verts, faces, context):
 
         normals = []
@@ -66,9 +62,8 @@ class BookGenShelfPreview():
         self.batch = batch_for_shader(self.shader, "TRIS", {"pos": vertices, "nrm": normals})
 
         if self.draw_handler is None:
-            self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, (self, context), 'WINDOW', 'POST_VIEW')
-
-
+            self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(
+                self.draw, (self, context), 'WINDOW', 'POST_VIEW')
 
     def remove(self):
         self.log.debug("removing draw handler")

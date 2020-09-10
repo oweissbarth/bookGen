@@ -17,6 +17,23 @@
 # ======================= END GPL LICENSE BLOCK ========================
 
 
+from .properties import BookGenProperties, BookGenShelfProperties
+from os.path import splitext
+from .utils import get_bookgen_collection
+from .shelf_list import BOOKGEN_UL_Shelves
+from .panel import (
+    OBJECT_PT_BookGenPanel,
+    OBJECT_PT_BookGen_MainPanel,
+    OBJECT_PT_BookGen_LeaningPanel,
+    OBJECT_PT_BookGen_ProportionsPanel,
+    OBJECT_PT_BookGen_DetailsPanel,
+    OBJECT_PT_BookGen_ShelfOverridePanel)
+from .operator import (
+    OBJECT_OT_BookGenRebuild,
+    BookGen_SelectShelf,
+    OBJECT_OT_BookGenRemoveShelf)
+from bpy.app.handlers import persistent
+
 bl_info = {
     "name": "BookGen",
     "description": "Generate books to fill shelves",
@@ -27,17 +44,6 @@ bl_info = {
     "warning": "Beta",
     "wiki_url": "",
     "category": "Add Mesh"}
-
-from bpy.app.handlers import persistent
-
-from .operator import OBJECT_OT_BookGenRebuild, BookGen_SelectShelf, OBJECT_OT_BookGenRemoveShelf
-from .panel import OBJECT_PT_BookGenPanel, OBJECT_PT_BookGen_MainPanel, OBJECT_PT_BookGen_LeaningPanel, OBJECT_PT_BookGen_ProportionsPanel, OBJECT_PT_BookGen_DetailsPanel, OBJECT_PT_BookGen_ShelfOverridePanel
-from .properties import BookGenProperties, BookGenShelfProperties
-from .shelf_list import BOOKGEN_UL_Shelves
-from .utils import get_bookgen_collection
-from os.path import splitext  
-
-
 
 
 classes = [
@@ -54,10 +60,10 @@ classes = [
     BOOKGEN_UL_Shelves
 ]
 
+
 def register():
     from bpy.utils import register_class
     import bpy
-    
 
     for cls in classes:
         register_class(cls)
@@ -75,7 +81,6 @@ def unregister():
         unregister_class(cls)
     bpy.app.handlers.load_post.remove(bookGen_startup)
 
-    
 
 @persistent
 def bookGen_startup(scene):

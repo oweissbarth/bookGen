@@ -22,15 +22,32 @@ from mathutils import Vector, Euler, Matrix
 
 from math import radians, degrees, atan
 
-from .utils import get_bookgen_collection 
+from .utils import get_bookgen_collection
 from .data.verts import get_verts
 from .data.faces import get_faces
 from .data.uvs import get_uvs
 from .data.creases import get_creases
 
+
 class Book:
 
-    def __init__(self, cover_height, cover_thickness, cover_depth, page_height, page_depth, page_thickness, spine_curl, hinge_inset, hinge_width, book_width, lean, lean_angle, subsurf, cover_material, page_material):
+    def __init__(
+            self,
+            cover_height,
+            cover_thickness,
+            cover_depth,
+            page_height,
+            page_depth,
+            page_thickness,
+            spine_curl,
+            hinge_inset,
+            hinge_width,
+            book_width,
+            lean,
+            lean_angle,
+            subsurf,
+            cover_material,
+            page_material):
         self.height = cover_height
         self.width = page_thickness + 2 * cover_thickness
         self.depth = cover_depth
@@ -48,13 +65,21 @@ class Book:
         self.subsurf = subsurf
         self.cover_material = cover_material
         self.page_material = page_material
-        self.location =  Vector([0,0,0])
-        self.rotation =  Vector([0,0,0])
+        self.location = Vector([0, 0, 0])
+        self.rotation = Vector([0, 0, 0])
 
-
-        self.verts = get_verts(page_thickness, page_height, cover_depth, cover_height, cover_thickness, page_depth, hinge_inset, hinge_width, spine_curl)
+        self.verts = get_verts(
+            page_thickness,
+            page_height,
+            cover_depth,
+            cover_height,
+            cover_thickness,
+            page_depth,
+            hinge_inset,
+            hinge_width,
+            spine_curl)
         self.faces = get_faces()
-   
+
     def to_object(self):
         def index_to_vert(face):
             lst = []
@@ -65,8 +90,16 @@ class Book:
         mesh = bpy.data.meshes.new("book")
 
         self.creases = get_creases()
-        self.uvs = get_uvs(self.page_thickness, self.page_height, self.cover_depth, self.cover_height, self.cover_thickness, self.page_depth, self.hinge_inset, self.hinge_width, self.spine_curl)
-
+        self.uvs = get_uvs(
+            self.page_thickness,
+            self.page_height,
+            self.cover_depth,
+            self.cover_height,
+            self.cover_thickness,
+            self.page_depth,
+            self.hinge_inset,
+            self.hinge_width,
+            self.spine_curl)
 
         self.obj = bpy.data.objects.new("book", mesh)
 
@@ -105,8 +138,8 @@ class Book:
         side = self.verts[-5]
         curl = abs(center[1] - side[1])
         width = abs(center[0] - side[0])
-        spine_angle = atan(width/curl)*2
-        normal_angle = radians(180) - spine_angle + radians(1) # add 1 deg to account for fp
+        spine_angle = atan(width / curl) * 2
+        normal_angle = radians(180) - spine_angle + radians(1)  # add 1 deg to account for fp
         mesh.use_auto_smooth = True
         mesh.auto_smooth_angle = normal_angle
 
@@ -114,14 +147,12 @@ class Book:
             self.obj.modifiers.new("subd", type='SUBSURF')
             self.obj.modifiers['subd'].levels = 1
 
-
         if(self.cover_material):
             if self.obj.data.materials:
                 self.obj.data.materials[0] = self.cover_material
             else:
                 self.obj.data.materials.append(self.cover_material)
 
-        
         if(self.page_material):
             self.obj.data.materials.append(self.page_material)
             bm.faces.ensure_lookup_table()
@@ -130,8 +161,6 @@ class Book:
             bm.faces[2].material_index = 1
             bm.faces[3].material_index = 1
 
-
-        
         self.obj.matrix_world = Matrix.Translation(self.location) @ self.rotation.to_4x4()
 
         bm.to_mesh(mesh)
@@ -139,9 +168,6 @@ class Book:
 
         return self.obj
 
-
     def get_geometry(self):
         transformed_verts = map(lambda v: self.rotation @ Vector(v) + self.location, self.verts)
         return transformed_verts, self.faces
-
-

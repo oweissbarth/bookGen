@@ -1,6 +1,8 @@
+import os
 import bpy
 import bpy_extras.view3d_utils
 from mathutils import Vector
+
 
 def get_bookgen_collection(create=True):
     for c in bpy.context.scene.collection.children:
@@ -13,6 +15,7 @@ def get_bookgen_collection(create=True):
         col = None
     return col
 
+
 def get_shelf_collection(name):
     bookgen = get_bookgen_collection()
     for c in bookgen.children:
@@ -23,23 +26,25 @@ def get_shelf_collection(name):
     bookgen.children.link(col)
     return col
 
+
 def get_shelf_collection_by_index(index):
     bookgen = get_bookgen_collection()
     if index < 0 or index >= len(bookgen.children):
         return None
     return bookgen.children[index]
 
-def visible_objects_and_duplis():
-        """Loop over (object, matrix) pairs (mesh only)"""
 
-        depsgraph = bpy.context.evaluated_depsgraph_get()
-        for dup in depsgraph.object_instances:
-            if dup.is_instance:  # Real dupli instance
-                obj = dup.instance_object
-                yield (obj, dup.matrix_world.copy())
-            else:  # Usual object
-                obj = dup.object
-                yield (obj, obj.matrix_world.copy())
+def visible_objects_and_duplis():
+    """Loop over (object, matrix) pairs (mesh only)"""
+
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    for dup in depsgraph.object_instances:
+        if dup.is_instance:  # Real dupli instance
+            obj = dup.instance_object
+            yield (obj, dup.matrix_world.copy())
+        else:  # Usual object
+            obj = dup.object
+            yield (obj, obj.matrix_world.copy())
 
 
 def obj_ray_cast(obj, matrix, ray_origin, ray_target):
@@ -52,14 +57,13 @@ def obj_ray_cast(obj, matrix, ray_origin, ray_target):
     ray_direction_obj = ray_target_obj - ray_origin_obj
 
     # cast the ray
-    success, location, normal, _ = obj.ray_cast(ray_origin_obj, ray_direction_obj)
+    success, location, normal, face = obj.ray_cast(ray_origin_obj, ray_direction_obj)
 
     if success:
-        return location, normal
+        return location, normal, face
     else:
-        return None, None
+        return None, None, None
 
-import os
 
 bookGen_directory = os.path.dirname(os.path.realpath(__file__))
 
@@ -98,22 +102,25 @@ def get_shelf_parameters(shelf_id=0):
     }
     return parameters
 
-def get_click_position_on_object(x,y):
+
+def ray_cast(x, y):
     region = bpy.context.region
     regionData = bpy.context.space_data.region_3d
 
-    view_vector = bpy_extras.view3d_utils.region_2d_to_vector_3d(region, regionData, (x,y))
-    ray_origin = bpy_extras.view3d_utils.region_2d_to_origin_3d(region, regionData, (x,y))
+    view_vector = bpy_extras.view3d_utils.region_2d_to_vector_3d(region, regionData, (x, y))
+    ray_origin = bpy_extras.view3d_utils.region_2d_to_origin_3d(region, regionData, (x, y))
 
     ray_target = ray_origin + view_vector
 
     best_length_squared = -1.0
     closest_loc = None
     closest_normal = None
+    closest_obj = None
+    closest_face = None
 
     for obj, matrix in visible_objects_and_duplis():
         if obj.type == 'MESH':
-            hit, normal = obj_ray_cast(obj, matrix, ray_origin, ray_target)
+            hit, normal, face = obj_ray_cast(obj, matrix, ray_origin, ray_target)
             if hit is not None:
                 _, rot, _ = matrix.decompose()
                 hit_world = matrix @ hit
@@ -123,12 +130,26 @@ def get_click_position_on_object(x,y):
                     best_length_squared = length_squared
                     closest_loc = hit_world
                     closest_normal = normal_world
+                    closest_face = face
+                    closest_obj = obj
+
+    return closest_loc, closest_normal, closest_face, closest_obj
+
+
+def get_click_face(x, y):
+    closest_loc, closest_normal, closest_face, closest_obj = ray_cast(x, y)
+    return closest_obj, closest_face
+
+
+def get_click_position_on_object(x, y):
+    closest_loc, closest_normal, closest_face, closest_obj = ray_cast(x, y)
 
     return closest_loc, closest_normal
 
 
 def vector_scale(veca, vecb):
     return Vector(x * y for x, y in zip(veca, vecb))
+
 
 def get_free_shelf_id():
     shelves = get_bookgen_collection().children
@@ -137,6 +158,6 @@ def get_free_shelf_id():
     nameFound = False
     shelf_id = 0
     while not nameFound:
-        if "shelf_"+str(shelf_id) not in names:
+        if "shelf_" + str(shelf_id) not in names:
             return shelf_id
         shelf_id += 1

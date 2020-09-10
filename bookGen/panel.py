@@ -42,12 +42,12 @@ class OBJECT_PT_BookGen_LeaningPanel(bpy.types.Panel):
         layout = self.layout
         layout.use_property_split = True
 
-
         layout.prop(properties, "lean_amount", text="Lean Amount")
         layout.prop(properties, "lean_direction", text="Lean Direction")
         col = layout.column(align=True)
         col.prop(properties, "lean_angle", text="Lean Angle")
         col.prop(properties, "rndm_lean_angle_factor", text="Random")
+
 
 class OBJECT_PT_BookGen_ProportionsPanel(bpy.types.Panel):
     bl_label = "Proportions"
@@ -74,6 +74,7 @@ class OBJECT_PT_BookGen_ProportionsPanel(bpy.types.Panel):
         col.prop(properties, "book_width", text="Book Width")
         col.prop(properties, "rndm_book_width_factor", text="Random")
 
+
 class OBJECT_PT_BookGen_DetailsPanel(bpy.types.Panel):
     bl_label = "Details"
     bl_space_type = 'VIEW_3D'
@@ -86,7 +87,6 @@ class OBJECT_PT_BookGen_DetailsPanel(bpy.types.Panel):
         properties = get_bookgen_collection().BookGenProperties
         layout = self.layout
         layout.use_property_split = True
-
 
         col = layout.column(align=True)
         col.prop(properties, "textblock_offset", text="Textblock Offset")
@@ -113,7 +113,6 @@ class OBJECT_PT_BookGen_DetailsPanel(bpy.types.Panel):
         layout.prop(properties, "subsurf")
 
 
-
 class OBJECT_PT_BookGenPanel(BookGen_ShelfSettings):
     bl_label = "Properties"
     bl_space_type = 'VIEW_3D'
@@ -137,10 +136,12 @@ class OBJECT_PT_BookGen_MainPanel(bpy.types.Panel):
         layout.prop(properties, "auto_rebuild")
         layout.label(text="Shelves")
         row = layout.row()
-        row.template_list("BOOKGEN_UL_Shelves", "", get_bookgen_collection(), "children", get_bookgen_collection().BookGenProperties, "active_shelf")
+        row.template_list("BOOKGEN_UL_Shelves", "", get_bookgen_collection(), "children",
+                          get_bookgen_collection().BookGenProperties, "active_shelf")
         col = row.column(align=True)
         props = col.operator("object.book_gen_remove_shelf", icon="X", text="")
         col.prop(properties, "outline_active", toggle=True, icon="SHADING_BBOX", icon_only=True)
+
 
 class OBJECT_PT_BookGen_ShelfOverridePanel(BookGen_ShelfSettings):
     bl_label = "Per Shelf Override"

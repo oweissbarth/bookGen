@@ -55,7 +55,8 @@ class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
 
             parameters["seed"] += shelf_props.id
 
-            shelf = Shelf(shelf_collection.name, shelf_props.start, shelf_props.end, shelf_props.normal, parameters)
+            shelf = Shelf(shelf_collection.name, shelf_props.start,
+                          shelf_props.end, shelf_props.normal, parameters)
             shelf.clean()
             shelf.fill()
 
@@ -63,7 +64,8 @@ class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
 
             shelf.to_collection()
 
-        self.log.info("Finished populating shelf in %.4f secs" % (time.time() - time_start))
+        self.log.info("Finished populating shelf in %.4f secs" %
+                      (time.time() - time_start))
 
 
 class OBJECT_OT_BookGenRemoveShelf(bpy.types.Operator):
@@ -127,7 +129,7 @@ class BookGen_SelectShelf(bpy.types.Operator):
                 if self.end is not None:
                     self.end_original = self.end.copy()
 
-                    
+
                     self.apply_limits(context)
                     self.refresh_preview(context)
 
@@ -140,21 +142,24 @@ class BookGen_SelectShelf(bpy.types.Operator):
             return {'PASS_THROUGH'}
         elif event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
             if self.start is None:
-                self.start, self.start_normal = get_click_position_on_object(x, y)
-                return { 'RUNNING_MODAL' }
+                self.start, self.start_normal = get_click_position_on_object(
+                    x, y)
+                return {'RUNNING_MODAL'}
             else:
                 if self.end is None:
-                    return { 'RUNNING_MODAL' }
+                    return {'RUNNING_MODAL'}
                 shelf_id = get_free_shelf_id()
                 parameters = get_shelf_parameters()
                 parameters["seed"] += shelf_id
-                normal = (self.start_normal  + self.end_normal)/2
-                shelf = Shelf("shelf_"+str(shelf_id), self.start, self.end, normal, parameters)
+                normal = (self.start_normal + self.end_normal)/2
+                shelf = Shelf("shelf_"+str(shelf_id), self.start,
+                              self.end, normal, parameters)
                 shelf.clean()
                 shelf.fill()
                 
                 # set properties for later rebuild
-                shelf_props = get_shelf_collection(shelf.name).BookGenShelfProperties
+                shelf_props = get_shelf_collection(
+                    shelf.name).BookGenShelfProperties
                 shelf_props.start = self.start
                 shelf_props.end = self.end
                 shelf_props.normal = normal
@@ -163,12 +168,12 @@ class BookGen_SelectShelf(bpy.types.Operator):
                 self.outline.disable_outline()
                 self.limit_line.remove()
                 shelf.to_collection()
-                return { 'FINISHED' }
-        elif event.type in { 'RIGHTMOUSE', 'ESC' }:
+                return {'FINISHED'}
+        elif event.type in {'RIGHTMOUSE', 'ESC'}:
             self.gizmo.remove()
             self.outline.disable_outline()
             self.limit_line.remove()
-            return { 'CANCELLED' }
+            return {'CANCELLED'}
         elif event.type == 'X' and event.value == 'PRESS':
             if self.limit == 'X':
                 self.limit = 'None'
@@ -192,7 +197,7 @@ class BookGen_SelectShelf(bpy.types.Operator):
                 self.limit = 'Z'
             self.apply_limits(context)
             self.refresh_preview(context)
-        return { 'RUNNING_MODAL' }
+        return {'RUNNING_MODAL'}
 
     def invoke(self, context, event):
 
@@ -205,22 +210,20 @@ class BookGen_SelectShelf(bpy.types.Operator):
         args = (self, context)
 
         props = get_shelf_parameters()
-
-
-        self.gizmo =  BookGenShelfGizmo(self.start, self.end, None, props["book_height"], props["book_depth"], args)
+        self.gizmo = BookGenShelfGizmo(
+            self.start, self.end, None, props["book_height"], props["book_depth"], args)
         self.outline = BookGenShelfOutline()
         self.limit_line = BookGenLimitLine(self.start, self.limit, args)
 
-
         context.window_manager.modal_handler_add(self)
-        return { 'RUNNING_MODAL' }
-
+        return {'RUNNING_MODAL'}
 
     def refresh_preview(self, context):
-        normal = (self.start_normal  + self.end_normal)/2
+        normal = (self.start_normal + self.end_normal)/2
         shelf_id = get_free_shelf_id()
         parameters = get_shelf_parameters(shelf_id)
-        shelf = Shelf("shelf_"+str(shelf_id), self.start, self.end, normal, parameters)
+        shelf = Shelf("shelf_"+str(shelf_id), self.start,
+                      self.end, normal, parameters)
         shelf.fill()
         self.outline.enable_outline(*shelf.get_geometry(), context)
         self.gizmo.update(self.start, self.end, normal)

@@ -4,6 +4,8 @@ from gpu_extras.batch import batch_for_shader
 import bgl
 
 from .utils import get_shelf_collection_by_index
+
+
 class BookGenShelfOutline:
     draw_handler = None
     batch = None
@@ -11,7 +13,7 @@ class BookGenShelfOutline:
     def __init__(self):
         col_ref = bpy.context.preferences.themes[0].view_3d.face_select
         self.outline_color = (col_ref[0], col_ref[1], col_ref[2], 0.1)
-        self.batch = None 
+        self.batch = None
 
     def update(self, verts, faces, context):
         self.shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
@@ -24,14 +26,14 @@ class BookGenShelfOutline:
 
     def enable_outline(self, verts, faces, context):
         if self.draw_handler is None:
-            self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw_outline, (self,context), 'WINDOW', 'POST_VIEW')
+            self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(
+                self.draw_outline, (self, context), 'WINDOW', 'POST_VIEW')
         self.update(verts, faces, context)
 
     def disable_outline(self):
         if self.draw_handler is not None:
             bpy.types.SpaceView3D.draw_handler_remove(self.draw_handler, 'WINDOW')
             self.draw_handler = None
-
 
     def draw_outline(self, op, context):
         if self.batch is None:

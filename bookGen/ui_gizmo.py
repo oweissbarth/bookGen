@@ -14,19 +14,19 @@ import logging
 
 from .utils import bookGen_directory
 
+
 class BookGenShelfGizmo():
 
     log = logging.getLogger("bookGen.gizmo")
-
 
     def __init__(self, start, end, nrm, height, depth, args):
         self.height = height
         self.depth = depth
 
-        with open(bookGen_directory+"/shaders/dotted_line.vert") as fp:
+        with open(bookGen_directory + "/shaders/dotted_line.vert") as fp:
             vertex_shader = fp.read()
 
-        with open(bookGen_directory+"/shaders/dotted_line.frag") as fp:
+        with open(bookGen_directory + "/shaders/dotted_line.frag") as fp:
             fragment_shader = fp.read()
 
         self.bookstand_shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
@@ -37,13 +37,9 @@ class BookGenShelfGizmo():
         self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, args, 'WINDOW', 'POST_VIEW')
 
         color_ref = bpy.context.preferences.themes[0].user_interface.gizmo_primary
-        self.bookstand_color = [color_ref[0], color_ref[1],color_ref[2], 0.6]
-
+        self.bookstand_color = [color_ref[0], color_ref[1], color_ref[2], 0.6]
 
         self.args = args
-
-
-
 
     def draw(self, op, context):
         if self.bookstand_batch is None or self.line_batch is None:
@@ -55,7 +51,6 @@ class BookGenShelfGizmo():
         self.bookstand_batch.draw(self.bookstand_shader)
         bgl.glDisable(bgl.GL_BLEND)
 
-
         bgl.glLineWidth(3)
         matrix = bpy.context.region_data.perspective_matrix
         self.line_shader.bind()
@@ -63,16 +58,15 @@ class BookGenShelfGizmo():
         self.line_shader.uniform_float("u_Scale", 100)
         self.line_batch.draw(self.line_shader)
 
-
     def update(self, start, end, nrm):
         dir = end - start
         width = dir.length
         dir.normalize()
         rotationMatrix = Matrix([dir, dir.cross(nrm), nrm]).transposed()
-        verts_start= []
+        verts_start = []
         for v in bookstand_verts_start:
             scaled = vector_scale(v, [1, self.depth, self.height])
-            rotated = rotationMatrix @ scaled 
+            rotated = rotationMatrix @ scaled
             verts_start.append(rotated + start)
         verts_end = []
         for v in bookstand_verts_end:
@@ -87,8 +81,8 @@ class BookGenShelfGizmo():
 
         offset = nrm * 0.0001 + start
 
-        lines = [rotationMatrix@Vector((0, self.depth/2, 0))+offset, rotationMatrix@Vector((width, self.depth/2, 0))+offset,\
-             rotationMatrix@Vector((0, -self.depth/2, 0))+offset, rotationMatrix@Vector((width, -self.depth/2, 0))+offset]
+        lines = [rotationMatrix @ Vector((0, self.depth / 2, 0)) + offset, rotationMatrix @ Vector((width, self.depth / 2, 0)) + offset,
+                 rotationMatrix @ Vector((0, -self.depth / 2, 0)) + offset, rotationMatrix @ Vector((width, -self.depth / 2, 0)) + offset]
 
         arc_length = [0, width, 0, width]
 

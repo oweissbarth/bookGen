@@ -12,6 +12,7 @@ from .ui_preview import BookGenShelfPreview
 
 partial = None
 
+
 def remove_previews(previews):
     for p in previews:
         p.remove()
@@ -19,11 +20,13 @@ def remove_previews(previews):
     bpy.ops.object.book_gen_rebuild()
     return None
 
+
 class BookGenShelfProperties(bpy.types.PropertyGroup):
     start: FloatVectorProperty(name="start")
     end: FloatVectorProperty(name="end")
     normal: FloatVectorProperty(name="normal")
     id: IntProperty(name="id")
+
 
 class BookGenProperties(bpy.types.PropertyGroup):
     log = logging.getLogger("bookGen.properties")
@@ -40,8 +43,6 @@ class BookGenProperties(bpy.types.PropertyGroup):
 
         self.log.info("Finished populating shelf in %.4f secs" % (time.time() - time_start))
 
-    
-
     def update_delayed(self, context):
         global partial
         time_start = time.time()
@@ -50,7 +51,6 @@ class BookGenProperties(bpy.types.PropertyGroup):
 
         if not properties.auto_rebuild:
             return
-
 
         for shelf_collection in get_bookgen_collection().children:
             shelf_props = shelf_collection.BookGenShelfProperties
@@ -63,24 +63,22 @@ class BookGenProperties(bpy.types.PropertyGroup):
 
             parameters["seed"] -= shelf_props.id
 
-            if not shelf_props.id in self.previews.keys():
+            if shelf_props.id not in self.previews.keys():
                 preview = BookGenShelfPreview()
                 self.previews.update({shelf_props.id: preview})
             else:
                 preview = self.previews[shelf_props.id]
 
             preview.update(*shelf.get_geometry(), context)
-            
 
         self.log.info("Finished populating shelf in %.4f secs" % (time.time() - time_start))
         properties = get_bookgen_collection().BookGenProperties
-        
+
         if partial is not None and bpy.app.timers.is_registered(partial):
             bpy.app.timers.unregister(partial)
 
         partial = functools.partial(remove_previews, self.previews.values())
         bpy.app.timers.register(partial, first_interval=1.0)
-
 
     def update_outline_active(self, context):
         properties = get_bookgen_collection().BookGenProperties
@@ -102,22 +100,28 @@ class BookGenProperties(bpy.types.PropertyGroup):
     active_shelf: IntProperty(name="active_shelf", update=update_active_shelf)
     outline_active: BoolProperty(name="outline active shelf", default=False, update=update_outline_active)
 
-    #shelf
-    scale: FloatProperty(name="scale", min=0.1, default=1,  update=update_delayed)
+    # shelf
+    scale: FloatProperty(name="scale", min=0.1, default=1, update=update_delayed)
 
     seed: IntProperty(name="seed", default=0, update=update_delayed)
 
-    alignment:  EnumProperty(name="alignment", items=(("0", "fore edge", "align books at the fore edge"), (
+    alignment: EnumProperty(name="alignment", items=(("0", "fore edge", "align books at the fore edge"), (
         "1", "spine", "align books at the spine"), ("2", "center", "align at center")), update=update_immediate)
 
-    lean_amount:  FloatProperty(
+    lean_amount: FloatProperty(
         name="lean amount", subtype="FACTOR", min=.0, soft_max=1.0, update=update_delayed)
 
     lean_direction: FloatProperty(
         name="lean direction", subtype="FACTOR", min=-1, max=1, default=0, update=update_delayed)
 
     lean_angle: FloatProperty(
-        name="lean angle", unit='ROTATION', min=.0, soft_max=radians(30), max=pi / 2.0, default=radians(8), update=update_delayed)
+        name="lean angle",
+        unit='ROTATION',
+        min=.0,
+        soft_max=radians(30),
+        max=pi / 2.0,
+        default=radians(8),
+        update=update_delayed)
     rndm_lean_angle_factor: FloatProperty(
         name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
 
@@ -137,7 +141,12 @@ class BookGenProperties(bpy.types.PropertyGroup):
         name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
 
     cover_thickness: FloatProperty(
-        name="cover thickness", default=0.002, min=.0, step=.02, unit="LENGTH", update=update_delayed) # TODO hinge_inset_guard
+        name="cover thickness",
+        default=0.002,
+        min=.0,
+        step=.02,
+        unit="LENGTH",
+        update=update_delayed)  # TODO hinge_inset_guard
     rndm_cover_thickness_factor: FloatProperty(
         name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
 
@@ -151,8 +160,8 @@ class BookGenProperties(bpy.types.PropertyGroup):
     rndm_spine_curl_factor: FloatProperty(
         name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
 
-    hinge_inset: FloatProperty(
-        name="hinge inset", default=0.001, min=.0, step=.0001, unit="LENGTH", update=update_delayed) #TODO hinge inset guard
+    hinge_inset: FloatProperty(name="hinge inset", default=0.001, min=.0, step=.0001,
+                               unit="LENGTH", update=update_delayed)  # TODO hinge inset guard
     rndm_hinge_inset_factor: FloatProperty(
         name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
 
@@ -163,7 +172,6 @@ class BookGenProperties(bpy.types.PropertyGroup):
 
     subsurf: BoolProperty(
         name="Add Subsurf-Modifier", default=False, update=update_immediate)
-
 
     cover_material: PointerProperty(name="Cover Material", type=bpy.types.Material, update=update_immediate)
 
