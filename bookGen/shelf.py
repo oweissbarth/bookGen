@@ -156,7 +156,7 @@ class Shelf:
 
             offset = 0
             
-            if same_dir and abs(last.lean_angle) >= abs(current.lean_angle) and last.corner_height_right < current.corner_height_left:
+            if same_dir and abs(last.lean_angle) >= abs(current.lean_angle) and last.corner_height_right <= current.corner_height_left:
                 self.log.debug("case 1")
                 offset = sin(abs(last.lean_angle)) * last.height  - (tan(abs(current.lean_angle))*last.corner_height_right - current.width/cos(abs(current.lean_angle)))
             elif same_dir and abs(last.lean_angle) >= abs(current.lean_angle) and last.corner_height_right > current.corner_height_left:
