@@ -20,7 +20,7 @@ class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
     """Regenerate all books"""
     bl_idname = "object.book_gen_rebuild"
     bl_label = "BookGen"
-    bl_options = {'REGISTER'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     """def hinge_inset_guard(self, context):
         if(self.hinge_inset > self.cover_thickness):
@@ -69,7 +69,7 @@ class OBJECT_OT_BookGenRemoveShelf(bpy.types.Operator):
     """Delete the selected shelf"""
     bl_idname = "object.book_gen_remove_shelf"
     bl_label = "BookGen"
-    bl_options = {'REGISTER'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     log = logging.getLogger("bookGen.operator")
 
@@ -111,6 +111,7 @@ class BookGen_SelectShelf(bpy.types.Operator):
     """Define where books should be generated.\nClick on a surface where the generation should start. Click again to set the end point"""
     bl_idname = "object.book_gen_select_shelf"
     bl_label = "Select BookGen Shelf"
+    bl_options = {'REGISTER', 'UNDO'}
     log = logging.getLogger("bookGen.select_shelf")
 
     def __init__(self):
@@ -119,7 +120,7 @@ class BookGen_SelectShelf(bpy.types.Operator):
         self.end_original = None
         self.end_normal = None
         self.start_normal = None
-        self.limit = "None"
+        self.axis_constraint = "None"
 
         self.gizmo = None
         self.outline = None
@@ -131,78 +132,90 @@ class BookGen_SelectShelf(bpy.types.Operator):
 
         x, y = event.mouse_region_x, event.mouse_region_y
         if event.type == 'MOUSEMOVE':
-            if self.start is not None:
-                self.end, self.end_normal = get_click_position_on_object(x, y)
-                if self.end is not None:
-                    self.end_original = self.end.copy()
-
-                    self.apply_limits(context)
-                    self.refresh_preview(context)
-
-                else:
-                    self.gizmo.remove()
-                    self.outline.disable_outline()
-
+            return self.handle_mouse_move(context, x, y)
         elif event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
             # allow navigation
             return {'PASS_THROUGH'}
         elif event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
-            if self.start is None:
-                self.start, self.start_normal = get_click_position_on_object(
-                    x, y)
-                return {'RUNNING_MODAL'}
-            else:
-                if self.end is None:
-                    return {'RUNNING_MODAL'}
-                shelf_id = get_free_shelf_id()
-                parameters = get_shelf_parameters()
-                parameters["seed"] += shelf_id
-                normal = (self.start_normal + self.end_normal) / 2
-                shelf = Shelf("shelf_" + str(shelf_id), self.start,
-                              self.end, normal, parameters)
-                shelf.clean()
-                shelf.fill()
+            return self.handle_confirm(context, x, y)
+        elif event.type in {'RIGHTMOUSE', 'ESC'}:
+            return self.handle_cancel(context)
+        elif (event.type == 'X' or event.type == 'Y' or event.type == 'Z') and event.value == 'PRESS':
+            return self.handle_axis_constraint(context, event.type)
+        return {'RUNNING_MODAL'}
 
-                # set properties for later rebuild
-                shelf_props = get_shelf_collection(
-                    shelf.name).BookGenShelfProperties
-                shelf_props.start = self.start
-                shelf_props.end = self.end
-                shelf_props.normal = normal
-                shelf_props.id = shelf_id
+    def handle_mouse_move(self, context, mouse_x, mouse_y):
+        """
+        Update the gizmo for current mouse position if there is an object under the cursor.
+        If there is no object under the cursor remove the gizmo.
+        """
+        if self.start is not None:
+            self.end, normal = get_click_position_on_object(mouse_x, mouse_y)
+            if self.end is not None:
+                self.end_original = self.end.copy()
+                self.end_normal = normal
+
+                self.apply_limits(context)
+                self.refresh_preview(context)
+
+            else:
                 self.gizmo.remove()
                 self.outline.disable_outline()
-                self.limit_line.remove()
-                shelf.to_collection()
-                return {'FINISHED'}
-        elif event.type in {'RIGHTMOUSE', 'ESC'}:
-            self.gizmo.remove()
-            self.outline.disable_outline()
-            self.limit_line.remove()
-            return {'CANCELLED'}
-        elif event.type == 'X' and event.value == 'PRESS':
-            if self.limit == 'X':
-                self.limit = 'None'
-            else:
-                self.limit = 'X'
-            self.apply_limits(context)
-            self.refresh_preview(context)
+        return {'RUNNING_MODAL'}
 
-        elif event.type == 'Y' and event.value == 'PRESS':
-            if self.limit == 'Y':
-                self.limit = 'None'
-            else:
-                self.limit = 'Y'
-            self.apply_limits(context)
-            self.refresh_preview(context)
+    def handle_confirm(self, _context, mouse_x, mouse_y):
+        """
+        If shelf start position has not been set, get current position under cursor.
+        Otherwise check if there is an object under the cursor. If that's the case collect shelf parameters,
+        create the shelf and add it to the scene.
+        """
 
-        elif event.type == 'Z' and event.value == 'PRESS':
-            if self.limit == 'Z':
-                self.limit = 'None'
-            else:
-                self.limit = 'Z'
-            self.apply_limits(context)
-            self.refresh_preview(context)
+        if self.start is None:
+            self.start, self.start_normal = get_click_position_on_object(
+                mouse_x, mouse_y)
+            return {'RUNNING_MODAL'}
+
+        if self.end is None:
+            return {'RUNNING_MODAL'}
+
+        shelf_id = get_free_shelf_id()
+        parameters = get_shelf_parameters()
+        parameters["seed"] += shelf_id
+        normal = (self.start_normal + self.end_normal) / 2
+        shelf = Shelf("shelf_" + str(shelf_id), self.start,
+                      self.end, normal, parameters)
+        shelf.clean()
+        shelf.fill()
+
+        # set properties for later rebuild
+        shelf_props = get_shelf_collection(
+            shelf.name).BookGenShelfProperties
+        shelf_props.start = self.start
+        shelf_props.end = self.end
+        shelf_props.normal = normal
+        shelf_props.id = shelf_id
+        self.gizmo.remove()
+        self.outline.disable_outline()
+        self.limit_line.remove()
+        shelf.to_collection()
+        return {'FINISHED'}
+
+    def handle_cancel(self, _context):
+        """
+        Remove all gizmos, outlines and constraints
+        """
+        self.gizmo.remove()
+        self.outline.disable_outline()
+        self.limit_line.remove()
+        return {'CANCELLED'}
+
+    def handle_axis_constraint(self, context, axis):
+        if self.axis_constraint == axis:
+            self.axis_constraint = 'None'
+        else:
+            self.axis_constraint = axis
+        self.apply_limits(context)
+        self.refresh_preview(context)
         return {'RUNNING_MODAL'}
 
     def invoke(self, context, _event):
@@ -213,12 +226,14 @@ class BookGen_SelectShelf(bpy.types.Operator):
         self.gizmo = BookGenShelfGizmo(
             self.start, self.end, None, props["book_height"], props["book_depth"], args)
         self.outline = BookGenShelfOutline()
-        self.limit_line = BookGenLimitLine(self.start, self.limit, args)
+        self.limit_line = BookGenLimitLine(self.start, self.axis_constraint, args)
 
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
     def refresh_preview(self, context):
+        if self.start is None or self.end is None:
+            return
         normal = (self.start_normal + self.end_normal) / 2
         shelf_id = get_free_shelf_id()
         parameters = get_shelf_parameters(shelf_id)
@@ -227,20 +242,20 @@ class BookGen_SelectShelf(bpy.types.Operator):
         shelf.fill()
         self.outline.enable_outline(*shelf.get_geometry(), context)
         self.gizmo.update(self.start, self.end, normal)
-        self.limit_line.update(self.start, self.limit)
+        self.limit_line.update(self.start, self.axis_constraint)
 
     def apply_limits(self, _context):
-        if self.limit == 'None' and self.end_original is not None:
+        if self.axis_constraint == 'None' and self.end_original is not None:
             self.end = self.end_original.copy()
             return
 
         self.end = self.end_original.copy()
-        if self.limit == 'X':
+        if self.axis_constraint == 'X':
             self.end[1] = self.start[1]
             self.end[2] = self.start[2]
-        if self.limit == 'Y':
+        if self.axis_constraint == 'Y':
             self.end[0] = self.start[0]
             self.end[2] = self.start[2]
-        if self.limit == 'Z':
+        if self.axis_constraint == 'Z':
             self.end[0] = self.start[0]
             self.end[1] = self.start[1]
