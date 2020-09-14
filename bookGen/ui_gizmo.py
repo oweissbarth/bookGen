@@ -166,7 +166,8 @@ class BookGenShelfFaceGizmo():
         self.batch = batch_for_shader(self.shader, 'TRIS', {"pos": verts})
 
         if self.draw_handler is None:
-            self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, self.args, 'WINDOW', 'POST_VIEW')
+            self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(
+                self.draw, (self.context,), 'WINDOW', 'POST_VIEW')
 
     def remove(self):
         """

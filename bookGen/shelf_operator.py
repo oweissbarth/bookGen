@@ -293,7 +293,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         """ Select shelf called from the UI
 
         Args:
-            _context (bpy.types.Context): the execution context for the operator
+            context (bpy.types.Context): the execution context for the operator
             _event (bpy.type.Event): the invocation event
 
         Returns:
