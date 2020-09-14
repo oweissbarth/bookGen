@@ -16,20 +16,27 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # ======================= END GPL LICENSE BLOCK ========================
 
+"""
+This file contains the book class
+"""
+
+from math import radians, atan
+
 import bpy
 import bmesh
-from mathutils import Vector, Euler, Matrix
+from mathutils import Vector, Matrix
 
-from math import radians, degrees, atan
-
-from .utils import get_bookgen_collection
-from .data.verts import get_verts
+from .data.vertices import get_vertices
 from .data.faces import get_faces
 from .data.uvs import get_uvs
 from .data.creases import get_creases
 
 
 class Book:
+    """
+    This stores information about a single book. It can export the book as blender object
+    or return the raw geometry for previz.
+    """
 
     def __init__(
             self,
@@ -42,7 +49,6 @@ class Book:
             spine_curl,
             hinge_inset,
             hinge_width,
-            book_width,
             lean,
             lean_angle,
             subsurf,
@@ -68,7 +74,9 @@ class Book:
         self.location = Vector([0, 0, 0])
         self.rotation = Vector([0, 0, 0])
 
-        self.verts = get_verts(
+        self.obj = None
+
+        self.vertices = get_vertices(
             page_thickness,
             page_height,
             cover_depth,
@@ -80,7 +88,10 @@ class Book:
             spine_curl)
         self.faces = get_faces()
 
-    def to_object(self):
+    def to_object(self, with_uvs=False):
+        """
+        Exports the book as a blender object
+        """
         def index_to_vert(face):
             lst = []
             for i in face:
@@ -89,53 +100,56 @@ class Book:
 
         mesh = bpy.data.meshes.new("book")
 
-        self.creases = get_creases()
-        self.uvs = get_uvs(
-            self.page_thickness,
-            self.page_height,
-            self.cover_depth,
-            self.cover_height,
-            self.cover_thickness,
-            self.page_depth,
-            self.hinge_inset,
-            self.hinge_width,
-            self.spine_curl)
+        creases = get_creases()
+
+        if with_uvs:
+            uvs = get_uvs(
+                self.page_thickness,
+                self.page_height,
+                self.cover_depth,
+                self.cover_height,
+                self.cover_thickness,
+                self.page_depth,
+                self.hinge_inset,
+                self.hinge_width,
+                self.spine_curl)
 
         self.obj = bpy.data.objects.new("book", mesh)
 
         bm = bmesh.new()
         bm.from_mesh(mesh)
         vert_ob = []
-        for vert in self.verts:
+        for vert in self.vertices:
             vert_ob.append(bm.verts.new(vert))
 
         bm.verts.index_update()
         bm.verts.ensure_lookup_table()
 
-        cl = bm.edges.layers.crease.verify()
-        for c in self.creases:
-            e = bm.edges.new((bm.verts[c[0]], bm.verts[c[1]]))
-            e[cl] = 1.0
+        crease_layer = bm.edges.layers.crease.verify()
+        for crease in creases:
+            edge = bm.edges.new((bm.verts[crease[0]], bm.verts[crease[1]]))
+            edge[crease_layer] = 1.0
 
-        for face in self.faces:
-            f = bm.faces.new(index_to_vert(face))
-            f.smooth = True
+        for face_index in self.faces:
+            face = bm.faces.new(index_to_vert(face_index))
+            face.smooth = True
 
         bm.faces.index_update()
         bm.edges.ensure_lookup_table()
 
-        uv_layer = bm.loops.layers.uv.verify()
-        for (f, uvs) in zip(bm.faces, self.uvs):
-            for (l, uv) in zip(f.loops, uvs):
-                loop_uv = l[uv_layer]
-                loop_uv.uv.x = uv[0]
-                loop_uv.uv.y = uv[1]
+        if with_uvs:
+            uv_layer = bm.loops.layers.uv.verify()
+            for (face, face_uvs) in zip(bm.faces, uvs):
+                for (loop, uv) in zip(face.loops, face_uvs):
+                    loop_uv = loop[uv_layer]
+                    loop_uv.uv.x = uv[0]
+                    loop_uv.uv.y = uv[1]
 
         bm.normal_update()
 
         # calculate auto smooth angle based on spine
-        center = self.verts[-1]
-        side = self.verts[-5]
+        center = self.vertices[-1]
+        side = self.vertices[-5]
         curl = abs(center[1] - side[1])
         width = abs(center[0] - side[0])
         spine_angle = atan(width / curl) * 2
@@ -143,17 +157,17 @@ class Book:
         mesh.use_auto_smooth = True
         mesh.auto_smooth_angle = normal_angle
 
-        if(self.subsurf):
-            self.obj.modifiers.new("subd", type='SUBSURF')
-            self.obj.modifiers['subd'].levels = 1
+        if self.subsurf:
+            self.obj.modifiers.new("Subdivision Surface", type='SUBSURF')
+            self.obj.modifiers['Subdivision Surface'].levels = 1
 
-        if(self.cover_material):
+        if self.cover_material:
             if self.obj.data.materials:
                 self.obj.data.materials[0] = self.cover_material
             else:
                 self.obj.data.materials.append(self.cover_material)
 
-        if(self.page_material):
+        if self.page_material:
             self.obj.data.materials.append(self.page_material)
             bm.faces.ensure_lookup_table()
             bm.faces[0].material_index = 1
@@ -169,5 +183,8 @@ class Book:
         return self.obj
 
     def get_geometry(self):
-        transformed_verts = map(lambda v: self.rotation @ Vector(v) + self.location, self.verts)
+        """
+        Returns the raw geometry of a book
+        """
+        transformed_verts = map(lambda v: self.rotation @ Vector(v) + self.location, self.vertices)
         return transformed_verts, self.faces

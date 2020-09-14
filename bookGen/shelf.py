@@ -1,3 +1,7 @@
+"""
+This file contains the shelf class. It allows to generate books in a shelf-like grouping
+"""
+
 # ====================== BEGIN GPL LICENSE BLOCK ======================
 #    This file is part of the  bookGen-addon for generating books in Blender
 #    Copyright (c) 2014 Oliver Weissbarth
@@ -29,6 +33,9 @@ from .utils import get_shelf_collection, get_bookgen_collection
 
 
 class Shelf:
+    """
+    Describes a shelf-like grouping of books.
+    """
     log = logging.getLogger("bookGen.Shelf")
     origin = Vector((0, 0, 0))
     direction = Vector((1, 0, 0))
@@ -50,7 +57,14 @@ class Shelf:
         self.books = []
         self.align_offset = 0
 
-    def add_book(self, book, first):
+    def add_book(self, book, offset, first):
+        """ Adds a single book at the given offset to the shelf
+
+        Args:
+            book (Book): the book to add
+            offset (float): the offset at which the book is added
+            first (bool): wether it is the first book of the shelf
+        """
 
         self.books.append(book)
 
@@ -74,20 +88,27 @@ class Shelf:
 
         # distribution
 
-        book.location += Vector((cur_offset, 0, 0))
+        book.location += Vector((offset, 0, 0))
         book.location = self.rotation_matrix @ book.location
 
         book.rotation = self.rotation_matrix @ Matrix.Rotation(book.lean_angle, 3, 'Y')
 
         book.location += self.origin
 
-    def to_collection(self):
+    def to_collection(self, with_uvs=False):
+        """ Converts the shelf to a blender collection and adds the books as blender objects
+
+        Args:
+            with_uvs (bool, optional): Whether to generate UVs for the books. Defaults to False.
+        """
         self.collection = get_shelf_collection(self.name)
-        for b in self.books:
-            obj = b.to_object()
+        for book in self.books:
+            obj = book.to_object(with_uvs)
             self.collection.objects.link(obj)
 
     def fill(self):
+        """ Fills the shelf with books
+        """
         cur_width = 0
         cur_offset = 0
 
@@ -104,9 +125,9 @@ class Shelf:
             cur_offset = cos(current.lean_angle) * current.width
         else:
             cur_offset = current.height * sin(abs(current.lean_angle))
-        self.add_book(current, first)
+        self.add_book(current, cur_offset, first)
 
-        while cur_width < self.width:  # TODO add current book width to cur_width
+        while cur_width < self.width:
             self.log.debug("remaining width to be filled: %.3f", (self.width - cur_width))
             params = self.apply_parameters()
             last = current
@@ -172,10 +193,12 @@ class Shelf:
                 self.log.debug("case 1")
                 offset = sin(abs(last.lean_angle)) * last.height - (tan(abs(current.lean_angle)) * \
                              last.corner_height_right - current.width / cos(abs(current.lean_angle)))
-            elif same_dir and abs(last.lean_angle) >= abs(current.lean_angle) and last.corner_height_right > current.corner_height_left:
+            elif same_dir and abs(last.lean_angle) >= abs(current.lean_angle) and \
+                    last.corner_height_right > current.corner_height_left:
                 self.log.debug("case 2")
                 offset = current.corner_height_left / tan(radians(90) - abs(last.lean_angle)) - (
-                    current.corner_height_left / tan(radians(90) - abs(current.lean_angle))) + current.width / cos(abs(current.lean_angle))
+                    current.corner_height_left / tan(radians(90) - abs(current.lean_angle))) + \
+                    current.width / cos(abs(current.lean_angle))
             elif not same_dir and last.lean_angle > current.lean_angle:
                 self.log.debug("case 3")
                 if last.corner_height_right > current.corner_height_left:
@@ -185,14 +208,16 @@ class Shelf:
                     last.corner_height_right / tan(radians(90) - abs(current.lean_angle))
             elif not same_dir and last.lean_angle < current.lean_angle:
                 self.log.debug("case 4")
-                offset = sin(radians(90) - abs(last.lean_angle)) * last.width - (tan(abs(current.lean_angle))
-                                                                                 * sin(abs(last.lean_angle)) * last.width - current.width / cos(abs(current.lean_angle)))
+                offset = sin(radians(90) - abs(last.lean_angle)) * last.width - \
+                    (tan(abs(current.lean_angle)) * sin(abs(last.lean_angle)) *
+                     last.width - current.width / cos(abs(current.lean_angle)))
             elif same_dir and abs(last.lean_angle) < abs(current.lean_angle):
                 self.log.debug("case 5")
-                offset = (cos(current.lean_angle) * current.width) + (sin(current.lean_angle)
-                                                                      * current.width / tan(radians(90) - last.lean_angle))
+                offset = (cos(current.lean_angle) * current.width) + \
+                    (sin(current.lean_angle) * current.width / tan(radians(90) - last.lean_angle))
             else:
                 self.log.warning("leaning hit a unusual case. This should not happen")
+                return
 
             if switched:
                 last, current = current, last
@@ -211,32 +236,40 @@ class Shelf:
             cur_offset += offset
 
             if cur_width < self.width:
-                self.add_book(current, first)
+                self.add_book(current, cur_offset, first)
 
             first = False
 
     def clean(self):
+        """ Remove all object from the shelf and remove meshes from the scene
+        """
         col = None
         if self.collection is not None:
             col = self.collection
         else:
             bookgen = get_bookgen_collection()
-            for c in bookgen.children:
-                if c.name == self.name:
-                    col = c
+            for child in bookgen.children:
+                if child.name == self.name:
+                    col = child
         if col is None:
             return
         for obj in col.objects:
             col.objects.unlink(obj)
             bpy.data.meshes.remove(obj.data)
+        # bpy.ops.object.delete({"selected_objects": col.objects})
 
     def get_geometry(self):
+        """ Returns the raw geometry of the shelf for previz
+
+        Returns:
+            (List[Vector], List[Vector]): a tuple containing a list of vertices and a list of indices
+        """
         index_offset = 0
         verts = []
         faces = []
 
-        for b in self.books:
-            b_verts, b_faces = b.get_geometry()
+        for book in self.books:
+            b_verts, b_faces = book.get_geometry()
             verts += b_verts
             offset_faces = map(
                 lambda f: [
@@ -300,6 +333,5 @@ class Shelf:
                 "spine_curl": spine_curl,
                 "hinge_inset": hinge_inset,
                 "hinge_width": hinge_width,
-                "book_width": book_width,
                 "lean": lean,
                 "lean_angle": lean_angle}

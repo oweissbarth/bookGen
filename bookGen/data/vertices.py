@@ -1,7 +1,11 @@
+"""
+Contains the parameterized vertices of a single book.
+"""
+
 from math import atan, cos, tan
 
 
-def get_verts(
+def get_vertices(
         page_thickness,
         page_height,
         cover_depth,
@@ -11,7 +15,9 @@ def get_verts(
         hinge_inset,
         hinge_width,
         spine_curl):
-
+    """
+    Returns the vertices given the dimensions
+    """
     spine_angle = atan(spine_curl / cover_thickness)
     spine_offset_center = cover_thickness * cos(spine_angle)
     spine_offset_side = tan(spine_angle / 2) * cover_thickness

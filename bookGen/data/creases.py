@@ -1,4 +1,12 @@
+"""
+Contains the creased edges of a single book.
+"""
+
+
 def get_creases():
+    """
+    Returns the creased edges of a single book.
+    """
     return [
         [2, 0],
         [1, 3],

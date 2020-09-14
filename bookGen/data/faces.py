@@ -1,4 +1,12 @@
+"""
+Contains the face indices of a single book
+"""
+
+
 def get_faces():
+    """
+    Returns the face indices of a single book
+    """
     return [
         [0, 1, 3, 2],
         [6, 7, 5, 4],

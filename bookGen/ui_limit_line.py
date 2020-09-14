@@ -1,24 +1,23 @@
-import gpu
+"""
+Contains a class for visualizing the axis constraint
+"""
+
+import logging
 
 import bpy
 import gpu
 import bgl
 from gpu_extras.batch import batch_for_shader
 
-import mathutils
-from mathutils import Vector, Matrix
-
-from .utils import vector_scale
-import logging
-
-from .utils import bookGen_directory
-
 
 class BookGenLimitLine():
+    """
+    Draws a visualization of the axis constraint
+    """
 
     log = logging.getLogger("bookGen.limit_line")
 
-    def __init__(self, start, direction, args):
+    def __init__(self, direction, context):
         self.shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
 
         if direction == 'X':
@@ -30,20 +29,32 @@ class BookGenLimitLine():
         self.batch = None
 
         self.draw_handler = None
-        self.args = args
+        self.context = context
 
-        self.limit = args[1].space_data.clip_end
+        self.limit = context.space_data.clip_end
 
-    def draw(self, op, context):
+    def draw(self, _context):
+        """Draws a visualization of the axis constraint
+
+        Args:
+            _context (bpy.types.Context): the execution context
+        """
         if self.batch is None:
             return
 
         self.shader.bind()
+        bgl.glLineWidth(2)
         self.shader.uniform_float("color", self.line_color)
         self.batch.draw(self.shader)
+        bgl.glLineWidth(1)
 
     def update(self, start, direction):
+        """ Updates the axis constraint visualization based on the current configuration
 
+        Args:
+            start (mathutils.Vector): the starting position of the axis constraint line
+            direction (mathutils.Vector): the direction of the axis constraint line
+        """
         if direction == 'None':
             self.batch = None
             return
@@ -61,9 +72,13 @@ class BookGenLimitLine():
         self.batch = batch_for_shader(self.shader, 'LINES', {"pos": verts})
 
         if self.draw_handler is None:
-            self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, self.args, 'WINDOW', 'POST_VIEW')
+            self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(
+                self.draw, (self.context,), 'WINDOW', 'POST_VIEW')
 
     def remove(self):
+        """
+        Disables the axis constraint visualization by removing the draw handler
+        """
         self.log.debug("removing draw handler")
         if self.draw_handler is not None:
             bpy.types.SpaceView3D.draw_handler_remove(self.draw_handler, 'WINDOW')

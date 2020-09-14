@@ -1,11 +1,13 @@
+"""
+This file contains all operators to add, update, and remove book shelves
+"""
 import logging
 import time
 
 import bpy
 
 from .shelf import Shelf
-from .utils import (obj_ray_cast,
-                    get_bookgen_collection,
+from .utils import (get_bookgen_collection,
                     get_shelf_parameters,
                     get_shelf_collection,
                     get_click_position_on_object,
@@ -16,11 +18,11 @@ from .ui_outline import BookGenShelfOutline
 from .ui_limit_line import BookGenLimitLine
 
 
-class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
+class BOOKGEN_OT_ShelfRebuild(bpy.types.Operator):
     """Regenerate all books"""
-    bl_idname = "object.book_gen_rebuild"
+    bl_idname = "bookgen.rebuild_shelves"
     bl_label = "BookGen"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO_GROUPED'}
 
     """def hinge_inset_guard(self, context):
         if(self.hinge_inset > self.cover_thickness):
@@ -28,23 +30,48 @@ class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
 
     log = logging.getLogger("bookGen.operator")
 
-    def check(self, _context):
-        self.run()
-
     def invoke(self, _context, _event):
+        """ Rebuild shelves called from the UI
+
+        Args:
+            _context (bpy.types.Context): the execution context for the operator
+            _event (bpy.type.Event): the invocation event
+
+        Returns:
+            Set[str]: operator return code
+        """
         self.run()
         return {'FINISHED'}
 
     def execute(self, _context):
+        """ Rebuild shelves called from a script
+
+        Args:
+            _context (bpy.types.Context): the execution context for the operator
+
+        Returns:
+            Set[str]: operator return code
+        """
         self.run()
         return {'FINISHED'}
 
     @classmethod
     def poll(cls, context):
+        """ Check if we are in object mode before calling the operator
+
+        Args:
+            context (bpy.types.Context): the execution context for the operator
+
+        Returns:
+            bool: True if the operator can be executed, otherwise false.
+        """
         return context.mode == 'OBJECT'
 
     def run(self):
-
+        """
+        Collect new shelf parameters, remove existing books,
+        generate new books based on the parameters and add them to the  scene.
+        """
         time_start = time.time()
         parameters = get_shelf_parameters()
 
@@ -65,30 +92,57 @@ class OBJECT_OT_BookGenRebuild(bpy.types.Operator):
         self.log.info("Finished populating shelf in %.4f secs", (time.time() - time_start))
 
 
-class OBJECT_OT_BookGenRemoveShelf(bpy.types.Operator):
+class BOOKGEN_OT_RemoveShelf(bpy.types.Operator):
     """Delete the selected shelf"""
-    bl_idname = "object.book_gen_remove_shelf"
+    bl_idname = "bookgen.remove_shelf"
     bl_label = "BookGen"
     bl_options = {'REGISTER', 'UNDO'}
 
     log = logging.getLogger("bookGen.operator")
 
-    def check(self, _context):
-        self.run()
-
     def invoke(self, _context, _event):
+        """ Remove shelves called from the UI
+
+        Args:
+            _context (bpy.types.Context): the execution context for the operator
+            _event (bpy.type.Event): the invocation event
+
+        Returns:
+            Set[str]: operator return code
+        """
         self.run()
         return {'FINISHED'}
 
     def execute(self, _context):
+        """ Remove shelves called from a script
+
+        Args:
+            _context (bpy.types.Context): the execution context for the operator
+
+        Returns:
+            Set[str]: operator return code
+        """
         self.run()
         return {'FINISHED'}
 
     @classmethod
     def poll(cls, context):
+        """ Check if we are in object mode before calling the operator
+
+        Args:
+            context (bpy.types.Context): the execution context for the operator
+
+        Returns:
+            bool: True if the operator can be executed, otherwise false.
+        """
         return context.mode == 'OBJECT'
 
     def run(self):
+        """
+        Remove the active shelf if it exists. Unlink all books in it from the collection.
+        Update the active shelf id.
+        """
+
         parent = get_bookgen_collection()
         active = parent.BookGenProperties.active_shelf
         if active < 0 or active >= len(parent.children):
@@ -107,9 +161,13 @@ class OBJECT_OT_BookGenRemoveShelf(bpy.types.Operator):
             parent.BookGenProperties.active_shelf += 1
 
 
-class BookGen_SelectShelf(bpy.types.Operator):
-    """Define where books should be generated.\nClick on a surface where the generation should start. Click again to set the end point"""
-    bl_idname = "object.book_gen_select_shelf"
+class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
+    """
+    Define where books should be generated.
+    Click on a surface where the generation should start.
+    Click again to set the end point
+    """
+    bl_idname = "bookgen.select_shelf"
     bl_label = "Select BookGen Shelf"
     bl_options = {'REGISTER', 'UNDO'}
     log = logging.getLogger("bookGen.select_shelf")
@@ -127,20 +185,28 @@ class BookGen_SelectShelf(bpy.types.Operator):
         self.limit_line = None
 
     def modal(self, context, event):
+        """ Handle modal events
+
+        Args:
+            context (bpy.types.Context): the execution context of the operator
+            event (bpy.types.Event): the modal event
+
+        Returns:
+            Set(str): the operator return code
+        """
         if context.area:
             context.area.tag_redraw()
 
-        x, y = event.mouse_region_x, event.mouse_region_y
+        mouse_x, mouse_y = event.mouse_region_x, event.mouse_region_y
         if event.type == 'MOUSEMOVE':
-            return self.handle_mouse_move(context, x, y)
-        elif event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
-            # allow navigation
+            return self.handle_mouse_move(context, mouse_x, mouse_y)
+        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
             return {'PASS_THROUGH'}
-        elif event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
-            return self.handle_confirm(context, x, y)
-        elif event.type in {'RIGHTMOUSE', 'ESC'}:
+        if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
+            return self.handle_confirm(context, mouse_x, mouse_y)
+        if event.type in {'RIGHTMOUSE', 'ESC'}:
             return self.handle_cancel(context)
-        elif (event.type == 'X' or event.type == 'Y' or event.type == 'Z') and event.value == 'PRESS':
+        if (event.type == 'X' or event.type == 'Y' or event.type == 'Z') and event.value == 'PRESS':
             return self.handle_axis_constraint(context, event.type)
         return {'RUNNING_MODAL'}
 
@@ -210,6 +276,11 @@ class BookGen_SelectShelf(bpy.types.Operator):
         return {'CANCELLED'}
 
     def handle_axis_constraint(self, context, axis):
+        """
+        Set the axis constraint to the given axis.
+        If it is already constraint to this axis, reset the constraint.
+        Update preview and constraint lines.
+        """
         if self.axis_constraint == axis:
             self.axis_constraint = 'None'
         else:
@@ -219,19 +290,29 @@ class BookGen_SelectShelf(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
     def invoke(self, context, _event):
+        """ Select shelf called from the UI
 
-        args = (self, context)
+        Args:
+            _context (bpy.types.Context): the execution context for the operator
+            _event (bpy.type.Event): the invocation event
+
+        Returns:
+            Set[str]: operator return code
+        """
 
         props = get_shelf_parameters()
-        self.gizmo = BookGenShelfGizmo(
-            self.start, self.end, None, props["book_height"], props["book_depth"], args)
+        self.gizmo = BookGenShelfGizmo(props["book_height"], props["book_depth"], context)
         self.outline = BookGenShelfOutline()
-        self.limit_line = BookGenLimitLine(self.start, self.axis_constraint, args)
+        self.limit_line = BookGenLimitLine(self.axis_constraint, context)
 
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
     def refresh_preview(self, context):
+        """
+        Collect the current parameters of the shelf,
+        generate the books and update the gizmo and outline accordingly.
+        """
         if self.start is None or self.end is None:
             return
         normal = (self.start_normal + self.end_normal) / 2
@@ -245,6 +326,10 @@ class BookGen_SelectShelf(bpy.types.Operator):
         self.limit_line.update(self.start, self.axis_constraint)
 
     def apply_limits(self, _context):
+        """
+        If there is an axis constraint apply it to the end position.
+        If there is none, reset the end position to the original.
+        """
         if self.axis_constraint == 'None' and self.end_original is not None:
             self.end = self.end_original.copy()
             return

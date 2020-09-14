@@ -1,9 +1,16 @@
+"""
+This file contains the UI panels.
+"""
+
 import bpy
 
 from .utils import get_bookgen_collection
 
 
-class BookGen_ShelfSettings(bpy.types.Panel):
+class BOOKGEN_PT_ShelfSettings(bpy.types.Panel):
+    """
+    Draws the main shelf settings panel.
+    """
     bl_label = "Properties"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -11,9 +18,16 @@ class BookGen_ShelfSettings(bpy.types.Panel):
     bl_options = set()
 
     def subdraw(self, context):
-        pass
+        """
+        Can be overwritten in subclass
+        """
 
     def draw(self, context):
+        """ Draws the shelf settings panel
+
+        Args:
+            context (bpy.types.Context): the execution context
+        """
         self.subdraw(context)
         properties = get_bookgen_collection().BookGenProperties
         layout = self.layout
@@ -29,15 +43,23 @@ class BookGen_ShelfSettings(bpy.types.Panel):
         layout.prop(properties, "page_material", text="Page Material")
 
 
-class OBJECT_PT_BookGen_LeaningPanel(bpy.types.Panel):
+class BOOKGEN_PT_LeaningPanel(bpy.types.Panel):
+    """
+    Draws the leaning settings panel.
+    """
     bl_label = "Leaning"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "BookGen"
     bl_options = set()
-    bl_parent_id = "OBJECT_PT_BookGenPanel"
+    bl_parent_id = "BOOKGEN_PT_Panel"
 
-    def draw(self, context):
+    def draw(self, _context):
+        """ Draws the leaning settings panel.
+
+        Args:
+            context (bpy.types.Context): the execution context
+        """
         properties = get_bookgen_collection().BookGenProperties
         layout = self.layout
         layout.use_property_split = True
@@ -49,15 +71,23 @@ class OBJECT_PT_BookGen_LeaningPanel(bpy.types.Panel):
         col.prop(properties, "rndm_lean_angle_factor", text="Random")
 
 
-class OBJECT_PT_BookGen_ProportionsPanel(bpy.types.Panel):
+class BOOKGEN_PT_ProportionsPanel(bpy.types.Panel):
+    """
+    Draws book proportions panel.
+    """
     bl_label = "Proportions"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "BookGen"
     bl_options = set()
-    bl_parent_id = "OBJECT_PT_BookGenPanel"
+    bl_parent_id = "BOOKGEN_PT_Panel"
 
-    def draw(self, context):
+    def draw(self, _context):
+        """ Draws the proportion settings panel
+
+        Args:
+            context (bpy.types.Context): the execution context
+        """
         properties = get_bookgen_collection().BookGenProperties
         layout = self.layout
         layout.use_property_split = True
@@ -75,15 +105,23 @@ class OBJECT_PT_BookGen_ProportionsPanel(bpy.types.Panel):
         col.prop(properties, "rndm_book_width_factor", text="Random")
 
 
-class OBJECT_PT_BookGen_DetailsPanel(bpy.types.Panel):
+class BOOKGEN_PT_DetailsPanel(bpy.types.Panel):
+    """
+    Draws the book details panel
+    """
     bl_label = "Details"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "BookGen"
     bl_options = {'DEFAULT_CLOSED'}
-    bl_parent_id = "OBJECT_PT_BookGenPanel"
+    bl_parent_id = "BOOKGEN_PT_Panel"
 
-    def draw(self, context):
+    def draw(self, _context):
+        """ Draws the detail settings panel
+
+        Args:
+            context (bpy.types.Context): the execution context
+        """
         properties = get_bookgen_collection().BookGenProperties
         layout = self.layout
         layout.use_property_split = True
@@ -113,7 +151,10 @@ class OBJECT_PT_BookGen_DetailsPanel(bpy.types.Panel):
         layout.prop(properties, "subsurf")
 
 
-class OBJECT_PT_BookGenPanel(BookGen_ShelfSettings):
+class BOOKGEN_PT_Panel(BOOKGEN_PT_ShelfSettings):
+    """
+    Generic BookGen panel
+    """
     bl_label = "Properties"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -121,31 +162,42 @@ class OBJECT_PT_BookGenPanel(BookGen_ShelfSettings):
     bl_options = set()
 
 
-class OBJECT_PT_BookGen_MainPanel(bpy.types.Panel):
+class BOOKGEN_PT_MainPanel(bpy.types.Panel):
+    """
+    Draws the main bookgen panel
+    """
     bl_label = "Main"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "BookGen"
     bl_options = set()
 
-    def draw(self, context):
+    def draw(self, _context):
+        """ Draws the main panel
+
+        Args:
+            context (bpy.types.Context): the execution context
+        """
         properties = get_bookgen_collection().BookGenProperties
         layout = self.layout
-        layout.operator("object.book_gen_select_shelf", text="Add shelf")
-        layout.operator("object.book_gen_select_shelf_faces", text="Add shelf face")
-        layout.operator("object.book_gen_select_stack", text="Add stack")
-        layout.operator("object.book_gen_rebuild", text="rebuild")
+        layout.operator("bookgen.select_shelf", text="Add shelf")
+        #layout.operator("object.book_gen_select_shelf_faces", text="Add shelf face")
+        #layout.operator("object.book_gen_select_stack", text="Add stack")
+        layout.operator("bookgen.rebuild_shelves", text="rebuild")
         layout.prop(properties, "auto_rebuild")
         layout.label(text="Shelves")
         row = layout.row()
         row.template_list("BOOKGEN_UL_Shelves", "", get_bookgen_collection(), "children",
                           get_bookgen_collection().BookGenProperties, "active_shelf")
         col = row.column(align=True)
-        props = col.operator("object.book_gen_remove_shelf", icon="X", text="")
+        col.operator("bookgen.remove_shelf", icon="X", text="")
         col.prop(properties, "outline_active", toggle=True, icon="SHADING_BBOX", icon_only=True)
 
 
-class OBJECT_PT_BookGen_ShelfOverridePanel(BookGen_ShelfSettings):
+class BOOKGEN_PT_ShelfOverridePanel(BOOKGEN_PT_ShelfSettings):
+    """
+    Draws the shelf override panel
+    """
     bl_label = "Per Shelf Override"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -153,10 +205,20 @@ class OBJECT_PT_BookGen_ShelfOverridePanel(BookGen_ShelfSettings):
     bl_options = {"DEFAULT_CLOSED"}
 
     def draw_header(self, _context):
+        """ Draws the override panel header
+
+        Args:
+            context (bpy.types.Context): the execution context
+        """
         properties = get_bookgen_collection().BookGenProperties
         self.layout.prop(properties, "auto_rebuild", text="")
 
     def subdraw(self, context):
+        """ Draws the override panel
+
+        Args:
+            context (bpy.types.Context): the execution context
+        """
         properties = get_bookgen_collection().BookGenProperties
         layout = self.layout
         layout.active = properties.auto_rebuild

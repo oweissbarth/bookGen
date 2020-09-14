@@ -1,10 +1,20 @@
+"""
+This file contains the property definitions used to describe the book and shelf layouts.
+"""
+
 from math import pi, radians
 import logging
 import time
 import functools
 
 import bpy
-from bpy.props import FloatProperty, IntProperty, EnumProperty, BoolProperty, FloatVectorProperty, PointerProperty
+from bpy.props import (
+    FloatProperty,
+    IntProperty,
+    EnumProperty,
+    BoolProperty,
+    FloatVectorProperty,
+    PointerProperty)
 
 from .utils import get_bookgen_collection, get_shelf_collection_by_index, get_shelf_parameters
 from .shelf import Shelf
@@ -15,14 +25,21 @@ partial = None
 
 
 def remove_previews(previews):
-    for p in previews:
-        p.remove()
+    """
+    Remove previews and rebuild all books.
+    """
+    for preview in previews:
+        preview.remove()
 
-    bpy.ops.object.book_gen_rebuild()
+    bpy.ops.bookgen.rebuild_shelves()
+    bpy.ops.ed.undo_push()
     return None
 
 
 class BookGenShelfProperties(bpy.types.PropertyGroup):
+    """
+    This describes how a shelf is positioned in 3D space.
+    """
     start: FloatVectorProperty(name="start")
     end: FloatVectorProperty(name="end")
     normal: FloatVectorProperty(name="normal")
@@ -30,21 +47,34 @@ class BookGenShelfProperties(bpy.types.PropertyGroup):
 
 
 class BookGenProperties(bpy.types.PropertyGroup):
+    """
+    This contains the settings of a shelf including book-shape, alignment and leaning.
+    """
     log = logging.getLogger("bookGen.properties")
     outline = BookGenShelfOutline()
     previews = {}
     f = None
 
     def update_immediate(self, _context):
+        """
+        Updates the scene using the settings in this property group.
+        """
         time_start = time.time()
         properties = get_bookgen_collection().BookGenProperties
 
         if properties.auto_rebuild:
-            bpy.ops.object.book_gen_rebuild()
+            bpy.ops.bookgen.rebuild_shelves()
+            # bpy.ops.ed.undo_push()
 
         self.log.info("Finished populating shelf in %.4f secs", (time.time() - time_start))
 
     def update_delayed(self, context):
+        """
+        Generates a preview of the current shelve configuration and draw it.
+        Sets up a timer to update the scene after a delay of 1 second
+        """
+        # self.update_immediate(context)
+        # return
         global partial
         time_start = time.time()
         parameters = get_shelf_parameters()
@@ -82,6 +112,10 @@ class BookGenProperties(bpy.types.PropertyGroup):
         bpy.app.timers.register(partial, first_interval=1.0)
 
     def update_outline_active(self, context):
+        """
+        If the outline was activated, generate the shelf and draw the outline.
+        Otherwise disable the outline.
+        """
         properties = get_bookgen_collection().BookGenProperties
         if properties.outline_active and properties.active_shelf != -1:
             shelf_collection = get_shelf_collection_by_index(properties.active_shelf)
@@ -93,12 +127,9 @@ class BookGenProperties(bpy.types.PropertyGroup):
         else:
             self.outline.disable_outline()
 
-    def update_active_shelf(self, context):
-        self.update_outline_active(context)
-
     # general
     auto_rebuild: BoolProperty(name="auto rebuild", default=True)
-    active_shelf: IntProperty(name="active_shelf", update=update_active_shelf)
+    active_shelf: IntProperty(name="active_shelf", update=update_outline_active)
     outline_active: BoolProperty(name="outline active shelf", default=False, update=update_outline_active)
 
     # shelf
@@ -147,7 +178,7 @@ class BookGenProperties(bpy.types.PropertyGroup):
         min=.0,
         step=.02,
         unit="LENGTH",
-        update=update_delayed)  # TODO hinge_inset_guard
+        update=update_delayed)
     rndm_cover_thickness_factor: FloatProperty(
         name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
 
@@ -162,7 +193,7 @@ class BookGenProperties(bpy.types.PropertyGroup):
         name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
 
     hinge_inset: FloatProperty(name="hinge inset", default=0.001, min=.0, step=.0001,
-                               unit="LENGTH", update=update_delayed)  # TODO hinge inset guard
+                               unit="LENGTH", update=update_delayed)
     rndm_hinge_inset_factor: FloatProperty(
         name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
 

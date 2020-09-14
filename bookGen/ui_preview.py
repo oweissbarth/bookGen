@@ -1,29 +1,30 @@
-import gpu
+"""
+Contains the class for drawing a preview of a book grouping
+"""
+
+import logging
 
 import bpy
 import gpu
 import bgl
 from gpu_extras.batch import batch_for_shader
-
-import mathutils
-from mathutils import Vector, Matrix
-
-from .utils import vector_scale
-import logging
+from mathutils import Vector
 
 from .utils import bookGen_directory
 
 
 class BookGenShelfPreview():
+    """ Draws a preview of a group of books
+    """
 
     log = logging.getLogger("bookGen.preview")
 
     def __init__(self):
-        with open(bookGen_directory + "/shaders/simple_flat.vert") as fp:
-            vertex_shader = fp.read()
+        with open(bookGen_directory + "/shaders/simple_flat.vert") as file:
+            vertex_shader = file.read()
 
-        with open(bookGen_directory + "/shaders/simple_flat.frag") as fp:
-            fragment_shader = fp.read()
+        with open(bookGen_directory + "/shaders/simple_flat.frag") as file:
+            fragment_shader = file.read()
 
         self.shader = gpu.types.GPUShader(vertex_shader, fragment_shader)
 
@@ -32,12 +33,19 @@ class BookGenShelfPreview():
         self.draw_handler = None
         self.color = [0.8, 0.8, 0.8]
 
-    def draw(self, op, context):
+    def draw(self, context):
+        """ Draws the preview based on the current configuration
+
+        Args:
+            _op ([type]): [description]
+            context ([type]): [description]
+        """
+
         if self.batch is None:
             return
 
-        view_projection_matrix = bpy.context.region_data.perspective_matrix
-        normal_matrix = bpy.context.region_data.view_matrix.inverted().transposed()
+        view_projection_matrix = context.region_data.perspective_matrix
+        normal_matrix = context.region_data.view_matrix.inverted().transposed()
 
         self.shader.bind()
         bgl.glEnable(bgl.GL_DEPTH_TEST)
@@ -49,6 +57,13 @@ class BookGenShelfPreview():
         bgl.glDisable(bgl.GL_DEPTH_TEST)
 
     def update(self, verts, faces, context):
+        """ Updates the vertices and faces of the preview
+
+        Args:
+            verts (List[Vector]): vertices of the mesh to preview in world-space
+            faces (List[Vector]): faces indices of the mesh to preview
+            context (bpy.types.Context): the blender context in which the preview is drawn
+        """
 
         normals = []
         vertices = []
@@ -63,9 +78,12 @@ class BookGenShelfPreview():
 
         if self.draw_handler is None:
             self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(
-                self.draw, (self, context), 'WINDOW', 'POST_VIEW')
+                self.draw, (context, ), 'WINDOW', 'POST_VIEW')
 
     def remove(self):
+        """
+        Remove the preview by removing the draw handler
+        """
         self.log.debug("removing draw handler")
         if self.draw_handler is not None:
             bpy.types.SpaceView3D.draw_handler_remove(self.draw_handler, 'WINDOW')

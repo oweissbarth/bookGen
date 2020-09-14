@@ -16,23 +16,26 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # ======================= END GPL LICENSE BLOCK ========================
 
+"""
+BookGen is a add-on for the 3D graphics software Blender. It allows to procedurally generate books.
+"""
+
+from bpy.app.handlers import persistent
 
 from .properties import BookGenProperties, BookGenShelfProperties
-from os.path import splitext
 from .utils import get_bookgen_collection
 from .shelf_list import BOOKGEN_UL_Shelves
 from .panel import (
-    OBJECT_PT_BookGenPanel,
-    OBJECT_PT_BookGen_MainPanel,
-    OBJECT_PT_BookGen_LeaningPanel,
-    OBJECT_PT_BookGen_ProportionsPanel,
-    OBJECT_PT_BookGen_DetailsPanel,
-    OBJECT_PT_BookGen_ShelfOverridePanel)
-from .operator import (
-    OBJECT_OT_BookGenRebuild,
-    BookGen_SelectShelf,
-    OBJECT_OT_BookGenRemoveShelf)
-from bpy.app.handlers import persistent
+    BOOKGEN_PT_Panel,
+    BOOKGEN_PT_MainPanel,
+    BOOKGEN_PT_LeaningPanel,
+    BOOKGEN_PT_ProportionsPanel,
+    BOOKGEN_PT_DetailsPanel,
+    BOOKGEN_PT_ShelfOverridePanel)
+from .shelf_operator import (
+    BOOKGEN_OT_ShelfRebuild,
+    BOOKGEN_OT_SelectShelf,
+    BOOKGEN_OT_RemoveShelf)
 
 bl_info = {
     "name": "BookGen",
@@ -49,19 +52,22 @@ bl_info = {
 classes = [
     BookGenProperties,
     BookGenShelfProperties,
-    OBJECT_OT_BookGenRebuild,
-    OBJECT_OT_BookGenRemoveShelf,
-    OBJECT_PT_BookGen_MainPanel,
-    OBJECT_PT_BookGenPanel,
-    OBJECT_PT_BookGen_LeaningPanel,
-    OBJECT_PT_BookGen_ProportionsPanel,
-    OBJECT_PT_BookGen_DetailsPanel,
-    BookGen_SelectShelf,
+    BOOKGEN_OT_ShelfRebuild,
+    BOOKGEN_OT_RemoveShelf,
+    BOOKGEN_PT_MainPanel,
+    BOOKGEN_PT_Panel,
+    BOOKGEN_PT_LeaningPanel,
+    BOOKGEN_PT_ProportionsPanel,
+    BOOKGEN_PT_DetailsPanel,
+    BOOKGEN_OT_SelectShelf,
     BOOKGEN_UL_Shelves
 ]
 
 
 def register():
+    """
+    Register all custom operators, panels, ui-lists and properties.
+    """
     from bpy.utils import register_class
     import bpy
 
@@ -71,19 +77,26 @@ def register():
     bpy.types.Collection.BookGenProperties = bpy.props.PointerProperty(type=BookGenProperties)
     bpy.types.Collection.BookGenShelfProperties = bpy.props.PointerProperty(type=BookGenShelfProperties)
 
-    bpy.app.handlers.load_post.append(bookGen_startup)
+    bpy.app.handlers.load_post.append(bookgen_startup)
 
 
 def unregister():
+    """
+    Unregister all custom operators, panels, ui-lists and properties.
+
+    """
     import bpy
     from bpy.utils import unregister_class
     for cls in reversed(classes):
         unregister_class(cls)
-    bpy.app.handlers.load_post.remove(bookGen_startup)
+    bpy.app.handlers.load_post.remove(bookgen_startup)
 
 
 @persistent
-def bookGen_startup(scene):
+def bookgen_startup(_scene):
+    """
+    Ensure that the outline is disabled on start-up.
+    """
     collection = get_bookgen_collection(create=False)
     if collection is not None:
         collection.BookGenProperties.outline_active = False

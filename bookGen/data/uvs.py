@@ -1,3 +1,8 @@
+"""
+Contains the parameterized uvs of a single book.
+"""
+
+
 def get_uvs(
         page_thickness,
         page_height,
@@ -9,7 +14,9 @@ def get_uvs(
         hinge_width,
         spine_curl,
         margin=0.02):
-
+    """
+    Returns the parameterized uvs of a single book.
+    """
     # generate all islands starting at left bottom corner (0,0)
     top_face = 0
     top = [[0, 0], [page_height, 0], [page_height, page_thickness], [0, page_thickness]]
