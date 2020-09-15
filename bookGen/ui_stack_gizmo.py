@@ -113,7 +113,7 @@ class BookGenStackGizmo():
             ARROW_HEAD_LENGTH = 0.02
             forward_vertices = []
 
-            rotation_matrix = Matrix([forward.cross(up), -forward, up]).transposed()
+            rotation_matrix = Matrix([forward.cross(up), forward, up]).transposed()
 
             forward_vertices.append(rotation_matrix @ Vector((-ARROW_WIDTH / 2, 0, 0)) + origin)
             forward_vertices.append(rotation_matrix @ Vector((ARROW_WIDTH / 2, ARROW_LENGTH, 0)) + origin)

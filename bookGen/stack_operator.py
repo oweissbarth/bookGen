@@ -130,7 +130,10 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         if self.forward is None:
             print("setting forward")
             front, _ = get_click_position_on_object(mouse_x, mouse_y)
-            self.forward = (self.origin - front).normalized()
+            original_direction = front - self.origin
+            distance = original_direction.dot(self.origin_normal)
+            projected_front = front - distance * self.origin_normal
+            self.forward = (projected_front - self.origin).normalized()
             return {'RUNNING_MODAL'}
 
         shelf_id = get_free_stack_id()
@@ -203,7 +206,10 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
                 mouse_x, mouse_y)
             if front is None:
                 return
-            forward = (self.origin - front).normalized()
+            original_direction = front - self.origin
+            distance = original_direction.dot(self.origin_normal)
+            projected_front = front - distance * self.origin_normal
+            forward = (projected_front - self.origin).normalized()
             self.gizmo.update(self.origin, forward, self.origin_normal, None)
             return
 
