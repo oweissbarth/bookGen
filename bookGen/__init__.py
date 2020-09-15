@@ -41,6 +41,8 @@ from .stack_operator import (
     BOOKGEN_OT_SelectStack
 )
 
+from .preferences import BOOKGEN_AddonPreferences
+
 bl_info = {
     "name": "BookGen",
     "description": "Generate books to fill shelves",
@@ -65,7 +67,8 @@ classes = [
     BOOKGEN_PT_DetailsPanel,
     BOOKGEN_OT_SelectShelf,
     BOOKGEN_UL_Shelves,
-    BOOKGEN_OT_SelectStack
+    BOOKGEN_OT_SelectStack,
+    BOOKGEN_AddonPreferences
 ]
 
 

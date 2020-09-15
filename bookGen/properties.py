@@ -55,6 +55,17 @@ class BookGenProperties(bpy.types.PropertyGroup):
     previews = {}
     f = None
 
+    def update(self, context):
+        """ Use immediate or lazy update based on add-on preferences
+
+        Args:
+            context (bpy.types.Context): the execution context
+        """
+        if context.preferences.addons["bookGen"].preferences["lazy_update"]:
+            self.update_delayed(context)
+        else:
+            self.update_immediate(context)
+
     def update_immediate(self, _context):
         """
         Updates the scene using the settings in this property group.
@@ -133,18 +144,18 @@ class BookGenProperties(bpy.types.PropertyGroup):
     outline_active: BoolProperty(name="outline active shelf", default=False, update=update_outline_active)
 
     # shelf
-    scale: FloatProperty(name="scale", min=0.1, default=1, update=update_delayed)
+    scale: FloatProperty(name="scale", min=0.1, default=1, update=update)
 
-    seed: IntProperty(name="seed", default=0, update=update_delayed)
+    seed: IntProperty(name="seed", default=0, update=update)
 
     alignment: EnumProperty(name="alignment", items=(("0", "fore edge", "align books at the fore edge"), (
         "1", "spine", "align books at the spine"), ("2", "center", "align at center")), update=update_immediate)
 
     lean_amount: FloatProperty(
-        name="lean amount", subtype="FACTOR", min=.0, soft_max=1.0, update=update_delayed)
+        name="lean amount", subtype="FACTOR", min=.0, soft_max=1.0, update=update)
 
     lean_direction: FloatProperty(
-        name="lean direction", subtype="FACTOR", min=-1, max=1, default=0, update=update_delayed)
+        name="lean direction", subtype="FACTOR", min=-1, max=1, default=0, update=update)
 
     lean_angle: FloatProperty(
         name="lean angle",
@@ -153,24 +164,24 @@ class BookGenProperties(bpy.types.PropertyGroup):
         soft_max=radians(30),
         max=pi / 2.0,
         default=radians(8),
-        update=update_delayed)
+        update=update)
     rndm_lean_angle_factor: FloatProperty(
-        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
+        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 
     book_height: FloatProperty(
-        name="height", default=0.15, min=.05, step=0.005, unit="LENGTH", update=update_delayed)
+        name="height", default=0.15, min=.05, step=0.005, unit="LENGTH", update=update)
     rndm_book_height_factor: FloatProperty(
-        name=" random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
+        name=" random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 
     book_width: FloatProperty(
-        name="width", default=0.03, min=.002, step=0.001, unit="LENGTH", update=update_delayed)
+        name="width", default=0.03, min=.002, step=0.001, unit="LENGTH", update=update)
     rndm_book_width_factor: FloatProperty(
-        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
+        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 
     book_depth: FloatProperty(
-        name="depth", default=0.12, min=.0, step=0.005, unit="LENGTH", update=update_delayed)
+        name="depth", default=0.12, min=.0, step=0.005, unit="LENGTH", update=update)
     rndm_book_depth_factor: FloatProperty(
-        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
+        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 
     cover_thickness: FloatProperty(
         name="cover thickness",
@@ -178,29 +189,29 @@ class BookGenProperties(bpy.types.PropertyGroup):
         min=.0,
         step=.02,
         unit="LENGTH",
-        update=update_delayed)
+        update=update)
     rndm_cover_thickness_factor: FloatProperty(
-        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
+        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 
     textblock_offset: FloatProperty(
-        name="textblock offset", default=0.005, min=.0, step=.001, unit="LENGTH", update=update_delayed)
+        name="textblock offset", default=0.005, min=.0, step=.001, unit="LENGTH", update=update)
     rndm_textblock_offset_factor: FloatProperty(
-        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
+        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 
     spine_curl: FloatProperty(
-        name="spine curl", default=0.002, step=.002, min=.0, unit="LENGTH", update=update_delayed)
+        name="spine curl", default=0.002, step=.002, min=.0, unit="LENGTH", update=update)
     rndm_spine_curl_factor: FloatProperty(
-        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
+        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 
     hinge_inset: FloatProperty(name="hinge inset", default=0.001, min=.0, step=.0001,
-                               unit="LENGTH", update=update_delayed)
+                               unit="LENGTH", update=update)
     rndm_hinge_inset_factor: FloatProperty(
-        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
+        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 
     hinge_width: FloatProperty(
-        name="hinge width", default=0.004, min=.0, step=.05, unit="LENGTH", update=update_delayed)
+        name="hinge width", default=0.004, min=.0, step=.05, unit="LENGTH", update=update)
     rndm_hinge_width_factor: FloatProperty(
-        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update_delayed)
+        name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
 
     subsurf: BoolProperty(
         name="Add Subsurf-Modifier", default=False, update=update_immediate)
