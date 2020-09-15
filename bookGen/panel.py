@@ -182,7 +182,7 @@ class BOOKGEN_PT_MainPanel(bpy.types.Panel):
         layout = self.layout
         layout.operator("bookgen.select_shelf", text="Add shelf")
         #layout.operator("object.book_gen_select_shelf_faces", text="Add shelf face")
-        #layout.operator("object.book_gen_select_stack", text="Add stack")
+        layout.operator("object.book_gen_select_stack", text="Add stack")
         layout.operator("bookgen.rebuild_shelves", text="rebuild")
         layout.prop(properties, "auto_rebuild")
         layout.label(text="Shelves")

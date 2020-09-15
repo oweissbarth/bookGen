@@ -17,7 +17,7 @@ class BookGenShelfOutline:
 
     def __init__(self):
         col_ref = bpy.context.preferences.themes[0].view_3d.face_select
-        self.outline_color = (col_ref[0], col_ref[1], col_ref[2], 0.1)
+        self.outline_color = (col_ref[0], col_ref[1], col_ref[2], 0.3)
         self.batch = None
         self.shader = None
 

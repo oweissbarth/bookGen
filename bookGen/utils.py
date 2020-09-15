@@ -237,12 +237,33 @@ def get_free_shelf_id():
     Returns:
         int: the next unused shelf id
     """
-    shelves = get_bookgen_collection().children
+    return get_free_id("shelf")
 
-    names = list(map(lambda x: x.name, shelves))
+
+def get_free_stack_id():
+    """ Finds the next unused stack id
+
+    Returns:
+        int: the next unused shelf id
+    """
+    return get_free_id("stack")
+
+
+def get_free_id(name: str):
+    """ Finds the next unused id of the given name
+
+    Args:
+        name (str) : the type of id to find
+
+    Returns:
+        int: the next unused id
+    """
+    groupings = get_bookgen_collection().children
+
+    names = list(map(lambda x: x.name, groupings))
     name_found = False
-    shelf_id = 0
+    element_id = 0
     while not name_found:
-        if "shelf_" + str(shelf_id) not in names:
-            return shelf_id
-        shelf_id += 1
+        if name + "_" + str(element_id) not in names:
+            return element_id
+        element_id += 1
