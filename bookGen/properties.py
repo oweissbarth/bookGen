@@ -14,7 +14,8 @@ from bpy.props import (
     EnumProperty,
     BoolProperty,
     FloatVectorProperty,
-    PointerProperty)
+    PointerProperty,
+    StringProperty)
 
 from .utils import get_bookgen_collection, get_shelf_collection_by_index, get_shelf_parameters
 from .shelf import Shelf
@@ -31,19 +32,9 @@ def remove_previews(previews):
     for preview in previews:
         preview.remove()
 
-    bpy.ops.bookgen.rebuild_shelves()
+    bpy.ops.bookgen.rebuild()
     bpy.ops.ed.undo_push()
     return None
-
-
-class BookGenShelfProperties(bpy.types.PropertyGroup):
-    """
-    This describes how a shelf is positioned in 3D space.
-    """
-    start: FloatVectorProperty(name="start")
-    end: FloatVectorProperty(name="end")
-    normal: FloatVectorProperty(name="normal")
-    id: IntProperty(name="id")
 
 
 class BookGenProperties(bpy.types.PropertyGroup):
@@ -61,7 +52,8 @@ class BookGenProperties(bpy.types.PropertyGroup):
         Args:
             context (bpy.types.Context): the execution context
         """
-        if context.preferences.addons["bookGen"].preferences["lazy_update"]:
+        preferences = context.preferences.addons["bookGen"].preferences
+        if "lazy_update" in preferences.keys() and preferences["lazy_update"]:
             self.update_delayed(context)
         else:
             self.update_immediate(context)
@@ -74,7 +66,7 @@ class BookGenProperties(bpy.types.PropertyGroup):
         properties = get_bookgen_collection().BookGenProperties
 
         if properties.auto_rebuild:
-            bpy.ops.bookgen.rebuild_shelves()
+            bpy.ops.bookgen.rebuild()
             # bpy.ops.ed.undo_push()
 
         self.log.info("Finished populating shelf in %.4f secs", (time.time() - time_start))
@@ -138,7 +130,19 @@ class BookGenProperties(bpy.types.PropertyGroup):
         else:
             self.outline.disable_outline()
 
+    def get_name(self):
+        return self.get("name", "BookGenSettings")
+
+    def set_name(self, name):
+        old_name = self.name
+        self["name"] = name
+        if name != old_name:
+            for collection in get_bookgen_collection().children:
+                if collection.BookGenShelfProperties.settings_name == old_name:
+                    collection.BookGenShelfProperties.settings_name = name
+
     # general
+    name: StringProperty(name="name", default="BookGenSettings", set=set_name, get=get_name)
     auto_rebuild: BoolProperty(name="auto rebuild", default=True)
     active_shelf: IntProperty(name="active_shelf", update=update_outline_active)
     outline_active: BoolProperty(name="outline active shelf", default=False, update=update_outline_active)
@@ -219,3 +223,25 @@ class BookGenProperties(bpy.types.PropertyGroup):
     cover_material: PointerProperty(name="Cover Material", type=bpy.types.Material, update=update_immediate)
 
     page_material: PointerProperty(name="Page Material", type=bpy.types.Material, update=update_immediate)
+
+
+class BookGenShelfProperties(bpy.types.PropertyGroup):
+    """
+    This describes how a shelf is positioned in 3D space.
+    """
+    start: FloatVectorProperty(name="start")
+    end: FloatVectorProperty(name="end")
+    normal: FloatVectorProperty(name="normal")
+    id: IntProperty(name="id")
+    settings_name: StringProperty("Settings name")
+
+
+class BookGenStackProperties(bpy.types.PropertyGroup):
+    """
+    This describes how a stack is positioned in 3D space.
+    """
+    origin: FloatVectorProperty(name="origin")
+    forward: FloatVectorProperty(name="forward")
+    normal: FloatVectorProperty(name="normal")
+    height: FloatProperty(name="height")
+    id: IntProperty(name="id")

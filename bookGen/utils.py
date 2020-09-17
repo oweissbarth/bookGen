@@ -104,7 +104,7 @@ def project_to_screen(context, world_space_point):
 bookGen_directory = os.path.dirname(os.path.realpath(__file__))
 
 
-def get_shelf_parameters(shelf_id=0):
+def get_shelf_parameters(shelf_id=0, settings=None):
     """ Collects the parameters for a specific shelf
 
     Args:
@@ -113,7 +113,10 @@ def get_shelf_parameters(shelf_id=0):
     Returns:
         Dict[str, any]: a dictionary of the shelf parameters
     """
-    properties = get_bookgen_collection().BookGenProperties
+    if settings:
+        properties = settings
+    else:
+        properties = get_bookgen_collection().BookGenProperties
 
     parameters = {
         "scale": properties.scale,
@@ -267,3 +270,77 @@ def get_free_id(name: str):
         if name + "_" + str(element_id) not in names:
             return element_id
         element_id += 1
+
+
+def get_active_grouping():
+    """ Get the collection of the active grouping
+
+    TODO move somewhere were it can be reused
+
+    Returns:
+        bpy.types.Collection: the collection of the active grouping
+    """
+    shelf_id = get_bookgen_collection().BookGenProperties.active_shelf
+    return get_shelf_collection_by_index(shelf_id)
+
+
+def get_active_settings(context):
+    """ Retrieve the currently active bookGen settings
+
+    Args:
+        context (bpy.types.Context): the execution context
+
+    Returns:
+        BookGenProperties: the active settings or None
+    """
+    collection = get_active_grouping()
+    if collection is None:
+        return None
+    settings_name = collection.BookGenShelfProperties.settings_name
+    for settings in context.scene.BookGenSettings:
+        if settings.name == settings_name:
+            return settings
+    return None
+
+
+def get_settings_by_name(context, name):
+    """ Retrieve the bookGen settings by name
+
+    Args:
+        context (bpy.types.Context): the execution context
+        name (str): the name of the settings
+
+    Returns:
+        BookGenProperties: the settings or None
+    """
+    for settings in context.scene.BookGenSettings:
+        if settings.name == name:
+            return settings
+    return None
+
+
+def get_settings_for_new_grouping(context):
+    """ Retrieve settings for a new grouping.
+    If there are active settings return them.
+    Otherwise select the first settings the list
+    Otherwise create new default settings
+
+    Args:
+        context ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+
+    # check for active settings
+    active_settings = get_active_settings(context)
+    if active_settings:
+        return active_settings
+
+    # otherwise  check for existing settings
+    if len(context.scene.BookGenSettings) > 0:
+        return context.scene.BookGenSettings[0]
+
+    # otherwise create default settings
+    settings = context.scene.BookGenSettings.add()
+    return settings

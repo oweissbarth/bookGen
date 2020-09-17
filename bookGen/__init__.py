@@ -30,10 +30,15 @@ from .panel import (
     BOOKGEN_PT_MainPanel,
     BOOKGEN_PT_LeaningPanel,
     BOOKGEN_PT_ProportionsPanel,
-    BOOKGEN_PT_DetailsPanel,
-    BOOKGEN_PT_ShelfOverridePanel)
+    BOOKGEN_PT_DetailsPanel)
+
+from .generic_operators import (
+    BOOKGEN_OT_Rebuild,
+    BOOKGEN_OT_CreateSettings,
+    BOOKGEN_OT_SetSettings,
+    BOOKGEN_OT_RemoveSettings
+)
 from .shelf_operator import (
-    BOOKGEN_OT_ShelfRebuild,
     BOOKGEN_OT_SelectShelf,
     BOOKGEN_OT_RemoveShelf)
 
@@ -58,7 +63,7 @@ bl_info = {
 classes = [
     BookGenProperties,
     BookGenShelfProperties,
-    BOOKGEN_OT_ShelfRebuild,
+    BOOKGEN_OT_Rebuild,
     BOOKGEN_OT_RemoveShelf,
     BOOKGEN_PT_MainPanel,
     BOOKGEN_PT_Panel,
@@ -68,7 +73,10 @@ classes = [
     BOOKGEN_OT_SelectShelf,
     BOOKGEN_UL_Shelves,
     BOOKGEN_OT_SelectStack,
-    BOOKGEN_AddonPreferences
+    BOOKGEN_AddonPreferences,
+    BOOKGEN_OT_CreateSettings,
+    BOOKGEN_OT_SetSettings,
+    BOOKGEN_OT_RemoveSettings
 ]
 
 
@@ -84,6 +92,7 @@ def register():
 
     bpy.types.Collection.BookGenProperties = bpy.props.PointerProperty(type=BookGenProperties)
     bpy.types.Collection.BookGenShelfProperties = bpy.props.PointerProperty(type=BookGenShelfProperties)
+    bpy.types.Scene.BookGenSettings = bpy.props.CollectionProperty(type=BookGenProperties)
 
     bpy.app.handlers.load_post.append(bookgen_startup)
 
@@ -101,10 +110,15 @@ def unregister():
 
 
 @persistent
-def bookgen_startup(_scene):
+def bookgen_startup(scene):
     """
     Ensure that the outline is disabled on start-up.
     """
+    import bpy
+
     collection = get_bookgen_collection(create=False)
     if collection is not None:
         collection.BookGenProperties.outline_active = False
+
+    if not bpy.context.scene.BookGenSettings:
+        bpy.context.scene.BookGenSettings.add()

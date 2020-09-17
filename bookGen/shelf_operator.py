@@ -11,85 +11,14 @@ from .utils import (get_bookgen_collection,
                     get_shelf_parameters,
                     get_shelf_collection,
                     get_click_position_on_object,
-                    get_free_shelf_id)
+                    get_free_shelf_id,
+                    get_active_settings,
+                    get_settings_by_name,
+                    get_settings_for_new_grouping)
 
 from .ui_gizmo import BookGenShelfGizmo
 from .ui_outline import BookGenShelfOutline
 from .ui_limit_line import BookGenLimitLine
-
-
-class BOOKGEN_OT_ShelfRebuild(bpy.types.Operator):
-    """Regenerate all books"""
-    bl_idname = "bookgen.rebuild_shelves"
-    bl_label = "BookGen"
-    bl_options = {'REGISTER', 'UNDO_GROUPED'}
-
-    """def hinge_inset_guard(self, context):
-        if(self.hinge_inset > self.cover_thickness):
-            self.hinge_inset = self.cover_thickness - self.cover_thickness / 8"""
-
-    log = logging.getLogger("bookGen.operator")
-
-    def invoke(self, _context, _event):
-        """ Rebuild shelves called from the UI
-
-        Args:
-            _context (bpy.types.Context): the execution context for the operator
-            _event (bpy.type.Event): the invocation event
-
-        Returns:
-            Set[str]: operator return code
-        """
-        self.run()
-        return {'FINISHED'}
-
-    def execute(self, _context):
-        """ Rebuild shelves called from a script
-
-        Args:
-            _context (bpy.types.Context): the execution context for the operator
-
-        Returns:
-            Set[str]: operator return code
-        """
-        self.run()
-        return {'FINISHED'}
-
-    @classmethod
-    def poll(cls, context):
-        """ Check if we are in object mode before calling the operator
-
-        Args:
-            context (bpy.types.Context): the execution context for the operator
-
-        Returns:
-            bool: True if the operator can be executed, otherwise false.
-        """
-        return context.mode == 'OBJECT'
-
-    def run(self):
-        """
-        Collect new shelf parameters, remove existing books,
-        generate new books based on the parameters and add them to the  scene.
-        """
-        time_start = time.time()
-        parameters = get_shelf_parameters()
-
-        for shelf_collection in get_bookgen_collection().children:
-            shelf_props = shelf_collection.BookGenShelfProperties
-
-            parameters["seed"] += shelf_props.id
-
-            shelf = Shelf(shelf_collection.name, shelf_props.start,
-                          shelf_props.end, shelf_props.normal, parameters)
-            shelf.clean()
-            shelf.fill()
-
-            parameters["seed"] -= shelf_props.id
-
-            shelf.to_collection()
-
-        self.log.info("Finished populating shelf in %.4f secs", (time.time() - time_start))
 
 
 class BOOKGEN_OT_RemoveShelf(bpy.types.Operator):
@@ -229,7 +158,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
                 self.outline.disable_outline()
         return {'RUNNING_MODAL'}
 
-    def handle_confirm(self, _context, mouse_x, mouse_y):
+    def handle_confirm(self, context, mouse_x, mouse_y):
         """
         If shelf start position has not been set, get current position under cursor.
         Otherwise check if there is an object under the cursor. If that's the case collect shelf parameters,
@@ -245,8 +174,13 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
             return {'RUNNING_MODAL'}
 
         shelf_id = get_free_shelf_id()
-        parameters = get_shelf_parameters()
-        parameters["seed"] += shelf_id
+
+        settings_name = get_settings_for_new_grouping(context).name
+
+        settings = get_settings_by_name(context, settings_name)
+
+        parameters = get_shelf_parameters(shelf_id, settings)
+
         normal = (self.start_normal + self.end_normal) / 2
         shelf = Shelf("shelf_" + str(shelf_id), self.start,
                       self.end, normal, parameters)
@@ -260,10 +194,12 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         shelf_props.end = self.end
         shelf_props.normal = normal
         shelf_props.id = shelf_id
+        shelf_props.settings_name = settings_name
         self.gizmo.remove()
         self.outline.disable_outline()
         self.limit_line.remove()
         shelf.to_collection()
+
         return {'FINISHED'}
 
     def handle_cancel(self, _context):
@@ -300,7 +236,10 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
             Set[str]: operator return code
         """
 
-        props = get_shelf_parameters()
+        settings_name = get_settings_for_new_grouping(context).name
+
+        settings = get_settings_by_name(context, settings_name)
+        props = get_shelf_parameters(0, settings)
         self.gizmo = BookGenShelfGizmo(props["book_height"], props["book_depth"], context)
         self.outline = BookGenShelfOutline()
         self.limit_line = BookGenLimitLine(self.axis_constraint, context)
@@ -317,7 +256,13 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
             return
         normal = (self.start_normal + self.end_normal) / 2
         shelf_id = get_free_shelf_id()
-        parameters = get_shelf_parameters(shelf_id)
+
+        settings_name = get_settings_for_new_grouping(context).name
+
+        settings = get_settings_by_name(context, settings_name)
+
+        parameters = get_shelf_parameters(shelf_id, settings)
+
         shelf = Shelf("shelf_" + str(shelf_id), self.start,
                       self.end, normal, parameters)
         shelf.fill()

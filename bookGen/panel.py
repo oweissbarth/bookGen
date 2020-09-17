@@ -4,7 +4,7 @@ This file contains the UI panels.
 
 import bpy
 
-from .utils import get_bookgen_collection
+from .utils import get_bookgen_collection, get_shelf_collection_by_index, get_active_settings
 
 
 class BOOKGEN_PT_ShelfSettings(bpy.types.Panel):
@@ -21,6 +21,10 @@ class BOOKGEN_PT_ShelfSettings(bpy.types.Panel):
         """
         Can be overwritten in subclass
         """
+    @classmethod
+    def poll(self, context):
+        properties = get_active_settings(context)
+        return bool(properties)
 
     def draw(self, context):
         """ Draws the shelf settings panel
@@ -29,7 +33,10 @@ class BOOKGEN_PT_ShelfSettings(bpy.types.Panel):
             context (bpy.types.Context): the execution context
         """
         self.subdraw(context)
-        properties = get_bookgen_collection().BookGenProperties
+        properties = get_active_settings(context)
+        if not properties:
+            return
+
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False
@@ -54,13 +61,20 @@ class BOOKGEN_PT_LeaningPanel(bpy.types.Panel):
     bl_options = set()
     bl_parent_id = "BOOKGEN_PT_Panel"
 
-    def draw(self, _context):
+    @ classmethod
+    def poll(self, context):
+        properties = get_active_settings(context)
+        return bool(properties)
+
+    def draw(self, context):
         """ Draws the leaning settings panel.
 
         Args:
             context (bpy.types.Context): the execution context
         """
-        properties = get_bookgen_collection().BookGenProperties
+        properties = get_active_settings(context)
+        if not properties:
+            return
         layout = self.layout
         layout.use_property_split = True
 
@@ -82,13 +96,21 @@ class BOOKGEN_PT_ProportionsPanel(bpy.types.Panel):
     bl_options = set()
     bl_parent_id = "BOOKGEN_PT_Panel"
 
-    def draw(self, _context):
+    @classmethod
+    def poll(self, context):
+        properties = get_active_settings(context)
+        return bool(properties)
+
+    def draw(self, context):
         """ Draws the proportion settings panel
 
         Args:
             context (bpy.types.Context): the execution context
         """
-        properties = get_bookgen_collection().BookGenProperties
+        properties = get_active_settings(context)
+        if not properties:
+            return
+
         layout = self.layout
         layout.use_property_split = True
 
@@ -116,13 +138,21 @@ class BOOKGEN_PT_DetailsPanel(bpy.types.Panel):
     bl_options = {'DEFAULT_CLOSED'}
     bl_parent_id = "BOOKGEN_PT_Panel"
 
-    def draw(self, _context):
+    @classmethod
+    def poll(self, context):
+        properties = get_active_settings(context)
+        return bool(properties)
+
+    def draw(self, context):
         """ Draws the detail settings panel
 
         Args:
             context (bpy.types.Context): the execution context
         """
-        properties = get_bookgen_collection().BookGenProperties
+
+        properties = get_active_settings(context)
+        if not properties:
+            return
         layout = self.layout
         layout.use_property_split = True
 
@@ -172,7 +202,7 @@ class BOOKGEN_PT_MainPanel(bpy.types.Panel):
     bl_category = "BookGen"
     bl_options = set()
 
-    def draw(self, _context):
+    def draw(self, context):
         """ Draws the main panel
 
         Args:
@@ -181,9 +211,9 @@ class BOOKGEN_PT_MainPanel(bpy.types.Panel):
         properties = get_bookgen_collection().BookGenProperties
         layout = self.layout
         layout.operator("bookgen.select_shelf", text="Add shelf")
-        #layout.operator("object.book_gen_select_shelf_faces", text="Add shelf face")
+        # layout.operator("object.book_gen_select_shelf_faces", text="Add shelf face")
         layout.operator("object.book_gen_select_stack", text="Add stack")
-        layout.operator("bookgen.rebuild_shelves", text="rebuild")
+        layout.operator("bookgen.rebuild", text="rebuild")
         layout.prop(properties, "auto_rebuild")
         layout.label(text="Shelves")
         row = layout.row()
@@ -193,32 +223,23 @@ class BOOKGEN_PT_MainPanel(bpy.types.Panel):
         col.operator("bookgen.remove_shelf", icon="X", text="")
         col.prop(properties, "outline_active", toggle=True, icon="SHADING_BBOX", icon_only=True)
 
-
-class BOOKGEN_PT_ShelfOverridePanel(BOOKGEN_PT_ShelfSettings):
-    """
-    Draws the shelf override panel
-    """
-    bl_label = "Per Shelf Override"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = "BookGen"
-    bl_options = {"DEFAULT_CLOSED"}
-
-    def draw_header(self, _context):
-        """ Draws the override panel header
-
-        Args:
-            context (bpy.types.Context): the execution context
-        """
-        properties = get_bookgen_collection().BookGenProperties
-        self.layout.prop(properties, "auto_rebuild", text="")
-
-    def subdraw(self, context):
-        """ Draws the override panel
-
-        Args:
-            context (bpy.types.Context): the execution context
-        """
-        properties = get_bookgen_collection().BookGenProperties
+        active_shelf = self.get_active_shelf()
         layout = self.layout
-        layout.active = properties.auto_rebuild
+        row = layout.row(align=True)
+        choose_props = row.operator('bookgen.set_settings', text="", icon='PRESET')
+        if active_shelf and active_shelf.BookGenShelfProperties.settings_name:
+            settings = get_active_settings(context)
+            row.prop(settings, "name", text="", expand=True)
+        choose_props = row.operator('bookgen.create_settings', text="", icon='ADD')
+        choose_props = row.operator('bookgen.remove_settings', text="", icon='X')
+
+    def get_active_shelf(self):
+        """ Get the collection of the active grouping
+
+        TODO move somewhere were it can be reused
+
+        Returns:
+            bpy.types.Collection: the collection of the active grouping
+        """
+        shelf_id = get_bookgen_collection().BookGenProperties.active_shelf
+        return get_shelf_collection_by_index(shelf_id)
