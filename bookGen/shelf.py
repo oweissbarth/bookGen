@@ -57,7 +57,7 @@ class Shelf:
         self.books = []
         self.align_offset = 0
 
-    def add_book(self, book, offset, first):
+    def add_book(self, book, offset, first=False):
         """ Adds a single book at the given offset to the shelf
 
         Args:
@@ -114,8 +114,6 @@ class Shelf:
 
         random.seed(self.parameters["seed"])
 
-        first = True
-
         params = self.apply_parameters()
         current = Book(*(list(params.values())),
                        self.parameters["subsurf"],
@@ -125,7 +123,7 @@ class Shelf:
             cur_offset = cos(current.lean_angle) * current.width
         else:
             cur_offset = current.height * sin(abs(current.lean_angle))
-        self.add_book(current, cur_offset, first)
+        self.add_book(current, cur_offset, True)
 
         while cur_width < self.width:
             self.log.debug("remaining width to be filled: %.3f", (self.width - cur_width))
@@ -191,8 +189,8 @@ class Shelf:
                     last.lean_angle) >= abs(
                     current.lean_angle) and last.corner_height_right <= current.corner_height_left:
                 self.log.debug("case 1")
-                offset = sin(abs(last.lean_angle)) * last.height - (tan(abs(current.lean_angle)) * \
-                             last.corner_height_right - current.width / cos(abs(current.lean_angle)))
+                offset = sin(abs(last.lean_angle)) * last.height - (tan(abs(current.lean_angle)) *
+                                                                    last.corner_height_right - current.width / cos(abs(current.lean_angle)))
             elif same_dir and abs(last.lean_angle) >= abs(current.lean_angle) and \
                     last.corner_height_right > current.corner_height_left:
                 self.log.debug("case 2")
@@ -236,9 +234,7 @@ class Shelf:
             cur_offset += offset
 
             if cur_width < self.width:
-                self.add_book(current, cur_offset, first)
-
-            first = False
+                self.add_book(current, cur_offset)
 
     def clean(self):
         """ Remove all object from the shelf and remove meshes from the scene
