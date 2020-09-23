@@ -199,7 +199,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         self.gizmo.remove()
         self.outline.disable_outline()
         self.limit_line.remove()
-        shelf.to_collection()
+        shelf.to_collection(with_uvs=True)
 
         return {'FINISHED'}
 

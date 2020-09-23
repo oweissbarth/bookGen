@@ -86,7 +86,7 @@ class BOOKGEN_OT_Rebuild(bpy.types.Operator):
                 shelf.clean()
                 shelf.fill()
 
-                shelf.to_collection()
+                shelf.to_collection(with_uvs=True)
             else:
                 parameters = get_shelf_parameters(grouping_props.id, settings)
                 stack = Stack(grouping_collection.name, grouping_props.origin,

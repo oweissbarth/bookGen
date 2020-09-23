@@ -299,11 +299,11 @@ def get_uvs(
 
     for v in range(len(top)):
         top[v][0] += margin
-        top[v][1] += 3 * margin + exterior_y + scale_factor * page_thickness
+        top[v][1] += 1 - margin - scale_factor * page_thickness
 
     for v in range(len(left)):
         left[v][0] += 2 * margin + scale_factor * page_height
-        left[v][1] += 3 * margin + exterior_y + scale_factor * page_thickness
+        left[v][1] += 1 - margin - scale_factor * page_thickness
 
     for v in range(len(bottom)):
         bottom[v][0] += margin
