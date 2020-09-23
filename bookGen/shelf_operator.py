@@ -194,6 +194,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         shelf_props.end = self.end
         shelf_props.normal = normal
         shelf_props.id = shelf_id
+        shelf_props.grouping_type = 'SHELF'
         shelf_props.settings_name = settings_name
         self.gizmo.remove()
         self.outline.disable_outline()

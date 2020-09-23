@@ -16,7 +16,9 @@ from .utils import (
     get_click_position_on_object,
     get_free_stack_id,
     get_shelf_parameters,
-    get_shelf_collection)
+    get_shelf_collection,
+    get_settings_for_new_grouping,
+    get_settings_by_name)
 from .ui_outline import BookGenShelfOutline
 
 
@@ -136,10 +138,13 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
             self.forward = (projected_front - self.origin).normalized()
             return {'RUNNING_MODAL'}
 
-        shelf_id = get_free_stack_id()
-        parameters = get_shelf_parameters()
-        parameters["seed"] += shelf_id
-        stack = Stack("stack_" + str(shelf_id), self.origin,
+        stack_id = get_free_stack_id()
+        settings_name = get_settings_for_new_grouping(context).name
+        settings = get_settings_by_name(context, settings_name)
+
+        parameters = get_shelf_parameters(stack_id, settings)
+
+        stack = Stack("stack_" + str(stack_id), self.origin,
                       self.forward, self.origin_normal, self.height, parameters)
         stack.clean()
         stack.fill()
@@ -147,10 +152,14 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         # set properties for later rebuild
         stack_props = get_shelf_collection(
             stack.name).BookGenShelfProperties
-        stack_props.start = self.origin
-        stack_props.end = self.forward
+        stack_props.origin = self.origin
+        stack_props.forward = self.forward
         stack_props.normal = self.origin_normal
-        stack_props.id = shelf_id
+        stack_props.height = self.height
+        stack_props.id = stack_id
+        stack_props.grouping_type = 'STACK'
+        stack_props.settings_name = settings_name
+
         self.gizmo.remove()
         self.outline.disable_outline()
         stack.to_collection()
@@ -214,9 +223,12 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
             return
 
         self.gizmo.remove()
-        shelf_id = get_free_stack_id()
-        parameters = get_shelf_parameters(shelf_id)
-        stack = Stack("stack_" + str(shelf_id), self.origin,
+        stack_id = get_free_stack_id()
+        settings_name = get_settings_for_new_grouping(context).name
+        settings = get_settings_by_name(context, settings_name)
+
+        parameters = get_shelf_parameters(stack_id, settings)
+        stack = Stack("stack_" + str(stack_id), self.origin,
                       self.forward, self.origin_normal, self.height, parameters)
         stack.fill()
         self.outline.enable_outline(*stack.get_geometry(), context)

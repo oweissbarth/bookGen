@@ -46,9 +46,9 @@ class Stack:
 
     def __init__(self, name, origin, forward, up, height, parameters):
         self.name = name
-        self.origin = origin
-        self.forward = forward
-        self.up = up
+        self.origin = Vector(origin)
+        self.forward = Vector(forward)
+        self.up = Vector(up)
         self.height = height
 
         self.rotation_matrix = Matrix([self.forward, -self.forward.cross(self.up), self.up]).transposed()

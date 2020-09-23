@@ -74,18 +74,27 @@ class BOOKGEN_OT_Rebuild(bpy.types.Operator):
         """
         time_start = time.time()
 
-        for shelf_collection in get_bookgen_collection().children:
-            shelf_props = shelf_collection.BookGenShelfProperties
+        for grouping_collection in get_bookgen_collection().children:
+            grouping_props = grouping_collection.BookGenShelfProperties
+            settings = get_settings_by_name(context, grouping_props.settings_name)
 
-            settings = get_settings_by_name(context, shelf_props.settings_name)
-            parameters = get_shelf_parameters(shelf_props.id, settings)
+            if grouping_props.grouping_type == 'SHELF':
+                parameters = get_shelf_parameters(grouping_props.id, settings)
 
-            shelf = Shelf(shelf_collection.name, shelf_props.start,
-                          shelf_props.end, shelf_props.normal, parameters)
-            shelf.clean()
-            shelf.fill()
+                shelf = Shelf(grouping_collection.name, grouping_props.start,
+                              grouping_props.end, grouping_props.normal, parameters)
+                shelf.clean()
+                shelf.fill()
 
-            shelf.to_collection()
+                shelf.to_collection()
+            else:
+                parameters = get_shelf_parameters(grouping_props.id, settings)
+                stack = Stack(grouping_collection.name, grouping_props.origin,
+                              grouping_props.forward, grouping_props.normal, grouping_props.height, parameters)
+                stack.clean()
+                stack.fill()
+
+                stack.to_collection()
 
         self.log.info("Finished populating shelf in %.4f secs", (time.time() - time_start))
 

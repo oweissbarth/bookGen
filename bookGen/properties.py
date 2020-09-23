@@ -232,11 +232,7 @@ class BookGenShelfProperties(bpy.types.PropertyGroup):
     start: FloatVectorProperty(name="start")
     end: FloatVectorProperty(name="end")
     normal: FloatVectorProperty(name="normal")
-    id: IntProperty(name="id")
-    settings_name: StringProperty("Settings name")
 
-
-class BookGenStackProperties(bpy.types.PropertyGroup):
     """
     This describes how a stack is positioned in 3D space.
     """
@@ -244,4 +240,17 @@ class BookGenStackProperties(bpy.types.PropertyGroup):
     forward: FloatVectorProperty(name="forward")
     normal: FloatVectorProperty(name="normal")
     height: FloatProperty(name="height")
+
+    grouping_type: EnumProperty(
+        items=(
+            ("SHELF",
+             "shelf",
+             ""),
+            ("STACK",
+             "stack",
+             "")),
+        name="grouping_type",
+        description="Test",
+        default="SHELF")
     id: IntProperty(name="id")
+    settings_name: StringProperty("Settings name")
