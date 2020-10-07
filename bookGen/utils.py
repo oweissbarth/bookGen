@@ -113,10 +113,7 @@ def get_shelf_parameters(shelf_id=0, settings=None):
     Returns:
         Dict[str, any]: a dictionary of the shelf parameters
     """
-    if settings:
-        properties = settings
-    else:
-        properties = get_bookgen_collection().BookGenProperties
+    properties = settings
 
     parameters = {
         "scale": properties.scale,
@@ -126,6 +123,47 @@ def get_shelf_parameters(shelf_id=0, settings=None):
         "lean_direction": properties.lean_direction,
         "lean_angle": properties.lean_angle,
         "rndm_lean_angle_factor": properties.rndm_lean_angle_factor,
+        "book_height": properties.book_height,
+        "rndm_book_height_factor": properties.rndm_book_height_factor,
+        "book_width": properties.book_width,
+        "rndm_book_width_factor": properties.rndm_book_width_factor,
+        "book_depth": properties.book_depth,
+        "rndm_book_depth_factor": properties.rndm_book_depth_factor,
+        "cover_thickness": properties.cover_thickness,
+        "rndm_cover_thickness_factor": properties.rndm_cover_thickness_factor,
+        "textblock_offset": properties.textblock_offset,
+        "rndm_textblock_offset_factor": properties.rndm_textblock_offset_factor,
+        "spine_curl": properties.spine_curl,
+        "rndm_spine_curl_factor": properties.rndm_spine_curl_factor,
+        "hinge_inset": properties.hinge_inset,
+        "rndm_hinge_inset_factor": properties.rndm_hinge_inset_factor,
+        "hinge_width": properties.hinge_width,
+        "rndm_hinge_width_factor": properties.rndm_hinge_width_factor,
+        "subsurf": properties.subsurf,
+        "cover_material": properties.cover_material,
+        "page_material": properties.page_material
+    }
+    return parameters
+
+
+def get_stack_parameters(shelf_id=0, settings=None):
+    """ Collects the parameters for a specific stack
+
+    Args:
+        shelf_id (int, optional): The id of the shelf for which the parameters are collected. Defaults to 0.
+
+    Returns:
+        Dict[str, any]: a dictionary of the shelf parameters
+    """
+    if settings:
+        properties = settings
+    else:
+        properties = get_bookgen_collection().BookGenProperties
+
+    parameters = {
+        "scale": properties.scale,
+        "seed": properties.seed + shelf_id,
+        "rotation": properties.rotation,
         "book_height": properties.book_height,
         "rndm_book_height_factor": properties.rndm_book_height_factor,
         "book_width": properties.book_width,
@@ -272,15 +310,13 @@ def get_free_id(name: str):
         element_id += 1
 
 
-def get_active_grouping():
+def get_active_grouping(context):
     """ Get the collection of the active grouping
-
-    TODO move somewhere were it can be reused
 
     Returns:
         bpy.types.Collection: the collection of the active grouping
     """
-    shelf_id = get_bookgen_collection().BookGenProperties.active_shelf
+    shelf_id = context.scene.BookGenAddonProperties.active_shelf
     return get_shelf_collection_by_index(shelf_id)
 
 
@@ -293,10 +329,10 @@ def get_active_settings(context):
     Returns:
         BookGenProperties: the active settings or None
     """
-    collection = get_active_grouping()
+    collection = get_active_grouping(context)
     if collection is None:
         return None
-    settings_name = collection.BookGenShelfProperties.settings_name
+    settings_name = collection.BookGenGroupingProperties.settings_name
     for settings in context.scene.BookGenSettings:
         if settings.name == settings_name:
             return settings

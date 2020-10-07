@@ -74,16 +74,20 @@ class Stack:
             self.align_offset = book.depth / 2
 
         # book alignment
-        offset_dir = -1 if self.parameters["alignment"] == "1" else 1
-        if(not first and not self.parameters["alignment"] == "2"):
+        #offset_dir = -1 if self.parameters["alignment"] == "1" else 1
+
+        # if(not first and not self.parameters["alignment"] == "2"):
             # location alignment
-            book.location += Vector((0, offset_dir * (book.depth / 2 - self.align_offset), 0))
+        #    book.location += Vector((0, offset_dir * (book.depth / 2 - self.align_offset), 0))
 
         # distribution
 
+        rotation = random.random() * self.parameters["rotation"] * 180
+
         book.location += Vector((0, 0, self.cur_offset))
         book.location = self.rotation_matrix @ book.location
-        book.rotation = self.rotation_matrix @ Matrix.Rotation(radians(90), 3, 'Y')
+        book.rotation = Matrix.Rotation(
+            radians(rotation), 3, 'Z') @ self.rotation_matrix @ Matrix.Rotation(radians(90), 3, 'Y')
         # print(book.rotation)
 
         book.location += self.origin
@@ -109,10 +113,10 @@ class Stack:
         first = True
 
         params = self.apply_parameters()
-        current = Book(*(list(params.values())),
-                       self.parameters["subsurf"],
-                       self.parameters["cover_material"],
-                       self.parameters["page_material"])
+        current = Book(**params,
+                       subsurf=self.parameters["subsurf"],
+                       cover_material=self.parameters["cover_material"],
+                       page_material=self.parameters["page_material"])
         self.cur_offset += current.width / 2
         self.add_book(current, first)
 
@@ -120,10 +124,10 @@ class Stack:
             self.log.debug("remaining height to be filled: %.3f", (self.height - self.cur_height))
             params = self.apply_parameters()
             last = current
-            current = Book(*(list(params.values())),
-                           self.parameters["subsurf"],
-                           self.parameters["cover_material"],
-                           self.parameters["page_material"])
+            current = Book(**params,
+                           subsurf=self.parameters["subsurf"],
+                           cover_material=self.parameters["cover_material"],
+                           page_material=self.parameters["page_material"])
 
             self.cur_height = self.cur_offset + current.width
 
@@ -195,8 +199,6 @@ class Stack:
         rndm_hinge_inset = (random.random() * 0.4 - 0.2) * p["rndm_hinge_inset_factor"]
         rndm_hinge_width = (random.random() * 0.4 - 0.2) * p["rndm_hinge_width_factor"]
 
-        rndm_lean_angle = (random.random() * 0.8 - 0.4) * p["rndm_lean_angle_factor"]
-
         book_height = p["scale"] * p["book_height"] * (1 + rndm_book_height)
         book_width = p["scale"] * p["book_width"] * (1 + rndm_book_width)
         book_depth = p["scale"] * p["book_depth"] * (1 + rndm_book_depth)
@@ -212,20 +214,13 @@ class Stack:
         hinge_inset = p["scale"] * p["hinge_inset"] * (1 + rndm_hinge_inset)
         hinge_width = p["scale"] * p["hinge_width"] * (1 + rndm_hinge_width)
 
-        lean = p["lean_amount"] > random.random()
-
-        lean_dir_factor = 1 if random.random() > (.5 - p["lean_direction"] / 2) else -1
-
-        lean_angle = p["lean_angle"] * (1 + rndm_lean_angle) * lean_dir_factor if lean else 0
-
-        return {"book_height": book_height,
+        return {"cover_height": book_height,
                 "cover_thickness": cover_thickness,
-                "book_depth": book_depth,
-                "textblock_height": textblock_height,
-                "textblock_depth": textblock_depth,
-                "textblock_thickness": textblock_thickness,
+                "cover_depth": book_depth,
+                "page_height": textblock_height,
+                "page_depth": textblock_depth,
+                "page_thickness": textblock_thickness,
                 "spine_curl": spine_curl,
                 "hinge_inset": hinge_inset,
-                "hinge_width": hinge_width,
-                "lean": lean,
-                "lean_angle": lean_angle}
+                "hinge_width": hinge_width
+                }

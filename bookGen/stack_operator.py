@@ -15,7 +15,7 @@ from .utils import (
     project_to_screen,
     get_click_position_on_object,
     get_free_stack_id,
-    get_shelf_parameters,
+    get_stack_parameters,
     get_shelf_collection,
     get_settings_for_new_grouping,
     get_settings_by_name)
@@ -142,7 +142,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         settings_name = get_settings_for_new_grouping(context).name
         settings = get_settings_by_name(context, settings_name)
 
-        parameters = get_shelf_parameters(stack_id, settings)
+        parameters = get_stack_parameters(stack_id, settings)
 
         stack = Stack("stack_" + str(stack_id), self.origin,
                       self.forward, self.origin_normal, self.height, parameters)
@@ -151,7 +151,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
 
         # set properties for later rebuild
         stack_props = get_shelf_collection(
-            stack.name).BookGenShelfProperties
+            stack.name).BookGenGroupingProperties
         stack_props.origin = self.origin
         stack_props.forward = self.forward
         stack_props.normal = self.origin_normal
@@ -185,9 +185,6 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
             Set[str]: operator return code
         """
 
-        props = get_shelf_parameters()
-        # self.gizmo = BookGenShelfGizmo(
-        #   self.start, self.end, None, props["book_height"], props["book_depth"], args)
         self.outline = BookGenShelfOutline()
         self.gizmo = BookGenStackGizmo(0, 0, context)
 
@@ -227,7 +224,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         settings_name = get_settings_for_new_grouping(context).name
         settings = get_settings_by_name(context, settings_name)
 
-        parameters = get_shelf_parameters(stack_id, settings)
+        parameters = get_stack_parameters(stack_id, settings)
         stack = Stack("stack_" + str(stack_id), self.origin,
                       self.forward, self.origin_normal, self.height, parameters)
         stack.fill()

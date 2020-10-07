@@ -7,9 +7,11 @@ import logging
 
 import bpy
 from bpy.props import EnumProperty, StringProperty
+from mathutils import Vector
 
 from .utils import (
     get_shelf_parameters,
+    get_stack_parameters,
     get_bookgen_collection,
     get_active_grouping,
     get_active_settings,
@@ -75,8 +77,10 @@ class BOOKGEN_OT_Rebuild(bpy.types.Operator):
         time_start = time.time()
 
         for grouping_collection in get_bookgen_collection().children:
-            grouping_props = grouping_collection.BookGenShelfProperties
+            grouping_props = grouping_collection.BookGenGroupingProperties
             settings = get_settings_by_name(context, grouping_props.settings_name)
+            if not settings:
+                continue
 
             if grouping_props.grouping_type == 'SHELF':
                 parameters = get_shelf_parameters(grouping_props.id, settings)
@@ -88,7 +92,7 @@ class BOOKGEN_OT_Rebuild(bpy.types.Operator):
 
                 shelf.to_collection(with_uvs=True)
             else:
-                parameters = get_shelf_parameters(grouping_props.id, settings)
+                parameters = get_stack_parameters(grouping_props.id, settings)
                 stack = Stack(grouping_collection.name, grouping_props.origin,
                               grouping_props.forward, grouping_props.normal, grouping_props.height, parameters)
                 stack.clean()
@@ -121,7 +125,7 @@ class BOOKGEN_OT_CreateSettings(bpy.types.Operator):
         return wm.invoke_props_dialog(self)
         return {'FINISHED'}
 
-    def execute(self, _context):
+    def execute(self, context):
         """ Rebuild called from a script
 
         Args:
@@ -130,7 +134,7 @@ class BOOKGEN_OT_CreateSettings(bpy.types.Operator):
         Returns:
             Set[str]: operator return code
         """
-        self.run()
+        self.run(context)
         return {'FINISHED'}
 
     @classmethod
@@ -145,7 +149,7 @@ class BOOKGEN_OT_CreateSettings(bpy.types.Operator):
         """
         return context.mode == 'OBJECT'
 
-    def run(self):
+    def run(self, context):
         """
         Collect new parameters, remove existing books,
         generate new books based on the parameters and add them to the  scene.
@@ -153,9 +157,10 @@ class BOOKGEN_OT_CreateSettings(bpy.types.Operator):
         setting = bpy.context.scene.BookGenSettings.add()
         setting.name = self.name
 
-        active_grouping = get_active_grouping()
+        active_grouping = get_active_grouping(context)
         if active_grouping:
-            active_grouping.BookGenShelfProperties.settings_name = self.name
+            active_grouping.BookGenGroupingProperties.settings_name = self.name
+        context.area.tag_redraw()
 
 
 class BOOKGEN_OT_SetSettings(bpy.types.Operator):
@@ -190,7 +195,7 @@ class BOOKGEN_OT_SetSettings(bpy.types.Operator):
         context.window_manager.invoke_search_popup(self)
         return {'FINISHED'}
 
-    def execute(self, _context):
+    def execute(self, context):
         """  Assign settings called from a script
 
         Args:
@@ -199,8 +204,8 @@ class BOOKGEN_OT_SetSettings(bpy.types.Operator):
         Returns:
             Set[str]: operator return code
         """
-        active_grouping = get_active_grouping()
-        active_grouping.BookGenShelfProperties.settings_name = self.enum
+        active_grouping = get_active_grouping(context)
+        active_grouping.BookGenGroupingProperties.settings_name = self.enum
         bpy.ops.bookgen.rebuild()
 
         return {'FINISHED'}
@@ -215,7 +220,8 @@ class BOOKGEN_OT_SetSettings(bpy.types.Operator):
         Returns:
             bool: True if the operator can be executed, otherwise false.
         """
-        return context.mode == 'OBJECT'
+        active_grouping = get_active_grouping(context)
+        return active_grouping and context.mode == 'OBJECT'
 
 
 class BOOKGEN_OT_RemoveSettings(bpy.types.Operator):
@@ -246,8 +252,8 @@ class BOOKGEN_OT_RemoveSettings(bpy.types.Operator):
         context.scene.BookGenSettings.remove(settings_id)
 
         for collection in get_bookgen_collection().children:
-            if collection.BookGenShelfProperties.settings_name == settings_name:
-                collection.BookGenShelfProperties.settings_name = ""
+            if collection.BookGenGroupingProperties.settings_name == settings_name:
+                collection.BookGenGroupingProperties.settings_name = ""
 
         # bpy.ops.bookgen.rebuild()
         return {'FINISHED'}
@@ -262,4 +268,7 @@ class BOOKGEN_OT_RemoveSettings(bpy.types.Operator):
         Returns:
             bool: True if the operator can be executed, otherwise false.
         """
-        return context.mode == 'OBJECT'
+        settings_exist = bool(context.scene.BookGenSettings)
+        active_settings = get_active_settings(context)
+
+        return settings_exist and active_settings and context.mode == 'OBJECT'

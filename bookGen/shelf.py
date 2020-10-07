@@ -115,10 +115,10 @@ class Shelf:
         random.seed(self.parameters["seed"])
 
         params = self.apply_parameters()
-        current = Book(*(list(params.values())),
-                       self.parameters["subsurf"],
-                       self.parameters["cover_material"],
-                       self.parameters["page_material"])
+        current = Book(**params,
+                       subsurf=self.parameters["subsurf"],
+                       cover_material=self.parameters["cover_material"],
+                       page_material=self.parameters["page_material"])
         if current.lean_angle >= 0:
             cur_offset = cos(current.lean_angle) * current.width
         else:
@@ -129,10 +129,10 @@ class Shelf:
             self.log.debug("remaining width to be filled: %.3f", (self.width - cur_width))
             params = self.apply_parameters()
             last = current
-            current = Book(*(list(params.values())),
-                           self.parameters["subsurf"],
-                           self.parameters["cover_material"],
-                           self.parameters["page_material"])
+            current = Book(**params,
+                           subsurf=self.parameters["subsurf"],
+                           cover_material=self.parameters["cover_material"],
+                           page_material=self.parameters["page_material"])
 
             # gathering parameters for the next book
 
@@ -320,12 +320,12 @@ class Shelf:
 
         lean_angle = p["lean_angle"] * (1 + rndm_lean_angle) * lean_dir_factor if lean else 0
 
-        return {"book_height": book_height,
+        return {"cover_height": book_height,
                 "cover_thickness": cover_thickness,
-                "book_depth": book_depth,
-                "textblock_height": textblock_height,
-                "textblock_depth": textblock_depth,
-                "textblock_thickness": textblock_thickness,
+                "cover_depth": book_depth,
+                "page_height": textblock_height,
+                "page_depth": textblock_depth,
+                "page_thickness": textblock_thickness,
                 "spine_curl": spine_curl,
                 "hinge_inset": hinge_inset,
                 "hinge_width": hinge_width,

@@ -39,21 +39,22 @@ class Book:
     """
 
     def __init__(
-            self,
-            cover_height,
-            cover_thickness,
-            cover_depth,
-            page_height,
-            page_depth,
-            page_thickness,
-            spine_curl,
-            hinge_inset,
-            hinge_width,
-            lean,
-            lean_angle,
-            subsurf,
-            cover_material,
-            page_material):
+        self,
+        cover_height,
+        cover_thickness,
+        cover_depth,
+        page_height,
+        page_depth,
+        page_thickness,
+        spine_curl,
+        hinge_inset,
+        hinge_width,
+        lean=0,
+        lean_angle=0,
+        subsurf=False,
+        cover_material=None,
+        page_material=None
+    ):
         self.height = cover_height
         self.width = page_thickness + 2 * cover_thickness
         self.depth = cover_depth

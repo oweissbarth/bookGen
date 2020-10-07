@@ -17,8 +17,14 @@ from bpy.props import (
     PointerProperty,
     StringProperty)
 
-from .utils import get_bookgen_collection, get_shelf_collection_by_index, get_shelf_parameters
+from .utils import (
+    get_bookgen_collection,
+    get_shelf_collection_by_index,
+    get_shelf_parameters,
+    get_settings_by_name,
+    get_stack_parameters)
 from .shelf import Shelf
+from .stack import Stack
 from .ui_outline import BookGenShelfOutline
 from .ui_preview import BookGenShelfPreview
 
@@ -37,12 +43,56 @@ def remove_previews(previews):
     return None
 
 
+class BookGenAddonProperties(bpy.types.PropertyGroup):
+    """
+    This store the current state of the bookGen add-on.
+    """
+    outline = BookGenShelfOutline()
+
+    def update_outline_active(self, context):
+        """
+        If the outline was activated, generate the shelf and draw the outline.
+        Otherwise disable the outline.
+        """
+        properties = context.scene.BookGenAddonProperties
+        if properties.outline_active and properties.active_shelf != -1:
+            grouping_collection = get_shelf_collection_by_index(properties.active_shelf)
+            grouping_props = grouping_collection.BookGenGroupingProperties
+            settings = get_settings_by_name(context, grouping_props.settings_name)
+            if grouping_props.grouping_type == 'SHELF':
+                parameters = get_shelf_parameters(grouping_props.id, settings)
+                shelf = Shelf(
+                    grouping_collection.name,
+                    grouping_props.start,
+                    grouping_props.end,
+                    grouping_props.normal,
+                    parameters)
+                shelf.fill()
+                self.outline.enable_outline(*shelf.get_geometry(), context)
+            else:
+                parameters = get_stack_parameters(grouping_props.id, settings)
+                shelf = Stack(
+                    grouping_collection.name,
+                    grouping_props.origin,
+                    grouping_props.forward,
+                    grouping_props.normal,
+                    grouping_props.height,
+                    parameters)
+                shelf.fill()
+                self.outline.enable_outline(*shelf.get_geometry(), context)
+        else:
+            self.outline.disable_outline()
+
+    auto_rebuild: BoolProperty(name="auto rebuild", default=True)
+    active_shelf: IntProperty(name="active_shelf", update=update_outline_active)
+    outline_active: BoolProperty(name="outline active shelf", default=False, update=update_outline_active)
+
+
 class BookGenProperties(bpy.types.PropertyGroup):
     """
     This contains the settings of a shelf including book-shape, alignment and leaning.
     """
     log = logging.getLogger("bookGen.properties")
-    outline = BookGenShelfOutline()
     previews = {}
     f = None
 
@@ -58,12 +108,12 @@ class BookGenProperties(bpy.types.PropertyGroup):
         else:
             self.update_immediate(context)
 
-    def update_immediate(self, _context):
+    def update_immediate(self, context):
         """
         Updates the scene using the settings in this property group.
         """
         time_start = time.time()
-        properties = get_bookgen_collection().BookGenProperties
+        properties = context.scene.BookGenAddonProperties
 
         if properties.auto_rebuild:
             bpy.ops.bookgen.rebuild()
@@ -87,7 +137,7 @@ class BookGenProperties(bpy.types.PropertyGroup):
             return
 
         for shelf_collection in get_bookgen_collection().children:
-            shelf_props = shelf_collection.BookGenShelfProperties
+            shelf_props = shelf_collection.BookGenGroupingProperties
 
             parameters["seed"] += shelf_props.id
 
@@ -114,22 +164,6 @@ class BookGenProperties(bpy.types.PropertyGroup):
         partial = functools.partial(remove_previews, self.previews.values())
         bpy.app.timers.register(partial, first_interval=1.0)
 
-    def update_outline_active(self, context):
-        """
-        If the outline was activated, generate the shelf and draw the outline.
-        Otherwise disable the outline.
-        """
-        properties = get_bookgen_collection().BookGenProperties
-        if properties.outline_active and properties.active_shelf != -1:
-            shelf_collection = get_shelf_collection_by_index(properties.active_shelf)
-            shelf_props = shelf_collection.BookGenShelfProperties
-            parameters = get_shelf_parameters(shelf_props.id)
-            shelf = Shelf(shelf_collection.name, shelf_props.start, shelf_props.end, shelf_props.normal, parameters)
-            shelf.fill()
-            self.outline.enable_outline(*shelf.get_geometry(), context)
-        else:
-            self.outline.disable_outline()
-
     def get_name(self):
         return self.get("name", "BookGenSettings")
 
@@ -138,14 +172,11 @@ class BookGenProperties(bpy.types.PropertyGroup):
         self["name"] = name
         if name != old_name:
             for collection in get_bookgen_collection().children:
-                if collection.BookGenShelfProperties.settings_name == old_name:
-                    collection.BookGenShelfProperties.settings_name = name
+                if collection.BookGenGroupingProperties.settings_name == old_name:
+                    collection.BookGenGroupingProperties.settings_name = name
 
     # general
     name: StringProperty(name="name", default="BookGenSettings", set=set_name, get=get_name)
-    auto_rebuild: BoolProperty(name="auto rebuild", default=True)
-    active_shelf: IntProperty(name="active_shelf", update=update_outline_active)
-    outline_active: BoolProperty(name="outline active shelf", default=False, update=update_outline_active)
 
     # shelf
     scale: FloatProperty(name="scale", min=0.1, default=1, update=update)
@@ -171,6 +202,11 @@ class BookGenProperties(bpy.types.PropertyGroup):
         update=update)
     rndm_lean_angle_factor: FloatProperty(
         name="random", default=1, min=.0, soft_max=1, subtype="FACTOR", update=update)
+
+    # stack
+    rotation: FloatProperty(name="rotation", subtype='FACTOR', min=.0, max=1.0, update=update)
+
+    # books
 
     book_height: FloatProperty(
         name="height", default=0.15, min=.05, step=0.005, unit="LENGTH", update=update)
@@ -225,7 +261,14 @@ class BookGenProperties(bpy.types.PropertyGroup):
     page_material: PointerProperty(name="Page Material", type=bpy.types.Material, update=update_immediate)
 
 
-class BookGenShelfProperties(bpy.types.PropertyGroup):
+class BookGenGroupingProperties(bpy.types.PropertyGroup):
+    """
+    This describes how a grouping of books
+    what type of grouping it is
+    is positioned in 3d space,
+    what settings it uses
+    """
+
     """
     This describes how a shelf is positioned in 3D space.
     """

@@ -22,15 +22,17 @@ BookGen is a add-on for the 3D graphics software Blender. It allows to procedura
 
 from bpy.app.handlers import persistent
 
-from .properties import BookGenProperties, BookGenShelfProperties
+from .properties import BookGenProperties, BookGenGroupingProperties, BookGenAddonProperties
 from .utils import get_bookgen_collection
 from .shelf_list import BOOKGEN_UL_Shelves
 from .panel import (
-    BOOKGEN_PT_Panel,
+    BOOKGEN_PT_ShelfPanel,
     BOOKGEN_PT_MainPanel,
     BOOKGEN_PT_LeaningPanel,
     BOOKGEN_PT_ProportionsPanel,
-    BOOKGEN_PT_DetailsPanel)
+    BOOKGEN_PT_DetailsPanel,
+    BOOKGEN_PT_BookPanel,
+    BOOKGEN_PT_StackPanel)
 
 from .generic_operators import (
     BOOKGEN_OT_Rebuild,
@@ -62,11 +64,13 @@ bl_info = {
 
 classes = [
     BookGenProperties,
-    BookGenShelfProperties,
+    BookGenGroupingProperties,
+    BookGenAddonProperties,
     BOOKGEN_OT_Rebuild,
     BOOKGEN_OT_RemoveShelf,
     BOOKGEN_PT_MainPanel,
-    BOOKGEN_PT_Panel,
+    BOOKGEN_PT_BookPanel,
+    BOOKGEN_PT_ShelfPanel,
     BOOKGEN_PT_LeaningPanel,
     BOOKGEN_PT_ProportionsPanel,
     BOOKGEN_PT_DetailsPanel,
@@ -76,7 +80,9 @@ classes = [
     BOOKGEN_AddonPreferences,
     BOOKGEN_OT_CreateSettings,
     BOOKGEN_OT_SetSettings,
-    BOOKGEN_OT_RemoveSettings
+    BOOKGEN_OT_RemoveSettings,
+    BOOKGEN_PT_StackPanel
+
 ]
 
 
@@ -90,9 +96,9 @@ def register():
     for cls in classes:
         register_class(cls)
 
-    bpy.types.Collection.BookGenProperties = bpy.props.PointerProperty(type=BookGenProperties)
-    bpy.types.Collection.BookGenShelfProperties = bpy.props.PointerProperty(type=BookGenShelfProperties)
+    bpy.types.Collection.BookGenGroupingProperties = bpy.props.PointerProperty(type=BookGenGroupingProperties)
     bpy.types.Scene.BookGenSettings = bpy.props.CollectionProperty(type=BookGenProperties)
+    bpy.types.Scene.BookGenAddonProperties = bpy.props.PointerProperty(type=BookGenAddonProperties)
 
     bpy.app.handlers.load_post.append(bookgen_startup)
 

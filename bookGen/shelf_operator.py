@@ -29,7 +29,7 @@ class BOOKGEN_OT_RemoveShelf(bpy.types.Operator):
 
     log = logging.getLogger("bookGen.operator")
 
-    def invoke(self, _context, _event):
+    def invoke(self, context, _event):
         """ Remove shelves called from the UI
 
         Args:
@@ -39,10 +39,10 @@ class BOOKGEN_OT_RemoveShelf(bpy.types.Operator):
         Returns:
             Set[str]: operator return code
         """
-        self.run()
+        self.run(context)
         return {'FINISHED'}
 
-    def execute(self, _context):
+    def execute(self, context):
         """ Remove shelves called from a script
 
         Args:
@@ -51,7 +51,7 @@ class BOOKGEN_OT_RemoveShelf(bpy.types.Operator):
         Returns:
             Set[str]: operator return code
         """
-        self.run()
+        self.run(context)
         return {'FINISHED'}
 
     @classmethod
@@ -66,14 +66,14 @@ class BOOKGEN_OT_RemoveShelf(bpy.types.Operator):
         """
         return context.mode == 'OBJECT'
 
-    def run(self):
+    def run(self, context):
         """
         Remove the active shelf if it exists. Unlink all books in it from the collection.
         Update the active shelf id.
         """
 
         parent = get_bookgen_collection()
-        active = parent.BookGenProperties.active_shelf
+        active = context.scene.BookGenAddonProperties.active_shelf
         if active < 0 or active >= len(parent.children):
             return
         collection = parent.children[active]
@@ -84,10 +84,10 @@ class BOOKGEN_OT_RemoveShelf(bpy.types.Operator):
         parent.children.unlink(collection)
         bpy.data.collections.remove(collection)
 
-        parent.BookGenProperties.active_shelf -= 1
+        context.scene.BookGenAddonProperties.active_shelf -= 1
 
         if active != len(parent.children):
-            parent.BookGenProperties.active_shelf += 1
+            context.scene.BookGenAddonProperties.active_shelf += 1
 
 
 class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
@@ -189,7 +189,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
 
         # set properties for later rebuild
         shelf_props = get_shelf_collection(
-            shelf.name).BookGenShelfProperties
+            shelf.name).BookGenGroupingProperties
         shelf_props.start = self.start
         shelf_props.end = self.end
         shelf_props.normal = normal
