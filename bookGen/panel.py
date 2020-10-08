@@ -247,11 +247,20 @@ class BOOKGEN_PT_MainPanel(bpy.types.Panel):
             context (bpy.types.Context): the execution context
         """
         properties = context.scene.BookGenAddonProperties
+        icons = bpy.context.scene.bookgen_icons
         layout = self.layout
-        layout.operator("bookgen.select_shelf", text="Add shelf")
-        # layout.operator("object.book_gen_select_shelf_faces", text="Add shelf face")
-        layout.operator("object.book_gen_select_stack", text="Add stack")
-        layout.operator("bookgen.rebuild", text="Rebuild")
+
+        row = layout.row()
+        row.scale_y = 1.5
+        row.operator("bookgen.select_shelf", text="Add shelf", icon_value=icons["shelf"].icon_id)
+
+        row = layout.row()
+        row.scale_y = 1.5
+        row.operator("object.book_gen_select_stack", text="Add stack", icon_value=icons["stack"].icon_id)
+
+        row = layout.row()
+        row.scale_y = 1.5
+        row.operator("bookgen.rebuild", text="Rebuild", icon_value=icons["rebuild"].icon_id)
         layout.prop(properties, "auto_rebuild")
         layout.label(text="Book Groupings")
         row = layout.row()

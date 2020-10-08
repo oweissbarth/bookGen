@@ -90,8 +90,16 @@ def register():
     """
     Register all custom operators, panels, ui-lists and properties.
     """
-    from bpy.utils import register_class
+    from bpy.utils import register_class, previews
     import bpy
+    import os
+
+    bookgen_icons = previews.new()
+    bpy.types.Scene.bookgen_icons = bookgen_icons
+    icons_dir = os.path.join(os.path.dirname(__file__), "icons")
+    bookgen_icons.load("shelf", os.path.join(icons_dir, "shelf.png"), 'IMAGE')
+    bookgen_icons.load("stack", os.path.join(icons_dir, "stack.png"), 'IMAGE')
+    bookgen_icons.load("rebuild", os.path.join(icons_dir, "rebuild.png"), 'IMAGE')
 
     for cls in classes:
         register_class(cls)
@@ -113,6 +121,8 @@ def unregister():
     for cls in reversed(classes):
         unregister_class(cls)
     bpy.app.handlers.load_post.remove(bookgen_startup)
+
+    bpy.utils.previews.remove(bpy.context.scene.bookgen_icons)
 
 
 @persistent
