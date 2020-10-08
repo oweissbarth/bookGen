@@ -116,15 +116,13 @@ def unregister():
 
 
 @persistent
-def bookgen_startup(scene):
+def bookgen_startup(_dummy):
     """
     Ensure that the outline is disabled on start-up.
     """
     import bpy
 
-    collection = get_bookgen_collection(bpy.context, create=False)
-    if collection is not None:
-        collection.BookGenProperties.outline_active = False
+    bpy.context.scene.BookGenAddonProperties.outline_active = False
 
     if not bpy.context.scene.BookGenSettings:
         bpy.context.scene.BookGenSettings.add()
