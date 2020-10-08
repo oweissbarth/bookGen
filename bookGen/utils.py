@@ -9,7 +9,7 @@ import bpy_extras.view3d_utils
 from mathutils import Vector
 
 
-def get_bookgen_collection(create=True):
+def get_bookgen_collection(context, create=True):
     """ Retrieves the bookgen collection
 
     Args:
@@ -18,18 +18,18 @@ def get_bookgen_collection(create=True):
     Returns:
         bpy.types.Collection: the bookgen collection
     """
-    for collection in bpy.context.scene.collection.children:
+    for collection in context.scene.collection.children:
         if collection.name == "BookGen":
             return collection
     if create:
         collection = bpy.data.collections.new("BookGen")
-        bpy.context.scene.collection.children.link(collection)
+        context.scene.collection.children.link(collection)
     else:
         collection = None
     return collection
 
 
-def get_shelf_collection(name):
+def get_shelf_collection(context, name):  # TODO make name generic
     """ Retrieves a shelf collection by name
 
     Args:
@@ -38,7 +38,7 @@ def get_shelf_collection(name):
     Returns:
         bpy.types.Collection: the shelf collection or None
     """
-    bookgen = get_bookgen_collection()
+    bookgen = get_bookgen_collection(context)
     for collection in bookgen.children:
         if collection.name == name:
             return collection
@@ -48,7 +48,7 @@ def get_shelf_collection(name):
     return col
 
 
-def get_shelf_collection_by_index(index):
+def get_shelf_collection_by_index(context, index):
     """ Retrieves a shelf collection by index
 
     Args:
@@ -57,16 +57,16 @@ def get_shelf_collection_by_index(index):
     Returns:
         bpy.types.Collection: the shelf collection or None
     """
-    bookgen = get_bookgen_collection()
+    bookgen = get_bookgen_collection(context)
     if index < 0 or index >= len(bookgen.children):
         return None
     return bookgen.children[index]
 
 
-def visible_objects_and_duplis():
+def visible_objects_and_duplis(context):
     """Loop over (object, matrix) pairs (mesh only)"""
 
-    depsgraph = bpy.context.evaluated_depsgraph_get()  # TODO pass in the context here.
+    depsgraph = context.evaluated_depsgraph_get()  # TODO pass in the context here.
     for dup in depsgraph.object_instances:
         if dup.is_instance:  # Real dupli instance
             obj = dup.instance_object
@@ -76,7 +76,7 @@ def visible_objects_and_duplis():
             yield (obj, obj.matrix_world.copy())
 
 
-def obj_ray_cast(obj, matrix, ray_origin, ray_target):
+def obj_ray_cast(context, obj, matrix, ray_origin, ray_target):
     """Wrapper for ray casting that moves the ray into object space"""
 
     # get the ray relative to the object
@@ -104,7 +104,7 @@ def project_to_screen(context, world_space_point):
 bookGen_directory = os.path.dirname(os.path.realpath(__file__))
 
 
-def get_shelf_parameters(shelf_id=0, settings=None):
+def get_shelf_parameters(context, shelf_id=0, settings=None):
     """ Collects the parameters for a specific shelf
 
     Args:
@@ -113,7 +113,10 @@ def get_shelf_parameters(shelf_id=0, settings=None):
     Returns:
         Dict[str, any]: a dictionary of the shelf parameters
     """
-    properties = settings
+    if settings:
+        properties = settings
+    else:
+        properties = get_bookgen_collection(context).BookGenProperties
 
     parameters = {
         "scale": properties.scale,
@@ -146,7 +149,7 @@ def get_shelf_parameters(shelf_id=0, settings=None):
     return parameters
 
 
-def get_stack_parameters(shelf_id=0, settings=None):
+def get_stack_parameters(context, shelf_id=0, settings=None):
     """ Collects the parameters for a specific stack
 
     Args:
@@ -158,7 +161,7 @@ def get_stack_parameters(shelf_id=0, settings=None):
     if settings:
         properties = settings
     else:
-        properties = get_bookgen_collection().BookGenProperties
+        properties = get_bookgen_collection(context).BookGenProperties
 
     parameters = {
         "scale": properties.scale,
@@ -187,7 +190,7 @@ def get_stack_parameters(shelf_id=0, settings=None):
     return parameters
 
 
-def ray_cast(mouse_x, mouse_y):
+def ray_cast(context, mouse_x, mouse_y):
     """ Shoots a ray from the cursor position into the scene and returns the closest intersection
 
     Args:
@@ -198,8 +201,8 @@ def ray_cast(mouse_x, mouse_y):
         (Vector, Vector, int, bpy.types.Object): A tuple containing the position, normal,
                                                  face id and object of the closest intersection
     """
-    region = bpy.context.region
-    region_data = bpy.context.space_data.region_3d
+    region = context.region
+    region_data = context.space_data.region_3d
 
     view_vector = bpy_extras.view3d_utils.region_2d_to_vector_3d(region, region_data, (mouse_x, mouse_y))
     ray_origin = bpy_extras.view3d_utils.region_2d_to_origin_3d(region, region_data, (mouse_x, mouse_y))
@@ -212,9 +215,9 @@ def ray_cast(mouse_x, mouse_y):
     closest_obj = None
     closest_face = None
 
-    for obj, matrix in visible_objects_and_duplis():
+    for obj, matrix in visible_objects_and_duplis(context):
         if obj.type == 'MESH':
-            hit, normal, face = obj_ray_cast(obj, matrix, ray_origin, ray_target)
+            hit, normal, face = obj_ray_cast(context, obj, matrix, ray_origin, ray_target)
             if hit is not None:
                 _, rot, _ = matrix.decompose()
                 hit_world = matrix @ hit
@@ -230,7 +233,7 @@ def ray_cast(mouse_x, mouse_y):
     return closest_loc, closest_normal, closest_face, closest_obj
 
 
-def get_click_face(mouse_x, mouse_y):
+def get_click_face(context, mouse_x, mouse_y):
     """ Shoots a ray from the cursor position into the scene and returns the closest intersection object and face id
 
     Args:
@@ -240,11 +243,11 @@ def get_click_face(mouse_x, mouse_y):
     Returns:
         (bpy.types.Object, int): A tuple containing the object and face id
     """
-    _, _, closest_face, closest_obj = ray_cast(mouse_x, mouse_y)
+    _, _, closest_face, closest_obj = ray_cast(context, mouse_x, mouse_y)
     return closest_obj, closest_face
 
 
-def get_click_position_on_object(mouse_x, mouse_y):
+def get_click_position_on_object(context, mouse_x, mouse_y):
     """ Shoots a ray from the cursor position into the scene and returns the closest intersection
 
     Args:
@@ -254,7 +257,7 @@ def get_click_position_on_object(mouse_x, mouse_y):
     Returns:
         (Vector, Vector): A tuple containing the position and normal
     """
-    closest_loc, closest_normal, _, _ = ray_cast(mouse_x, mouse_y)
+    closest_loc, closest_normal, _, _ = ray_cast(context, mouse_x, mouse_y)
 
     return closest_loc, closest_normal
 
@@ -272,25 +275,25 @@ def vector_scale(vector_a, vector_b):
     return Vector(x * y for x, y in zip(vector_a, vector_b))
 
 
-def get_free_shelf_id():
+def get_free_shelf_id(context):
     """ Finds the next unused shelf id
 
     Returns:
         int: the next unused shelf id
     """
-    return get_free_id("shelf")
+    return get_free_id(context, "shelf")
 
 
-def get_free_stack_id():
+def get_free_stack_id(context):
     """ Finds the next unused stack id
 
     Returns:
         int: the next unused shelf id
     """
-    return get_free_id("stack")
+    return get_free_id(context, "stack")
 
 
-def get_free_id(name: str):
+def get_free_id(context, name: str):
     """ Finds the next unused id of the given name
 
     Args:
@@ -299,7 +302,7 @@ def get_free_id(name: str):
     Returns:
         int: the next unused id
     """
-    groupings = get_bookgen_collection().children
+    groupings = get_bookgen_collection(context).children
 
     names = list(map(lambda x: x.name, groupings))
     name_found = False
@@ -317,7 +320,7 @@ def get_active_grouping(context):
         bpy.types.Collection: the collection of the active grouping
     """
     shelf_id = context.scene.BookGenAddonProperties.active_shelf
-    return get_shelf_collection_by_index(shelf_id)
+    return get_shelf_collection_by_index(context, shelf_id)
 
 
 def get_active_settings(context):

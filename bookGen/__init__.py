@@ -122,7 +122,7 @@ def bookgen_startup(scene):
     """
     import bpy
 
-    collection = get_bookgen_collection(create=False)
+    collection = get_bookgen_collection(bpy.context, create=False)
     if collection is not None:
         collection.BookGenProperties.outline_active = False
 

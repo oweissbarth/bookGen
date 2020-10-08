@@ -255,7 +255,7 @@ class BOOKGEN_PT_MainPanel(bpy.types.Panel):
         layout.prop(properties, "auto_rebuild")
         layout.label(text="Book Groupings")
         row = layout.row()
-        row.template_list("BOOKGEN_UL_Shelves", "", get_bookgen_collection(), "children",
+        row.template_list("BOOKGEN_UL_Shelves", "", get_bookgen_collection(context), "children",
                           context.scene.BookGenAddonProperties, "active_shelf")
         col = row.column(align=True)
         col.operator("bookgen.remove_shelf", icon="X", text="")

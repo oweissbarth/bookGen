@@ -76,29 +76,29 @@ class BOOKGEN_OT_Rebuild(bpy.types.Operator):
         """
         time_start = time.time()
 
-        for grouping_collection in get_bookgen_collection().children:
+        for grouping_collection in get_bookgen_collection(context).children:
             grouping_props = grouping_collection.BookGenGroupingProperties
             settings = get_settings_by_name(context, grouping_props.settings_name)
             if not settings:
                 continue
 
             if grouping_props.grouping_type == 'SHELF':
-                parameters = get_shelf_parameters(grouping_props.id, settings)
+                parameters = get_shelf_parameters(context, grouping_props.id, settings)
 
                 shelf = Shelf(grouping_collection.name, grouping_props.start,
                               grouping_props.end, grouping_props.normal, parameters)
-                shelf.clean()
+                shelf.clean(context)
                 shelf.fill()
 
-                shelf.to_collection(with_uvs=True)
+                shelf.to_collection(context, with_uvs=True)
             else:
-                parameters = get_stack_parameters(grouping_props.id, settings)
+                parameters = get_stack_parameters(context, grouping_props.id, settings)
                 stack = Stack(grouping_collection.name, grouping_props.origin,
                               grouping_props.forward, grouping_props.normal, grouping_props.height, parameters)
-                stack.clean()
+                stack.clean(context)
                 stack.fill()
 
-                stack.to_collection()
+                stack.to_collection(context)
 
         self.log.info("Finished populating shelf in %.4f secs", (time.time() - time_start))
 
@@ -154,7 +154,7 @@ class BOOKGEN_OT_CreateSettings(bpy.types.Operator):
         Collect new parameters, remove existing books,
         generate new books based on the parameters and add them to the  scene.
         """
-        setting = bpy.context.scene.BookGenSettings.add()
+        setting = context.scene.BookGenSettings.add()
         setting.name = self.name
 
         active_grouping = get_active_grouping(context)
@@ -232,7 +232,7 @@ class BOOKGEN_OT_RemoveSettings(bpy.types.Operator):
 
     context = None
 
-    def invoke(self, context, event):
+    def invoke(self, context, _event):
         """ Remove settings called from the UI
 
         Args:
@@ -251,7 +251,7 @@ class BOOKGEN_OT_RemoveSettings(bpy.types.Operator):
 
         context.scene.BookGenSettings.remove(settings_id)
 
-        for collection in get_bookgen_collection().children:
+        for collection in get_bookgen_collection(context).children:
             if collection.BookGenGroupingProperties.settings_name == settings_name:
                 collection.BookGenGroupingProperties.settings_name = ""
 

@@ -121,8 +121,8 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         """
         if self.origin is None:
             print("setting origin")
-            self.origin, self.origin_normal = get_click_position_on_object(
-                mouse_x, mouse_y)
+            self.origin, self.origin_normal = get_click_position_on_object(context,
+                                                                           mouse_x, mouse_y)
 
             self.origin_2d = project_to_screen(context, self.origin)
             normal_offset_2d = project_to_screen(context, self.origin + self.origin_normal)
@@ -131,27 +131,27 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
             return {'RUNNING_MODAL'}
         if self.forward is None:
             print("setting forward")
-            front, _ = get_click_position_on_object(mouse_x, mouse_y)
+            front, _ = get_click_position_on_object(context, mouse_x, mouse_y)
             original_direction = front - self.origin
             distance = original_direction.dot(self.origin_normal)
             projected_front = front - distance * self.origin_normal
             self.forward = (projected_front - self.origin).normalized()
             return {'RUNNING_MODAL'}
 
-        stack_id = get_free_stack_id()
+        stack_id = get_free_stack_id(context)
         settings_name = get_settings_for_new_grouping(context).name
         settings = get_settings_by_name(context, settings_name)
 
-        parameters = get_stack_parameters(stack_id, settings)
+        parameters = get_stack_parameters(context, stack_id, settings)
 
         stack = Stack("stack_" + str(stack_id), self.origin,
                       self.forward, self.origin_normal, self.height, parameters)
-        stack.clean()
+        stack.clean(context)
         stack.fill()
 
         # set properties for later rebuild
-        stack_props = get_shelf_collection(
-            stack.name).BookGenGroupingProperties
+        stack_props = get_shelf_collection(context,
+                                           stack.name).BookGenGroupingProperties
         stack_props.origin = self.origin
         stack_props.forward = self.forward
         stack_props.normal = self.origin_normal
@@ -162,7 +162,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
 
         self.gizmo.remove()
         self.outline.disable_outline()
-        stack.to_collection()
+        stack.to_collection(context)
 
         return {'FINISHED'}
 
@@ -202,14 +202,14 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         self.log.info("Refreshing preview")
 
         if self.origin is None:
-            origin, origin_normal = get_click_position_on_object(
-                mouse_x, mouse_y)
+            origin, origin_normal = get_click_position_on_object(context,
+                                                                 mouse_x, mouse_y)
             self.gizmo.update(origin, self.forward, origin_normal, None)
             return
 
         if self.forward is None:
-            front, _ = get_click_position_on_object(
-                mouse_x, mouse_y)
+            front, _ = get_click_position_on_object(context,
+                                                    mouse_x, mouse_y)
             if front is None:
                 return
             original_direction = front - self.origin
@@ -220,11 +220,11 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
             return
 
         self.gizmo.remove()
-        stack_id = get_free_stack_id()
+        stack_id = get_free_stack_id(context)
         settings_name = get_settings_for_new_grouping(context).name
         settings = get_settings_by_name(context, settings_name)
 
-        parameters = get_stack_parameters(stack_id, settings)
+        parameters = get_stack_parameters(context, stack_id, settings)
         stack = Stack("stack_" + str(stack_id), self.origin,
                       self.forward, self.origin_normal, self.height, parameters)
         stack.fill()

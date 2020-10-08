@@ -72,7 +72,7 @@ class BOOKGEN_OT_RemoveShelf(bpy.types.Operator):
         Update the active shelf id.
         """
 
-        parent = get_bookgen_collection()
+        parent = get_bookgen_collection(context)
         active = context.scene.BookGenAddonProperties.active_shelf
         if active < 0 or active >= len(parent.children):
             return
@@ -145,7 +145,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         If there is no object under the cursor remove the gizmo.
         """
         if self.start is not None:
-            self.end, normal = get_click_position_on_object(mouse_x, mouse_y)
+            self.end, normal = get_click_position_on_object(context, mouse_x, mouse_y)
             if self.end is not None:
                 self.end_original = self.end.copy()
                 self.end_normal = normal
@@ -166,30 +166,30 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         """
 
         if self.start is None:
-            self.start, self.start_normal = get_click_position_on_object(
-                mouse_x, mouse_y)
+            self.start, self.start_normal = get_click_position_on_object(context,
+                                                                         mouse_x, mouse_y)
             return {'RUNNING_MODAL'}
 
         if self.end is None:
             return {'RUNNING_MODAL'}
 
-        shelf_id = get_free_shelf_id()
+        shelf_id = get_free_shelf_id(context)
 
         settings_name = get_settings_for_new_grouping(context).name
 
         settings = get_settings_by_name(context, settings_name)
 
-        parameters = get_shelf_parameters(shelf_id, settings)
+        parameters = get_shelf_parameters(context, shelf_id, settings)
 
         normal = (self.start_normal + self.end_normal) / 2
         shelf = Shelf("shelf_" + str(shelf_id), self.start,
                       self.end, normal, parameters)
-        shelf.clean()
+        print(shelf.collection)
+        shelf.clean(context)
         shelf.fill()
 
         # set properties for later rebuild
-        shelf_props = get_shelf_collection(
-            shelf.name).BookGenGroupingProperties
+        shelf_props = get_shelf_collection(context, shelf.name).BookGenGroupingProperties
         shelf_props.start = self.start
         shelf_props.end = self.end
         shelf_props.normal = normal
@@ -199,7 +199,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         self.gizmo.remove()
         self.outline.disable_outline()
         self.limit_line.remove()
-        shelf.to_collection(with_uvs=True)
+        shelf.to_collection(context, with_uvs=True)
 
         return {'FINISHED'}
 
@@ -240,7 +240,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         settings_name = get_settings_for_new_grouping(context).name
 
         settings = get_settings_by_name(context, settings_name)
-        props = get_shelf_parameters(0, settings)
+        props = get_shelf_parameters(context, 0, settings)
         self.gizmo = BookGenShelfGizmo(props["book_height"], props["book_depth"], context)
         self.outline = BookGenShelfOutline()
         self.limit_line = BookGenLimitLine(self.axis_constraint, context)
@@ -256,13 +256,13 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         if self.start is None or self.end is None:
             return
         normal = (self.start_normal + self.end_normal) / 2
-        shelf_id = get_free_shelf_id()
+        shelf_id = get_free_shelf_id(context)
 
         settings_name = get_settings_for_new_grouping(context).name
 
         settings = get_settings_by_name(context, settings_name)
 
-        parameters = get_shelf_parameters(shelf_id, settings)
+        parameters = get_shelf_parameters(context, shelf_id, settings)
 
         shelf = Shelf("shelf_" + str(shelf_id), self.start,
                       self.end, normal, parameters)

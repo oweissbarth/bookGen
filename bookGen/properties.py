@@ -47,6 +47,7 @@ class BookGenAddonProperties(bpy.types.PropertyGroup):
     """
     This store the current state of the bookGen add-on.
     """
+    #outline = None
     outline = BookGenShelfOutline()
 
     def update_outline_active(self, context):
@@ -56,11 +57,11 @@ class BookGenAddonProperties(bpy.types.PropertyGroup):
         """
         properties = context.scene.BookGenAddonProperties
         if properties.outline_active and properties.active_shelf != -1:
-            grouping_collection = get_shelf_collection_by_index(properties.active_shelf)
+            grouping_collection = get_shelf_collection_by_index(context, properties.active_shelf)
             grouping_props = grouping_collection.BookGenGroupingProperties
             settings = get_settings_by_name(context, grouping_props.settings_name)
             if grouping_props.grouping_type == 'SHELF':
-                parameters = get_shelf_parameters(grouping_props.id, settings)
+                parameters = get_shelf_parameters(context, grouping_props.id, settings)
                 shelf = Shelf(
                     grouping_collection.name,
                     grouping_props.start,
@@ -70,7 +71,7 @@ class BookGenAddonProperties(bpy.types.PropertyGroup):
                 shelf.fill()
                 self.outline.enable_outline(*shelf.get_geometry(), context)
             else:
-                parameters = get_stack_parameters(grouping_props.id, settings)
+                parameters = get_stack_parameters(context, grouping_props.id, settings)
                 shelf = Stack(
                     grouping_collection.name,
                     grouping_props.origin,
@@ -126,17 +127,16 @@ class BookGenProperties(bpy.types.PropertyGroup):
         Generates a preview of the current shelve configuration and draw it.
         Sets up a timer to update the scene after a delay of 1 second
         """
-        # self.update_immediate(context)
-        # return
+
         global partial
         time_start = time.time()
         parameters = get_shelf_parameters()
-        properties = get_bookgen_collection().BookGenProperties
+        properties = get_bookgen_collection(context).BookGenProperties
 
         if not properties.auto_rebuild:
             return
 
-        for shelf_collection in get_bookgen_collection().children:
+        for shelf_collection in get_bookgen_collection(context).children:
             shelf_props = shelf_collection.BookGenGroupingProperties
 
             parameters["seed"] += shelf_props.id
@@ -156,7 +156,7 @@ class BookGenProperties(bpy.types.PropertyGroup):
             preview.update(*shelf.get_geometry(), context)
 
         self.log.info("Finished populating shelf in %.4f secs", (time.time() - time_start))
-        properties = get_bookgen_collection().BookGenProperties
+        properties = get_bookgen_collection(context).BookGenProperties
 
         if partial is not None and bpy.app.timers.is_registered(partial):
             bpy.app.timers.unregister(partial)
@@ -171,7 +171,8 @@ class BookGenProperties(bpy.types.PropertyGroup):
         old_name = self.name
         self["name"] = name
         if name != old_name:
-            for collection in get_bookgen_collection().children:
+            for collection in get_bookgen_collection(
+                    bpy.context).children:  # TODO we should not use the global context here
                 if collection.BookGenGroupingProperties.settings_name == old_name:
                     collection.BookGenGroupingProperties.settings_name = name
 

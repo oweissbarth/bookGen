@@ -42,7 +42,7 @@ class BookGenShelfGizmo():
         color_ref = context.preferences.themes[0].user_interface.gizmo_primary
         self.bookstand_color = [color_ref[0], color_ref[1], color_ref[2], 0.6]
 
-    def draw(self, _context):
+    def draw(self, context):
         """ Draws shelf gizmo based on the current configuration
 
         Args:
@@ -58,7 +58,7 @@ class BookGenShelfGizmo():
         bgl.glDisable(bgl.GL_BLEND)
 
         bgl.glLineWidth(3)
-        matrix = bpy.context.region_data.perspective_matrix
+        matrix = context.region_data.perspective_matrix
         self.line_shader.bind()
         self.line_shader.uniform_float("u_ViewProjectionMatrix", matrix)
         self.line_shader.uniform_float("u_Scale", 100)
@@ -139,7 +139,7 @@ class BookGenShelfFaceGizmo():
 
         self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, (context, ), 'WINDOW', 'POST_VIEW')
 
-        color_ref = bpy.context.preferences.themes[0].user_interface.gizmo_primary
+        color_ref = context.preferences.themes[0].user_interface.gizmo_primary
         self.color = [color_ref[0], color_ref[1], color_ref[2], 0.6]
 
     def draw(self, _context):

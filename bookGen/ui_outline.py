@@ -16,18 +16,18 @@ class BookGenShelfOutline:
     batch = None
 
     def __init__(self):
-        col_ref = bpy.context.preferences.themes[0].view_3d.face_select
-        self.outline_color = (col_ref[0], col_ref[1], col_ref[2], 0.3)
         self.batch = None
         self.shader = None
 
-    def update(self, vertices, faces, _context):
+    def update(self, vertices, faces, context):
         """ Updates the axis constraint visualization based on the current configuration
 
         Args:
             vertices (List[mathutils.Vector]): the vertices of the shelf overlay
             faces (List[mathutils.Vector]): the face indices of the shelf overlay
         """
+        col_ref = context.preferences.themes[0].view_3d.face_select
+        self.outline_color = (col_ref[0], col_ref[1], col_ref[2], 0.3)
         self.shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
         indices = []
         for face in faces:

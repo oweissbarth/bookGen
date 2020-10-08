@@ -92,11 +92,11 @@ class Stack:
 
         book.location += self.origin
 
-    def to_collection(self):
+    def to_collection(self, context):
         """
         Converts the stack to a blender collection and adds the books as blender objects
         """
-        self.collection = get_shelf_collection(self.name)
+        self.collection = get_shelf_collection(context, self.name)
         for book in self.books:
             obj = book.to_object()
             self.collection.objects.link(obj)
@@ -138,7 +138,7 @@ class Stack:
 
             first = False
 
-    def clean(self):
+    def clean(self, context):
         """
         Removes all object from the stack and removes meshes from the scene
         """
@@ -146,7 +146,7 @@ class Stack:
         if self.collection is not None:
             collection = self.collection
         else:
-            bookgen = get_bookgen_collection()
+            bookgen = get_bookgen_collection(context)
             for child in bookgen.children:
                 if child.name == self.name:
                     collection = child

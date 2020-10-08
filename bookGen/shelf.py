@@ -95,13 +95,13 @@ class Shelf:
 
         book.location += self.origin
 
-    def to_collection(self, with_uvs=False):
+    def to_collection(self, context, with_uvs=False):
         """ Converts the shelf to a blender collection and adds the books as blender objects
 
         Args:
             with_uvs (bool, optional): Whether to generate UVs for the books. Defaults to False.
         """
-        self.collection = get_shelf_collection(self.name)
+        self.collection = get_shelf_collection(context, self.name)
         for book in self.books:
             obj = book.to_object(with_uvs)
             self.collection.objects.link(obj)
@@ -236,14 +236,14 @@ class Shelf:
             if cur_width < self.width:
                 self.add_book(current, cur_offset)
 
-    def clean(self):
+    def clean(self, context):
         """ Remove all object from the shelf and remove meshes from the scene
         """
         col = None
         if self.collection is not None:
             col = self.collection
         else:
-            bookgen = get_bookgen_collection()
+            bookgen = get_bookgen_collection(context)
             for child in bookgen.children:
                 if child.name == self.name:
                     col = child
