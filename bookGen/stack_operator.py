@@ -120,7 +120,6 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
             Set[str]: the operator return code
         """
         if self.origin is None:
-            print("setting origin")
             self.origin, self.origin_normal = get_click_position_on_object(context,
                                                                            mouse_x, mouse_y)
 
@@ -130,7 +129,6 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
 
             return {'RUNNING_MODAL'}
         if self.forward is None:
-            print("setting forward")
             front, _ = get_click_position_on_object(context, mouse_x, mouse_y)
             original_direction = front - self.origin
             distance = original_direction.dot(self.origin_normal)

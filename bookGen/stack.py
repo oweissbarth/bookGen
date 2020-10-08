@@ -88,7 +88,6 @@ class Stack:
         book.location = self.rotation_matrix @ book.location
         book.rotation = Matrix.Rotation(
             radians(rotation), 3, 'Z') @ self.rotation_matrix @ Matrix.Rotation(radians(90), 3, 'Y')
-        # print(book.rotation)
 
         book.location += self.origin
 

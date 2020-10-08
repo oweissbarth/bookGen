@@ -184,7 +184,6 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         normal = (self.start_normal + self.end_normal) / 2
         shelf = Shelf("shelf_" + str(shelf_id), self.start,
                       self.end, normal, parameters)
-        print(shelf.collection)
         shelf.clean(context)
         shelf.fill()
 

@@ -245,7 +245,6 @@ class BOOKGEN_OT_RemoveSettings(bpy.types.Operator):
         active_settings = get_active_settings(context)
         settings_name = active_settings.name
         settings_id = context.scene.BookGenSettings.find(settings_name)
-        print(settings_name, settings_id)
         if settings_id == -1:
             return {'CANCELLED'}
 
