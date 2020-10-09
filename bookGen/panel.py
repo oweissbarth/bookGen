@@ -85,7 +85,7 @@ class BOOKGEN_PT_LeaningPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "BookGen"
-    bl_options = set()
+    bl_options = {'DEFAULT_CLOSED'}
     bl_parent_id = "BOOKGEN_PT_ShelfPanel"
 
     @ classmethod
@@ -167,7 +167,6 @@ class BOOKGEN_PT_BookPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "BookGen"
-    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(self, context):
