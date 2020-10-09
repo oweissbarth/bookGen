@@ -15,6 +15,7 @@ from .utils import (get_bookgen_collection,
                     get_active_settings,
                     get_settings_by_name,
                     get_settings_for_new_grouping,
+                    get_grouping_index_by_name,
                     visible_objects_and_duplis)
 
 from .ui_gizmo import BookGenShelfGizmo
@@ -229,6 +230,9 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         self.limit_line.remove()
         shelf.to_collection(context, with_uvs=True)
 
+        index = get_grouping_index_by_name(context, shelf.name)
+
+        context.scene.BookGenAddonProperties.active_shelf = index
         context.window.cursor_modal_restore()
 
         return {'FINISHED'}

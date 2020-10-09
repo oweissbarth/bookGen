@@ -299,6 +299,22 @@ def vector_scale(vector_a, vector_b):
     return Vector(x * y for x, y in zip(vector_a, vector_b))
 
 
+def get_grouping_index_by_name(context, name):
+    """Returns the grouping index based on a given name
+
+    Args:
+        context (bpy.types.Context): the execution context
+        name (str): the name of the grouping
+
+    Returns:
+        int: the grouping index
+    """
+    for i, c in enumerate(get_bookgen_collection(context).children):
+        if c.name == name:
+            return i
+    return -1
+
+
 def get_free_shelf_id(context):
     """ Finds the next unused shelf id
 

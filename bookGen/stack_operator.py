@@ -20,6 +20,7 @@ from .utils import (
     get_settings_for_new_grouping,
     get_settings_by_name,
     get_click_on_plane,
+    get_grouping_index_by_name,
     visible_objects_and_duplis)
 from .ui_outline import BookGenShelfOutline
 
@@ -186,6 +187,10 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         self.gizmo.remove()
         self.outline.disable_outline()
         stack.to_collection(context)
+
+        index = get_grouping_index_by_name(context, stack.name)
+
+        context.scene.BookGenAddonProperties.active_shelf = index
 
         context.window.cursor_modal_restore()
 
