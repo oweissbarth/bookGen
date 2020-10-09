@@ -89,7 +89,8 @@ class BookGenAddonProperties(bpy.types.PropertyGroup):
     auto_rebuild: BoolProperty(name="auto rebuild", default=True, options=set())
     active_shelf: IntProperty(name="active_shelf", update=update_outline_active, options=set())
     outline_active: BoolProperty(
-        name="outline active shelf",
+        name="Highlight active",
+        description="Draws an overlay to highlight the active grouping",
         default=False,
         update=update_outline_active,
         options=set())

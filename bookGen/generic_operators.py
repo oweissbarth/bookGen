@@ -23,7 +23,8 @@ from .stack import Stack
 class BOOKGEN_OT_Rebuild(bpy.types.Operator):
     """Regenerate all books"""
     bl_idname = "bookgen.rebuild"
-    bl_label = "BookGen"
+    bl_label = "Regenerate all"
+    bl_description = "Regenerate all books"
     bl_options = {'REGISTER', 'UNDO_GROUPED'}
 
     """def hinge_inset_guard(self, context):
@@ -104,9 +105,10 @@ class BOOKGEN_OT_Rebuild(bpy.types.Operator):
 
 
 class BOOKGEN_OT_CreateSettings(bpy.types.Operator):
-    """Regenerate all books"""
+    """ Creates a new bookgen settings """
     bl_idname = "bookgen.create_settings"
-    bl_label = "Create new BookGen Settings"
+    bl_label = "Create Settings"
+    bl_description = "Creates a new settings data block"
     bl_options = {'INTERNAL'}
 
     name: StringProperty(name="name")
@@ -164,9 +166,9 @@ class BOOKGEN_OT_CreateSettings(bpy.types.Operator):
 
 
 class BOOKGEN_OT_SetSettings(bpy.types.Operator):
-    """Assign bookGen settings to grouping"""
+    """Select settings for the active grouping"""
     bl_idname = "bookgen.set_settings"
-    bl_label = "BookGen"
+    bl_label = "Select settings"
     bl_options = {'INTERNAL', 'UNDO'}
     bl_property = "enum"
 
@@ -227,7 +229,8 @@ class BOOKGEN_OT_SetSettings(bpy.types.Operator):
 class BOOKGEN_OT_RemoveSettings(bpy.types.Operator):
     """Remove bookGen settings and apply to all groupings"""
     bl_idname = "bookgen.remove_settings"
-    bl_label = "BookGen"
+    bl_label = "Remove settings"
+    bl_description = "Removes the selected settings from all groupings and the scene"
     bl_options = {'INTERNAL', 'UNDO'}
 
     context = None

@@ -259,7 +259,7 @@ class BOOKGEN_PT_MainPanel(bpy.types.Panel):
 
         row = layout.row()
         row.scale_y = 1.5
-        row.operator("object.book_gen_select_stack", text="Add stack", icon_value=icons["stack"].icon_id)
+        row.operator("bookgen.select_stack", text="Add stack", icon_value=icons["stack"].icon_id)
 
         row = layout.row()
         row.scale_y = 1.5

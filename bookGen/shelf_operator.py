@@ -26,7 +26,8 @@ from .ui_limit_line import BookGenLimitLine
 class BOOKGEN_OT_RemoveShelf(bpy.types.Operator):
     """Delete the selected shelf"""
     bl_idname = "bookgen.remove_shelf"
-    bl_label = "BookGen"
+    bl_label = "Remove Grouping"
+    bl_description = "Remove active grouping from the scene. The settings will not be deleted."
     bl_options = {'REGISTER', 'UNDO'}
 
     log = logging.getLogger("bookGen.operator")
@@ -108,6 +109,10 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
     bl_idname = "bookgen.select_shelf"
     bl_label = "Select BookGen Shelf"
     bl_options = {'REGISTER', 'UNDO'}
+    bl_description = ("Add a shelf of books to the scene.\n\n"
+                      "Click on a surface to position the start of the shelf.\n"
+                      "Click again to position the end"
+                      )
     log = logging.getLogger("bookGen.select_shelf")
 
     def __init__(self):
