@@ -15,9 +15,10 @@ class BookGenShelfOutline:
     draw_handler = None
     batch = None
 
-    def __init__(self):
+    def __init__(self, check_depth=False):
         self.batch = None
         self.shader = None
+        self.check_depth = check_depth
 
     def update(self, vertices, faces, context):
         """ Updates the axis constraint visualization based on the current configuration
@@ -67,7 +68,11 @@ class BookGenShelfOutline:
             return
         self.shader.bind()
         bgl.glEnable(bgl.GL_BLEND)
+        if self.check_depth:
+            bgl.glEnable(bgl.GL_DEPTH_TEST)
+
         bgl.glBlendFunc(bgl.GL_SRC_ALPHA, bgl.GL_ONE_MINUS_SRC_ALPHA)
         self.shader.uniform_float("color", self.outline_color)
         self.batch.draw(self.shader)
         bgl.glDisable(bgl.GL_BLEND)
+        bgl.glDisable(bgl.GL_DEPTH_TEST)

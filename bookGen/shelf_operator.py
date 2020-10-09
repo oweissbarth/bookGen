@@ -208,8 +208,8 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
 
         settings = get_settings_by_name(context, settings_name)
         props = get_shelf_parameters(context, 0, settings)
+        self.outline = BookGenShelfOutline(check_depth=True)
         self.gizmo = BookGenShelfGizmo(props["book_height"], props["book_depth"], context)
-        self.outline = BookGenShelfOutline()
         self.limit_line = BookGenLimitLine(self.axis_constraint, context)
 
         context.window_manager.modal_handler_add(self)
@@ -236,8 +236,9 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         shelf = Shelf("shelf_" + str(shelf_id), self.start,
                       self.end, normal, parameters)
         shelf.fill()
-        self.outline.enable_outline(*shelf.get_geometry(), context)
         self.gizmo.update(self.start, self.end, normal)
+
+        self.outline.enable_outline(*shelf.get_geometry(), context)
         self.limit_line.update(self.start, self.axis_constraint)
 
     def apply_limits(self, _context):

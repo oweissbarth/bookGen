@@ -227,7 +227,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
             Set[str]: operator return code
         """
 
-        self.outline = BookGenShelfOutline()
+        self.outline = BookGenShelfOutline(check_depth=True)
         self.gizmo = BookGenStackGizmo(0, 0, context)
 
         context.window_manager.modal_handler_add(self)
