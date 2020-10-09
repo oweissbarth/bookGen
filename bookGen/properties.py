@@ -58,6 +58,8 @@ class BookGenAddonProperties(bpy.types.PropertyGroup):
         properties = context.scene.BookGenAddonProperties
         if properties.outline_active and properties.active_shelf != -1:
             grouping_collection = get_shelf_collection_by_index(context, properties.active_shelf)
+            if not grouping_collection:
+                return
             grouping_props = grouping_collection.BookGenGroupingProperties
             settings = get_settings_by_name(context, grouping_props.settings_name)
             if grouping_props.grouping_type == 'SHELF':
