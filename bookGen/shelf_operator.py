@@ -14,7 +14,8 @@ from .utils import (get_bookgen_collection,
                     get_free_shelf_id,
                     get_active_settings,
                     get_settings_by_name,
-                    get_settings_for_new_grouping)
+                    get_settings_for_new_grouping,
+                    visible_objects_and_duplis)
 
 from .ui_gizmo import BookGenShelfGizmo
 from .ui_outline import BookGenShelfOutline
@@ -64,7 +65,14 @@ class BOOKGEN_OT_RemoveShelf(bpy.types.Operator):
         Returns:
             bool: True if the operator can be executed, otherwise false.
         """
-        return context.mode == 'OBJECT'
+        if context.mode != 'OBJECT':
+            return False
+
+        objects = visible_objects_and_duplis(context)
+        for obj in objects:
+            if obj[0].type == "MESH":
+                return True
+        return False
 
     def run(self, context):
         """
@@ -112,6 +120,25 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         self.gizmo = None
         self.outline = None
         self.limit_line = None
+
+    @classmethod
+    def poll(cls, context):
+        """ Check if we are in object mode before calling the operator
+
+        Args:
+            context (bpy.types.Context): the execution context for the operator
+
+        Returns:
+            bool: True if the operator can be executed, otherwise false.
+        """
+        if context.mode != 'OBJECT':
+            return False
+
+        objects = visible_objects_and_duplis(context)
+        for obj in objects:
+            if obj[0].type == "MESH":
+                return True
+        return False
 
     def modal(self, context, event):
         """ Handle modal events

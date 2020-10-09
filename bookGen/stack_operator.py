@@ -18,7 +18,8 @@ from .utils import (
     get_stack_parameters,
     get_shelf_collection,
     get_settings_for_new_grouping,
-    get_settings_by_name)
+    get_settings_by_name,
+    visible_objects_and_duplis)
 from .ui_outline import BookGenShelfOutline
 
 
@@ -41,6 +42,25 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         self.origin_normal_2d = None
         self.origin_2d = None
         self.gizmo = None
+
+    @classmethod
+    def poll(cls, context):
+        """ Check if we are in object mode before calling the operator
+
+        Args:
+            context (bpy.types.Context): the execution context for the operator
+
+        Returns:
+            bool: True if the operator can be executed, otherwise false.
+        """
+        if context.mode != 'OBJECT':
+            return False
+
+        objects = visible_objects_and_duplis(context)
+        for obj in objects:
+            if obj[0].type == "MESH":
+                return True
+        return False
 
     def modal(self, context, event):
         """Handle modal events
