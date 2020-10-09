@@ -19,6 +19,7 @@ from .utils import (
     get_shelf_collection,
     get_settings_for_new_grouping,
     get_settings_by_name,
+    get_click_on_plane,
     visible_objects_and_duplis)
 from .ui_outline import BookGenShelfOutline
 
@@ -144,6 +145,8 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         if self.origin is None:
             self.origin, self.origin_normal = get_click_position_on_object(context,
                                                                            mouse_x, mouse_y)
+            if self.origin is None:
+                return {'RUNNING_MODAL'}
 
             self.origin_2d = project_to_screen(context, self.origin)
             normal_offset_2d = project_to_screen(context, self.origin + self.origin_normal)
@@ -151,7 +154,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
 
             return {'RUNNING_MODAL'}
         if self.forward is None:
-            front, _ = get_click_position_on_object(context, mouse_x, mouse_y)
+            front = get_click_on_plane(context, mouse_x, mouse_y, self.origin, self.origin_normal)
             original_direction = front - self.origin
             distance = original_direction.dot(self.origin_normal)
             projected_front = front - distance * self.origin_normal
@@ -228,12 +231,14 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         if self.origin is None:
             origin, origin_normal = get_click_position_on_object(context,
                                                                  mouse_x, mouse_y)
-            self.gizmo.update(origin, self.forward, origin_normal, None)
+            if origin is None:
+                self.gizmo.remove()
+            else:
+                self.gizmo.update(origin, self.forward, origin_normal, None)
             return
 
         if self.forward is None:
-            front, _ = get_click_position_on_object(context,
-                                                    mouse_x, mouse_y)
+            front = get_click_on_plane(context, mouse_x, mouse_y, self.origin, self.origin_normal)
             if front is None:
                 return
             original_direction = front - self.origin

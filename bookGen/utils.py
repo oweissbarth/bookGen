@@ -233,6 +233,30 @@ def ray_cast(context, mouse_x, mouse_y):
     return closest_loc, closest_normal, closest_face, closest_obj
 
 
+def get_click_on_plane(context, mouse_x, mouse_y, position, normal):
+    """Returns the 3d position of the intersection of the mouse ray with a given plane
+
+    Args:
+        context (bpy.types.Context): the current execution context
+        mouse_x (int): mouse position in pixels
+        mouse_y (int): mouse y position in pixels
+        position (mathutils.Vector): a point on the plane
+        normal (mathutils.Vector): the normal of the plane
+    """
+    region = context.region
+    region_data = context.space_data.region_3d
+
+    view_vector = bpy_extras.view3d_utils.region_2d_to_vector_3d(region, region_data, (mouse_x, mouse_y))
+    ray_origin = bpy_extras.view3d_utils.region_2d_to_origin_3d(region, region_data, (mouse_x, mouse_y))
+
+    denominator = view_vector.dot(normal)
+    if denominator == 0:
+        return None
+    t = (position - ray_origin).dot(normal) / denominator
+
+    return ray_origin + t * view_vector
+
+
 def get_click_face(context, mouse_x, mouse_y):
     """ Shoots a ray from the cursor position into the scene and returns the closest intersection object and face id
 
