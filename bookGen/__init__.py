@@ -56,8 +56,9 @@ bl_info = {
     "author": "Oliver Weissbarth, Seojin Sim",
     "version": (0, 9, 0),
     "blender": (2, 80, 0),
-    "location": "View3D > Add > Mesh",
-    "warning": "Beta",
+    "location": "View3D > Toolshelf > BookGen",
+    "tracker_url": "https://github.com/oweissbarth/bookGen/issues",
+    "support": "COMMUNITY",
     "wiki_url": "",
     "category": "Add Mesh"}
 
