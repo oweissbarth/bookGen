@@ -153,6 +153,8 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         if context.area:
             context.area.tag_redraw()
 
+        context.window.cursor_modal_set("CROSSHAIR")
+
         mouse_x, mouse_y = event.mouse_region_x, event.mouse_region_y
         if event.type == 'MOUSEMOVE':
             return self.handle_mouse_move(context, mouse_x, mouse_y)
@@ -227,15 +229,19 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         self.limit_line.remove()
         shelf.to_collection(context, with_uvs=True)
 
+        context.window.cursor_modal_restore()
+
         return {'FINISHED'}
 
-    def handle_cancel(self, _context):
+    def handle_cancel(self, context):
         """
         Remove all gizmos, outlines and constraints
         """
         self.gizmo.remove()
         self.outline.disable_outline()
         self.limit_line.remove()
+        context.window.cursor_modal_restore()
+
         return {'CANCELLED'}
 
     def handle_axis_constraint(self, context, axis):

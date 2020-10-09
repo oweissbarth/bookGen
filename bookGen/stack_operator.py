@@ -75,6 +75,8 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         if context.area:
             context.area.tag_redraw()
 
+        context.window.cursor_modal_set("CROSSHAIR")
+
         mouse_x, mouse_y = event.mouse_region_x, event.mouse_region_y
         if event.type == 'MOUSEMOVE':
             return self.handle_mouse_move(context, mouse_x, mouse_y)
@@ -182,14 +184,18 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         self.outline.disable_outline()
         stack.to_collection(context)
 
+        context.window.cursor_modal_restore()
+
         return {'FINISHED'}
 
-    def handle_cancel(self, _context):
+    def handle_cancel(self, context):
         """
         Remove all gizmos and outlines
         """
         self.gizmo.remove()
         self.outline.disable_outline()
+        context.window.cursor_modal_restore()
+
         return {'CANCELLED'}
 
     def invoke(self, context, _event):
