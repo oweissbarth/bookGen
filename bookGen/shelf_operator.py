@@ -82,8 +82,6 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         if context.area:
             context.area.tag_redraw()
 
-        context.window.cursor_modal_set("CROSSHAIR")
-
         mouse_x, mouse_y = event.mouse_region_x, event.mouse_region_y
         if event.type == 'MOUSEMOVE':
             return self.handle_mouse_move(context, mouse_x, mouse_y)
@@ -126,6 +124,9 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         if self.start is None:
             self.start, self.start_normal = get_click_position_on_object(context,
                                                                          mouse_x, mouse_y)
+            context.workspace.status_text_set(
+                "Move the mouse and click on a surface again to place the end of the shelf")
+
             return {'RUNNING_MODAL'}
 
         if self.end is None:
@@ -162,6 +163,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
 
         context.scene.BookGenAddonProperties.active_shelf = index
         context.window.cursor_modal_restore()
+        context.workspace.status_text_set(None)
 
         return {'FINISHED'}
 
@@ -173,6 +175,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         self.outline.disable_outline()
         self.limit_line.remove()
         context.window.cursor_modal_restore()
+        context.workspace.status_text_set(None)
 
         return {'CANCELLED'}
 
@@ -210,6 +213,8 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         self.limit_line = BookGenLimitLine(self.axis_constraint, context)
 
         context.window_manager.modal_handler_add(self)
+        context.window.cursor_modal_set("CROSSHAIR")
+        context.workspace.status_text_set("Click on a surface to start placing the shelf")
         return {'RUNNING_MODAL'}
 
     def refresh_preview(self, context):

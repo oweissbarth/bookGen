@@ -157,6 +157,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
             self.origin_2d = project_to_screen(context, self.origin)
             normal_offset_2d = project_to_screen(context, self.origin + self.origin_normal)
             self.origin_normal_2d = (normal_offset_2d - self.origin_2d).normalized()
+            context.workspace.status_text_set("Move the mouse and click to select the forward direction of the stack.")
 
             return {'RUNNING_MODAL'}
         if self.forward is None:
@@ -165,6 +166,8 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
             distance = original_direction.dot(self.origin_normal)
             projected_front = front - distance * self.origin_normal
             self.forward = (projected_front - self.origin).normalized()
+            context.workspace.status_text_set("Move the mouse upwards and click to select the height of the stack.")
+
             return {'RUNNING_MODAL'}
 
         stack_id = get_free_stack_id(context)
@@ -198,6 +201,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         context.scene.BookGenAddonProperties.active_shelf = index
 
         context.window.cursor_modal_restore()
+        context.workspace.status_text_set(None)
 
         return {'FINISHED'}
 
@@ -208,6 +212,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         self.gizmo.remove()
         self.outline.disable_outline()
         context.window.cursor_modal_restore()
+        context.workspace.status_text_set(None)
 
         return {'CANCELLED'}
 
@@ -226,6 +231,8 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         self.gizmo = BookGenStackGizmo(0, 0, context)
 
         context.window_manager.modal_handler_add(self)
+        context.window.cursor_modal_set("CROSSHAIR")
+        context.workspace.status_text_set("Click on a surface to start placing the stack")
         return {'RUNNING_MODAL'}
 
     def refresh_preview(self, context, mouse_x, mouse_y):
