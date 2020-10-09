@@ -104,6 +104,7 @@ class BOOKGEN_PT_LeaningPanel(bpy.types.Panel):
             return
         layout = self.layout
         layout.use_property_split = True
+        layout.use_property_decorate = False
 
         layout.prop(properties, "lean_amount", text="Lean Amount")
         layout.prop(properties, "lean_direction", text="Lean Direction")
@@ -140,6 +141,7 @@ class BOOKGEN_PT_ProportionsPanel(bpy.types.Panel):
 
         layout = self.layout
         layout.use_property_split = True
+        layout.use_property_decorate = False
 
         col = layout.column(align=True)
         col.prop(properties, "book_height", text="Book Height")
@@ -204,6 +206,7 @@ class BOOKGEN_PT_DetailsPanel(bpy.types.Panel):
             return
         layout = self.layout
         layout.use_property_split = True
+        layout.use_property_decorate = False
 
         col = layout.column(align=True)
         col.prop(properties, "textblock_offset", text="Textblock Offset")
