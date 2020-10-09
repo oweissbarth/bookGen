@@ -15,7 +15,8 @@ from .utils import (
     get_bookgen_collection,
     get_active_grouping,
     get_active_settings,
-    get_settings_by_name)
+    get_settings_by_name,
+    visible_objects_and_duplis)
 from .shelf import Shelf
 from .stack import Stack
 
@@ -274,3 +275,80 @@ class BOOKGEN_OT_RemoveSettings(bpy.types.Operator):
         active_settings = get_active_settings(context)
 
         return settings_exist and active_settings and context.mode == 'OBJECT'
+
+
+class BOOKGEN_OT_RemoveGrouping(bpy.types.Operator):
+    """Delete the selected grouping"""
+    bl_idname = "bookgen.remove_grouping"
+    bl_label = "Remove Grouping"
+    bl_description = "Remove active grouping from the scene. The settings will not be deleted."
+    bl_options = {'REGISTER', 'UNDO'}
+
+    log = logging.getLogger("bookGen.operator")
+
+    def invoke(self, context, _event):
+        """ Remove shelves called from the UI
+
+        Args:
+            _context (bpy.types.Context): the execution context for the operator
+            _event (bpy.type.Event): the invocation event
+
+        Returns:
+            Set[str]: operator return code
+        """
+        self.run(context)
+        return {'FINISHED'}
+
+    def execute(self, context):
+        """ Remove shelves called from a script
+
+        Args:
+            _context (bpy.types.Context): the execution context for the operator
+
+        Returns:
+            Set[str]: operator return code
+        """
+        self.run(context)
+        return {'FINISHED'}
+
+    @classmethod
+    def poll(cls, context):
+        """ Check if we are in object mode before calling the operator
+
+        Args:
+            context (bpy.types.Context): the execution context for the operator
+
+        Returns:
+            bool: True if the operator can be executed, otherwise false.
+        """
+        if context.mode != 'OBJECT':
+            return False
+
+        objects = visible_objects_and_duplis(context)
+        for obj in objects:
+            if obj[0].type == "MESH":
+                return True
+        return False
+
+    def run(self, context):
+        """
+        Remove the active shelf if it exists. Unlink all books in it from the collection.
+        Update the active shelf id.
+        """
+
+        parent = get_bookgen_collection(context)
+        active = context.scene.BookGenAddonProperties.active_shelf
+        if active < 0 or active >= len(parent.children):
+            return
+        collection = parent.children[active]
+
+        for obj in collection.objects:
+            collection.objects.unlink(obj)
+            bpy.data.meshes.remove(obj.data)
+        parent.children.unlink(collection)
+        bpy.data.collections.remove(collection)
+
+        context.scene.BookGenAddonProperties.active_shelf -= 1
+
+        if active != len(parent.children):
+            context.scene.BookGenAddonProperties.active_shelf += 1

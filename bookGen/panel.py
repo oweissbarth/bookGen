@@ -270,7 +270,7 @@ class BOOKGEN_PT_MainPanel(bpy.types.Panel):
         row.template_list("BOOKGEN_UL_Shelves", "", get_bookgen_collection(context), "children",
                           context.scene.BookGenAddonProperties, "active_shelf")
         col = row.column(align=True)
-        col.operator("bookgen.remove_shelf", icon="X", text="")
+        col.operator("bookgen.remove_grouping", icon="X", text="")
         col.prop(properties, "outline_active", toggle=True, icon="SHADING_BBOX", icon_only=True)
 
         active_shelf = get_active_grouping(context)

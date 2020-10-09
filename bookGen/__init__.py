@@ -38,11 +38,12 @@ from .generic_operators import (
     BOOKGEN_OT_Rebuild,
     BOOKGEN_OT_CreateSettings,
     BOOKGEN_OT_SetSettings,
-    BOOKGEN_OT_RemoveSettings
+    BOOKGEN_OT_RemoveSettings,
+    BOOKGEN_OT_RemoveGrouping
 )
 from .shelf_operator import (
-    BOOKGEN_OT_SelectShelf,
-    BOOKGEN_OT_RemoveShelf)
+    BOOKGEN_OT_SelectShelf
+)
 
 from .stack_operator import (
     BOOKGEN_OT_SelectStack
@@ -68,7 +69,7 @@ classes = [
     BookGenGroupingProperties,
     BookGenAddonProperties,
     BOOKGEN_OT_Rebuild,
-    BOOKGEN_OT_RemoveShelf,
+    BOOKGEN_OT_RemoveGrouping,
     BOOKGEN_PT_MainPanel,
     BOOKGEN_PT_BookPanel,
     BOOKGEN_PT_ShelfPanel,
