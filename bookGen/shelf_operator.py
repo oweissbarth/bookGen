@@ -185,6 +185,9 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         If it is already constraint to this axis, reset the constraint.
         Update preview and constraint lines.
         """
+        if self.start is None:
+            return
+
         if self.axis_constraint == axis:
             self.axis_constraint = 'None'
         else:
@@ -246,6 +249,9 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         If there is an axis constraint apply it to the end position.
         If there is none, reset the end position to the original.
         """
+        if self.start is None:
+            return
+
         if self.axis_constraint == 'None' and self.end_original is not None:
             self.end = self.end_original.copy()
             return

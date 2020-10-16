@@ -66,7 +66,7 @@ def get_shelf_collection_by_index(context, index):
 def visible_objects_and_duplis(context):
     """Loop over (object, matrix) pairs (mesh only)"""
 
-    depsgraph = context.evaluated_depsgraph_get()  # TODO pass in the context here.
+    depsgraph = context.evaluated_depsgraph_get()
     for dup in depsgraph.object_instances:
         if dup.is_instance:  # Real dupli instance
             obj = dup.instance_object
