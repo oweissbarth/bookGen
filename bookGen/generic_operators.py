@@ -100,7 +100,7 @@ class BOOKGEN_OT_Rebuild(bpy.types.Operator):
                 stack.clean(context)
                 stack.fill()
 
-                stack.to_collection(context)
+                stack.to_collection(context, with_uvs=True)
 
         self.log.info("Finished populating shelf in %.4f secs", (time.time() - time_start))
 

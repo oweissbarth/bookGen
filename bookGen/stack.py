@@ -91,13 +91,13 @@ class Stack:
 
         book.location += self.origin
 
-    def to_collection(self, context):
+    def to_collection(self, context, with_uvs=False):
         """
         Converts the stack to a blender collection and adds the books as blender objects
         """
         self.collection = get_shelf_collection(context, self.name)
         for book in self.books:
-            obj = book.to_object()
+            obj = book.to_object(with_uvs)
             self.collection.objects.link(obj)
 
     def fill(self):

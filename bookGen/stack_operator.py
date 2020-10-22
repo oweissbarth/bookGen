@@ -194,7 +194,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
 
         self.gizmo.remove()
         self.outline.disable_outline()
-        stack.to_collection(context)
+        stack.to_collection(context, with_uvs=True)
 
         index = get_grouping_index_by_name(context, stack.name)
 
