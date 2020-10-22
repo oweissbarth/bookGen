@@ -422,4 +422,5 @@ def get_settings_for_new_grouping(context):
 
     # otherwise create default settings
     settings = context.scene.BookGenSettings.add()
+    settings.name = settings.name  # While this looks useless it actually sets the name to the default name
     return settings
