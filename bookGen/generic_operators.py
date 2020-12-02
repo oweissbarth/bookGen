@@ -281,7 +281,7 @@ class BOOKGEN_OT_RemoveGrouping(bpy.types.Operator):
     """Delete the selected grouping"""
     bl_idname = "bookgen.remove_grouping"
     bl_label = "Remove Grouping"
-    bl_description = "Remove active grouping from the scene. The settings will not be deleted."
+    bl_description = "Remove active grouping from the scene. The settings will not be deleted"
     bl_options = {'REGISTER', 'UNDO'}
 
     log = logging.getLogger("bookGen.operator")

@@ -252,7 +252,6 @@ class Shelf:
         for obj in col.objects:
             col.objects.unlink(obj)
             bpy.data.meshes.remove(obj.data)
-        # bpy.ops.object.delete({"selected_objects": col.objects})
 
     def get_geometry(self):
         """ Returns the raw geometry of the shelf for previz
