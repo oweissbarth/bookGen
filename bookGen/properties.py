@@ -86,7 +86,11 @@ class BookGenAddonProperties(bpy.types.PropertyGroup):
         else:
             self.outline.disable_outline()
 
-    auto_rebuild: BoolProperty(name="auto rebuild", default=True, options=set())
+    auto_rebuild: BoolProperty(
+        name="auto rebuild",
+        description="Automatically rebuild all books if settings are changed",
+        default=True,
+        options=set())
     active_shelf: IntProperty(name="Active grouping", update=update_outline_active, options=set())
     outline_active: BoolProperty(
         name="Highlight active",
