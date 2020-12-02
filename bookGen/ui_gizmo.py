@@ -161,7 +161,7 @@ class BookGenShelfFaceGizmo():
         self.batch.draw(self.shader)
         bgl.glDisable(bgl.GL_BLEND)
 
-    def update(self, verts, normal):
+    def update(self, verts, _normal):
         """ Updates the face gizmo based on the current configuration
 
         Args:

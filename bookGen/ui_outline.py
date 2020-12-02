@@ -19,6 +19,7 @@ class BookGenShelfOutline:
         self.batch = None
         self.shader = None
         self.check_depth = check_depth
+        self.outline_color = None
 
     def update(self, vertices, faces, context):
         """ Updates the axis constraint visualization based on the current configuration

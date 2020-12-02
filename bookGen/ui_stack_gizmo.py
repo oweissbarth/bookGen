@@ -11,9 +11,6 @@ import bgl
 from gpu_extras.batch import batch_for_shader
 from mathutils import Vector, Matrix
 
-from .data.gizmo_verts import bookstand_verts_start, bookstand_verts_end
-from .utils import vector_scale, bookGen_directory
-
 
 class BookGenStackGizmo():
     """
