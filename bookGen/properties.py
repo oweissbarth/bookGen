@@ -137,33 +137,44 @@ class BookGenProperties(bpy.types.PropertyGroup):
 
         global partial
         time_start = time.time()
-        parameters = get_shelf_parameters()
-        properties = get_bookgen_collection(context).BookGenProperties
+        properties = context.scene.BookGenAddonProperties
 
         if not properties.auto_rebuild:
             return
 
-        for shelf_collection in get_bookgen_collection(context).children:
-            shelf_props = shelf_collection.BookGenGroupingProperties
+        for grouping_collection in get_bookgen_collection(context).children:
 
-            parameters["seed"] += shelf_props.id
+            grouping_props = grouping_collection.BookGenGroupingProperties
+            settings = get_settings_by_name(context, grouping_props.settings_name)
+            if not settings:
+                continue
 
-            shelf = Shelf(shelf_collection.name, shelf_props.start, shelf_props.end, shelf_props.normal, parameters)
-            shelf.clean()
-            shelf.fill()
+            bpy.ops.bookgen.rebuild(clear=True)
 
-            parameters["seed"] -= shelf_props.id
+            if grouping_props.grouping_type == 'SHELF':
+                parameters = get_shelf_parameters(context, grouping_props.id, settings)
 
-            if shelf_props.id not in self.previews.keys():
-                preview = BookGenShelfPreview()
-                self.previews.update({shelf_props.id: preview})
+                grouping = Shelf(grouping_collection.name, grouping_props.start,
+                                 grouping_props.end, grouping_props.normal, parameters)
+                # grouping.clean(context)
+                grouping.fill()
+
             else:
-                preview = self.previews[shelf_props.id]
+                parameters = get_stack_parameters(context, grouping_props.id, settings)
+                grouping = Stack(grouping_collection.name, grouping_props.origin,
+                                 grouping_props.forward, grouping_props.normal, grouping_props.height, parameters)
+                # grouping.clean(context)
+                grouping.fill()
 
-            preview.update(*shelf.get_geometry(), context)
+            if grouping_props.id not in self.previews.keys():
+                preview = BookGenShelfPreview()
+                self.previews.update({grouping_props.id: preview})
+            else:
+                preview = self.previews[grouping_props.id]
+
+            preview.update(*grouping.get_geometry(), context)
 
         self.log.info("Finished populating shelf in %.4f secs", (time.time() - time_start))
-        properties = get_bookgen_collection(context).BookGenProperties
 
         if partial is not None and bpy.app.timers.is_registered(partial):
             bpy.app.timers.unregister(partial)

@@ -6,7 +6,7 @@ import time
 import logging
 
 import bpy
-from bpy.props import EnumProperty, StringProperty
+from bpy.props import EnumProperty, StringProperty, BoolProperty
 from mathutils import Vector
 
 from .utils import (
@@ -26,13 +26,14 @@ class BOOKGEN_OT_Rebuild(bpy.types.Operator):
     bl_idname = "bookgen.rebuild"
     bl_label = "Regenerate all"
     bl_description = "Regenerate all books"
-    bl_options = {'REGISTER', 'UNDO_GROUPED'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     """def hinge_inset_guard(self, context):
         if(self.hinge_inset > self.cover_thickness):
             self.hinge_inset = self.cover_thickness - self.cover_thickness / 8"""
 
     log = logging.getLogger("bookGen.operator")
+    clear: BoolProperty(name="clear", description="Remove all books", default=False)
 
     def invoke(self, context, _event):
         """ Rebuild called from the UI
@@ -76,6 +77,13 @@ class BOOKGEN_OT_Rebuild(bpy.types.Operator):
         Collect new parameters, remove existing books,
         generate new books based on the parameters and add them to the  scene.
         """
+        if self.clear:
+            for grouping_collection in get_bookgen_collection(context).children:
+                for obj in grouping_collection.objects:
+                    grouping_collection.objects.unlink(obj)
+                    bpy.data.meshes.remove(obj.data)
+            return
+
         time_start = time.time()
 
         for grouping_collection in get_bookgen_collection(context).children:
@@ -158,7 +166,7 @@ class BOOKGEN_OT_CreateSettings(bpy.types.Operator):
         generate new books based on the parameters and add them to the  scene.
         """
         setting = context.scene.BookGenSettings.add()
-        setting["name"] = self.name # NOTE We using setting["name"] here to avoid triggering the setter
+        setting["name"] = self.name  # NOTE We using setting["name"] here to avoid triggering the setter
 
         active_grouping = get_active_grouping(context)
         if active_grouping:
