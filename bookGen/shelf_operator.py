@@ -186,7 +186,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         Update preview and constraint lines.
         """
         if self.start is None:
-            return
+            return {'RUNNING_MODAL'}
 
         if self.axis_constraint == axis:
             self.axis_constraint = 'None'
