@@ -158,7 +158,7 @@ class BOOKGEN_OT_CreateSettings(bpy.types.Operator):
         generate new books based on the parameters and add them to the  scene.
         """
         setting = context.scene.BookGenSettings.add()
-        setting.name = self.name
+        setting["name"] = self.name # NOTE We using setting["name"] here to avoid triggering the setter
 
         active_grouping = get_active_grouping(context)
         if active_grouping:
