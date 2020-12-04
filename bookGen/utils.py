@@ -48,7 +48,7 @@ def get_shelf_collection(context, name):  # TODO make name generic
     return col
 
 
-def get_shelf_collection_by_index(context, index):
+def get_shelf_collection_by_index(context, index, create=False):
     """ Retrieves a shelf collection by index
 
     Args:
@@ -57,10 +57,10 @@ def get_shelf_collection_by_index(context, index):
     Returns:
         bpy.types.Collection: the shelf collection or None
     """
-    bookgen = get_bookgen_collection(context)
-    if index < 0 or index >= len(bookgen.children):
+    bookGen = get_bookgen_collection(context, create)
+    if bookGen is None or index < 0 or index >= len(bookGen.children):
         return None
-    return bookgen.children[index]
+    return bookGen.children[index]
 
 
 def visible_objects_and_duplis(context):
@@ -353,17 +353,17 @@ def get_free_id(context, name: str):
         element_id += 1
 
 
-def get_active_grouping(context):
+def get_active_grouping(context, create=True):
     """ Get the collection of the active grouping
 
     Returns:
         bpy.types.Collection: the collection of the active grouping
     """
     shelf_id = context.scene.BookGenAddonProperties.active_shelf
-    return get_shelf_collection_by_index(context, shelf_id)
+    return get_shelf_collection_by_index(context, shelf_id, create=create)
 
 
-def get_active_settings(context):
+def get_active_settings(context, create=True):
     """ Retrieve the currently active bookGen settings
 
     Args:
@@ -372,7 +372,7 @@ def get_active_settings(context):
     Returns:
         BookGenProperties: the active settings or None
     """
-    collection = get_active_grouping(context)
+    collection = get_active_grouping(context, create)
     if collection is None:
         return None
     settings_name = collection.BookGenGroupingProperties.settings_name
