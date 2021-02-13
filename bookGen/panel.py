@@ -4,7 +4,7 @@ This file contains the UI panels.
 
 import bpy
 
-from .utils import get_bookgen_collection, get_shelf_collection_by_index, get_active_settings, get_active_grouping
+from .utils import get_bookgen_collection, get_shelf_collection_by_index, get_active_settings, get_active_grouping, has_bookgen_collection
 
 
 class BOOKGEN_PT_ShelfPanel(bpy.types.Panel):
@@ -264,6 +264,10 @@ class BOOKGEN_PT_MainPanel(bpy.types.Panel):
         row.scale_y = 1.5
         row.operator("bookgen.rebuild", text="Rebuild", icon_value=icons["rebuild"].icon_id)
         layout.prop(properties, "auto_rebuild")
+
+        if not has_bookgen_collection(context):
+            return
+
         layout.label(text="Book Groupings")
         row = layout.row()
         row.template_list("BOOKGEN_UL_Shelves", "", get_bookgen_collection(context), "children",
