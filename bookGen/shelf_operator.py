@@ -7,7 +7,8 @@ import time
 import bpy
 
 from .shelf import Shelf
-from .utils import (get_bookgen_collection,
+from .utils import (compose_grouping_name,
+                    get_bookgen_collection,
                     get_shelf_parameters,
                     get_shelf_collection,
                     get_click_position_on_object,
@@ -141,7 +142,8 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         parameters = get_shelf_parameters(context, shelf_id, settings)
 
         normal = (self.start_normal + self.end_normal) / 2
-        shelf = Shelf("shelf_" + str(shelf_id), self.start,
+        shelf_name = compose_grouping_name(context, "shelf", shelf_id)
+        shelf = Shelf(shelf_name, self.start,
                       self.end, normal, parameters)
         shelf.clean(context)
         shelf.fill()
@@ -236,7 +238,9 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
 
         parameters = get_shelf_parameters(context, shelf_id, settings)
 
-        shelf = Shelf("shelf_" + str(shelf_id), self.start,
+        shelf_name = compose_grouping_name(context, "shelf", shelf_id)
+
+        shelf = Shelf(shelf_name, self.start,
                       self.end, normal, parameters)
         shelf.fill()
         self.gizmo.update(self.start, self.end, normal)

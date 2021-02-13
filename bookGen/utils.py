@@ -9,6 +9,17 @@ import bpy_extras.view3d_utils
 from mathutils import Vector
 
 
+def has_bookgen_collection(context):
+    """ Check if a bookgen collection exists in the active scene 
+
+    Args:
+        context (bpy.types.Context): the current execution context
+
+    Returns:
+        bool: true if the scene contains a bookgen collection, otherwise false
+    """
+    return bool(context.scene.BookGenAddonProperties.collection)
+
 def get_bookgen_collection(context, create=True):
     """ Retrieves the bookgen collection
 
@@ -18,12 +29,20 @@ def get_bookgen_collection(context, create=True):
     Returns:
         bpy.types.Collection: the bookgen collection
     """
-    for collection in context.scene.collection.children:
-        if collection.name == "BookGen":
-            return collection
+
+    if context.scene.BookGenAddonProperties.collection:
+        return context.scene.BookGenAddonProperties.collection
+    
+    name = "BookGen_" + context.scene.name
+        
+    if name in bpy.data.collections.keys():
+        return bpy.data.collections[name]
+
     if create:
-        collection = bpy.data.collections.new("BookGen")
+        collection = bpy.data.collections.new(name)
         context.scene.collection.children.link(collection)
+        context.scene.BookGenAddonProperties.collection = collection
+
     else:
         collection = None
     return collection
@@ -315,6 +334,19 @@ def get_grouping_index_by_name(context, name):
     return -1
 
 
+def compose_grouping_name(context, grouping_type, grouping_id):
+    """Constructs a grouping name from the grouping type, context and id
+
+    Args:
+        context (bpy.types.Context): the current execution context
+        grouping_type (str): shelf or stack
+        grouping_id (int): the id of the grouping
+
+    Returns:
+        str: the name of the grouping
+    """
+    return grouping_type+"_"+str(grouping_id)+"_"+context.scene.name
+
 def get_free_shelf_id(context):
     """ Finds the next unused shelf id
 
@@ -333,11 +365,11 @@ def get_free_stack_id(context):
     return get_free_id(context, "stack")
 
 
-def get_free_id(context, name: str):
-    """ Finds the next unused id of the given name
+def get_free_id(context, grouping_type: str):
+    """ Finds the next unused id of the given type
 
     Args:
-        name (str) : the type of id to find
+        grouping_type (str) : the type of id to find
 
     Returns:
         int: the next unused id
@@ -345,10 +377,9 @@ def get_free_id(context, name: str):
     groupings = get_bookgen_collection(context).children
 
     names = list(map(lambda x: x.name, groupings))
-    name_found = False
     element_id = 0
-    while not name_found:
-        if name + "_" + str(element_id) not in names:
+    while True:
+        if compose_grouping_name(context, grouping_type, element_id) not in names:
             return element_id
         element_id += 1
 

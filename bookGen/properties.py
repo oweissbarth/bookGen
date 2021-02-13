@@ -98,7 +98,7 @@ class BookGenAddonProperties(bpy.types.PropertyGroup):
         default=False,
         update=update_outline_active,
         options=set())
-
+    collection: PointerProperty(type=bpy.types.Collection, name="collection", description="master collection containing all groupings")
 
 class BookGenProperties(bpy.types.PropertyGroup):
     """

@@ -12,6 +12,7 @@ import mathutils
 from .stack import Stack
 from .ui_stack_gizmo import BookGenStackGizmo
 from .utils import (
+    compose_grouping_name,
     project_to_screen,
     get_click_position_on_object,
     get_free_stack_id,
@@ -176,7 +177,8 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
 
         parameters = get_stack_parameters(context, stack_id, settings)
 
-        stack = Stack("stack_" + str(stack_id), self.origin,
+        stack_name = compose_grouping_name(context, "stack", stack_id)
+        stack = Stack(stack_name, self.origin,
                       self.forward, self.origin_normal, self.height, parameters)
         stack.clean(context)
         stack.fill()
@@ -271,7 +273,8 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         settings = get_settings_by_name(context, settings_name)
 
         parameters = get_stack_parameters(context, stack_id, settings)
-        stack = Stack("stack_" + str(stack_id), self.origin,
+        stack_name = compose_grouping_name(context, "stack", stack_id)
+        stack = Stack(stack_name, self.origin,
                       self.forward, self.origin_normal, self.height, parameters)
         stack.fill()
         self.outline.enable_outline(*stack.get_geometry(), context)
