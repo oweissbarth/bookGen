@@ -23,8 +23,9 @@ BookGen is a add-on for the 3D graphics software Blender. It allows to procedura
 from bpy.app.handlers import persistent
 
 from .properties import BookGenProperties, BookGenGroupingProperties, BookGenAddonProperties
-from .utils import get_bookgen_collection
+from .utils import get_bookgen_collection, get_bookgen_version
 from .shelf_list import BOOKGEN_UL_Shelves
+from .versioning import handle_version_upgrade
 from .panel import (
     BOOKGEN_PT_ShelfPanel,
     BOOKGEN_PT_MainPanel,
@@ -55,7 +56,7 @@ bl_info = {
     "name": "BookGen",
     "description": "Generate books to fill shelves",
     "author": "Oliver Weissbarth, Seojin Sim",
-    "version": (1, 0, 0),
+    "version": (1, 0, 1),
     "blender": (2, 80, 0),
     "location": "View3D > Toolshelf > BookGen",
     "tracker_url": "https://github.com/oweissbarth/bookGen/issues",
@@ -111,6 +112,9 @@ def register():
     bpy.types.Scene.BookGenAddonProperties = bpy.props.PointerProperty(type=BookGenAddonProperties)
 
     bpy.app.handlers.load_post.append(bookgen_startup)
+    bpy.app.handlers.save_pre.append(bookgen_mark_version)
+
+    utils.bookgen_version = bl_info['version']
 
 
 def unregister():
@@ -128,6 +132,16 @@ def unregister():
 
 
 @persistent
+def bookgen_mark_version(_dummy):
+    """ Stores the version of bookgen in the properties
+
+    """
+    import bpy
+    for s in bpy.data.scenes:
+        s.BookGenAddonProperties.version = get_bookgen_version()
+
+
+@persistent
 def bookgen_startup(_dummy):
     """
     Ensure that the outline is disabled on start-up.
@@ -138,3 +152,6 @@ def bookgen_startup(_dummy):
 
     if not bpy.context.scene.BookGenSettings:
         bpy.context.scene.BookGenSettings.add()
+    
+    for s in bpy.data.scenes:
+        handle_version_upgrade(s)

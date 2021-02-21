@@ -9,6 +9,14 @@ import bpy_extras.view3d_utils
 from mathutils import Vector
 
 
+def get_bookgen_version():
+    """Returns the version number of bookgen
+
+    Returns:
+        (int, int, int): the version of bookgen
+    """
+    return bookgen_version
+
 def has_bookgen_collection(context):
     """ Check if a bookgen collection exists in the active scene 
 
@@ -33,10 +41,12 @@ def get_bookgen_collection(context, create=True):
     if context.scene.BookGenAddonProperties.collection:
         return context.scene.BookGenAddonProperties.collection
     
-    name = "BookGen_" + context.scene.name
+    name = "BookGen"
         
     if name in bpy.data.collections.keys():
-        return bpy.data.collections[name]
+        collection =  bpy.data.collections[name]
+        context.scene.BookGenAddonProperties.collection = collection
+        return collection
 
     if create:
         collection = bpy.data.collections.new(name)

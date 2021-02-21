@@ -11,6 +11,7 @@ import bpy
 from bpy.props import (
     FloatProperty,
     IntProperty,
+    IntVectorProperty,
     EnumProperty,
     BoolProperty,
     FloatVectorProperty,
@@ -99,6 +100,7 @@ class BookGenAddonProperties(bpy.types.PropertyGroup):
         update=update_outline_active,
         options=set())
     collection: PointerProperty(type=bpy.types.Collection, name="collection", description="master collection containing all groupings")
+    version: IntVectorProperty(name="version", description="the version of the bookgen add-on", default=(-1, -1, -1))
 
 class BookGenProperties(bpy.types.PropertyGroup):
     """
