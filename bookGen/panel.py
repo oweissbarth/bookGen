@@ -19,6 +19,8 @@ class BOOKGEN_PT_ShelfPanel(bpy.types.Panel):
 
     @classmethod
     def poll(self, context):
+        if not has_bookgen_collection(context):
+            return False
         properties = get_active_settings(context, create=False)
         return bool(properties)
 
@@ -54,6 +56,8 @@ class BOOKGEN_PT_StackPanel(bpy.types.Panel):
 
     @classmethod
     def poll(self, context):
+        if not has_bookgen_collection(context):
+            return False
         properties = get_active_settings(context, create=False)
         return bool(properties)
 
@@ -90,6 +94,8 @@ class BOOKGEN_PT_LeaningPanel(bpy.types.Panel):
 
     @ classmethod
     def poll(self, context):
+        if not has_bookgen_collection(context):
+            return False
         properties = get_active_settings(context, create=False)
         return bool(properties)
 
@@ -126,6 +132,8 @@ class BOOKGEN_PT_ProportionsPanel(bpy.types.Panel):
 
     @classmethod
     def poll(self, context):
+        if not has_bookgen_collection(context):
+            return False
         properties = get_active_settings(context, create=False)
         return bool(properties)
 
@@ -170,6 +178,8 @@ class BOOKGEN_PT_BookPanel(bpy.types.Panel):
 
     @classmethod
     def poll(self, context):
+        if not has_bookgen_collection(context):
+            return False
         properties = get_active_settings(context, create=False)
         return bool(properties)
 
@@ -190,6 +200,8 @@ class BOOKGEN_PT_DetailsPanel(bpy.types.Panel):
 
     @classmethod
     def poll(self, context):
+        if not has_bookgen_collection(context):
+            return False
         properties = get_active_settings(context, create=False)
         return bool(properties)
 
