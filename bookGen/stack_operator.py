@@ -34,6 +34,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
     """
     bl_idname = "bookgen.select_stack"
     bl_label = "Select BookGen Stack"
+    bl_options = {'REGISTER', 'UNDO'}
     bl_description = ("Add a stack of books to the scene.\n\n"
                       "Click on a surface to position the stack.\n"
                       "Move the cursor and click again to choose the direction the stack is facing.\n"
