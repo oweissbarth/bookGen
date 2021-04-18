@@ -124,9 +124,19 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
             region_data = context.space_data.region_3d
 
             view_vector = bpy_extras.view3d_utils.region_2d_to_vector_3d(region, region_data, (p_x, p_y))
-            ray_origin = bpy_extras.view3d_utils.region_2d_to_origin_3d(region, region_data, (p_x, p_y))
 
+            epsilon = 1e-8
+            if( view_vector.cross(self.origin_normal).length_squared < epsilon):
+                self.disable_preview()
+                context.window.cursor_modal_restore()
+                context.workspace.status_text_set(None)
+                self.report({'ERROR'}, "The surface normal can not be co-linear to the view direction.\n"
+                                        "Rotate the view and try again.")
+                return {'CANCELLED'}
+
+            ray_origin = bpy_extras.view3d_utils.region_2d_to_origin_3d(region, region_data, (p_x, p_y))
             ray_target = ray_origin + view_vector
+
 
             points = mathutils.geometry.intersect_line_line(
                 self.origin, self.origin + self.origin_normal, ray_origin, ray_target)
@@ -195,8 +205,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         stack_props.grouping_type = 'STACK'
         stack_props.settings_name = settings_name
 
-        self.gizmo.remove()
-        self.outline.disable_outline()
+        self.disable_preview()
         stack.to_collection(context, with_uvs=True)
 
         index = get_grouping_index_by_name(context, stack.name)
@@ -237,6 +246,13 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         context.window.cursor_modal_set("CROSSHAIR")
         context.workspace.status_text_set("Click on a surface to start placing the stack")
         return {'RUNNING_MODAL'}
+
+    def disable_preview(self):
+        """
+        Disable all preview handlers
+        """
+        self.gizmo.remove()
+        self.outline.disable_outline()
 
     def refresh_preview(self, context, mouse_x, mouse_y):
         """
