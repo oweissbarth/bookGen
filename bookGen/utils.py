@@ -127,7 +127,7 @@ def project_to_screen(context, world_space_point):
     """ Returns the 2d location of a world space point inside the 3D viewport """
     region = context.region
     rv3d = context.space_data.region_3d
-    return bpy_extras.view3d_utils.location_3d_to_region_2d(region, rv3d, world_space_point, (0, 0))
+    return bpy_extras.view3d_utils.location_3d_to_region_2d(region, rv3d, world_space_point, default=(0, 0))
 
 
 bookGen_directory = os.path.dirname(os.path.realpath(__file__))
@@ -214,7 +214,8 @@ def get_stack_parameters(context, shelf_id=0, settings=None):
         "rndm_hinge_width_factor": properties.rndm_hinge_width_factor,
         "subsurf": properties.subsurf,
         "cover_material": properties.cover_material,
-        "page_material": properties.page_material
+        "page_material": properties.page_material,
+        "stack_top_face": properties.stack_top_face
     }
     return parameters
 
