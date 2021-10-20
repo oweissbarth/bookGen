@@ -243,6 +243,17 @@ class BookGenProperties(bpy.types.PropertyGroup):
     # stack
     rotation: FloatProperty(name="rotation", subtype='FACTOR', min=.0, max=1.0, update=update, options=set())
 
+    stack_top_face: EnumProperty(
+        name="stack top face",
+        items=(
+            ("1",
+             "front cover",
+             "front cover facing up"),
+            ("-1",
+             "back cover",
+             "back cover facing up")),
+        update=update_immediate, default="1", options=set())
+
     # books
 
     book_height: FloatProperty(

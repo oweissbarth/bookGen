@@ -82,12 +82,15 @@ class Stack:
 
         # distribution
 
-        rotation = random.random() * self.parameters["rotation"] * 180
+        z_rotation_rnd = (random.random()-0.5) * self.parameters["rotation"] * 180
+        z_rotation = radians(180) if(self.parameters["stack_top_face"] == "1") else 0
+        y_rotation = int(self.parameters["stack_top_face"]) * radians(-90)
+
 
         book.location += Vector((0, 0, self.cur_offset))
         book.location = self.rotation_matrix @ book.location
         book.rotation = Matrix.Rotation(
-            radians(rotation), 3, 'Z') @ self.rotation_matrix @ Matrix.Rotation(radians(90), 3, 'Y')
+            radians(z_rotation_rnd), 3, 'Z') @ Matrix.Rotation(z_rotation, 3, 'Z') @ self.rotation_matrix  @ Matrix.Rotation(y_rotation, 3, 'Y')
 
         book.location += self.origin
 

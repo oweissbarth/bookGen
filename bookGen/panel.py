@@ -80,6 +80,8 @@ class BOOKGEN_PT_StackPanel(bpy.types.Panel):
 
         layout.prop(properties, "rotation", text="Rotation")
 
+        layout.prop(properties, "stack_top_face", text="top facing")
+
 
 class BOOKGEN_PT_LeaningPanel(bpy.types.Panel):
     """
