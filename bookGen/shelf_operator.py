@@ -167,6 +167,8 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         context.window.cursor_modal_restore()
         context.workspace.status_text_set(None)
 
+        self.log.info("Added new shelf")
+
         return {'FINISHED'}
 
     def handle_cancel(self, context):

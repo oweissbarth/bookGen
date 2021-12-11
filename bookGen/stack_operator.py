@@ -105,7 +105,6 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         """
 
         if self.forward is not None:
-            self.log.info("forward is not none")
             relative_mouse_pos = Vector((mouse_x, mouse_y)) - self.origin_2d
             t = relative_mouse_pos.dot(self.origin_normal_2d)
             projected = self.origin_2d + t * self.origin_normal_2d
@@ -215,6 +214,8 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         context.window.cursor_modal_restore()
         context.workspace.status_text_set(None)
 
+        self.log.info("Added new stack")
+
         return {'FINISHED'}
 
     def handle_cancel(self, context):
@@ -262,7 +263,6 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         Args:
             context (bpy.types.Context): the execution context
         """
-        self.log.info("Refreshing preview")
 
         if self.origin is None:
             origin, origin_normal = get_click_position_on_object(context,

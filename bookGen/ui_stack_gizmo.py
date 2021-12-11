@@ -45,7 +45,7 @@ class BookGenStackGizmo():
         if self.origin_batch is None:
             return
 
-        self.log.info("drawing stack gizmo")
+        self.log.debug("drawing stack gizmo")
 
         self.shader.bind()
         bgl.glEnable(bgl.GL_BLEND)
@@ -72,7 +72,7 @@ class BookGenStackGizmo():
         """
         if origin is None:
             return
-        self.log.info("updating stack gizmo")
+        self.log.debug("updating stack gizmo")
 
         # direction.normalize()
         #rotation_matrix = Matrix([direction, direction.cross(nrm), nrm]).transposed()
@@ -103,7 +103,6 @@ class BookGenStackGizmo():
 
         if forward is not None:
 
-            self.log.info("with forward")
             ARROW_LENGTH = 0.08
             ARROW_WIDTH = 0.007
             ARROW_HEAD_WIDTH = 0.015
