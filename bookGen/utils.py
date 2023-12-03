@@ -17,8 +17,9 @@ def get_bookgen_version():
     """
     return bookgen_version
 
+
 def has_bookgen_collection(context):
-    """ Check if a bookgen collection exists in the active scene 
+    """Check if a bookgen collection exists in the active scene
 
     Args:
         context (bpy.types.Context): the current execution context
@@ -28,8 +29,9 @@ def has_bookgen_collection(context):
     """
     return bool(context.scene.BookGenAddonProperties.collection)
 
+
 def get_bookgen_collection(context, create=True):
-    """ Retrieves the bookgen collection
+    """Retrieves the bookgen collection
 
     Args:
         create (bool, optional): Create the collection if none found. Defaults to True.
@@ -40,11 +42,11 @@ def get_bookgen_collection(context, create=True):
 
     if context.scene.BookGenAddonProperties.collection:
         return context.scene.BookGenAddonProperties.collection
-    
+
     name = "BookGen"
-        
+
     if name in bpy.data.collections.keys():
-        collection =  bpy.data.collections[name]
+        collection = bpy.data.collections[name]
         context.scene.BookGenAddonProperties.collection = collection
         return collection
 
@@ -59,7 +61,7 @@ def get_bookgen_collection(context, create=True):
 
 
 def get_shelf_collection(context, name):  # TODO make name generic
-    """ Retrieves a shelf collection by name
+    """Retrieves a shelf collection by name
 
     Args:
         name (str): name of the collection
@@ -78,7 +80,7 @@ def get_shelf_collection(context, name):  # TODO make name generic
 
 
 def get_shelf_collection_by_index(context, index, create=False):
-    """ Retrieves a shelf collection by index
+    """Retrieves a shelf collection by index
 
     Args:
         index (int): index of the collection
@@ -124,7 +126,7 @@ def obj_ray_cast(context, obj, matrix, ray_origin, ray_target):
 
 
 def project_to_screen(context, world_space_point):
-    """ Returns the 2d location of a world space point inside the 3D viewport """
+    """Returns the 2d location of a world space point inside the 3D viewport"""
     region = context.region
     rv3d = context.space_data.region_3d
     return bpy_extras.view3d_utils.location_3d_to_region_2d(region, rv3d, world_space_point, default=(0, 0))
@@ -134,7 +136,7 @@ bookGen_directory = os.path.dirname(os.path.realpath(__file__))
 
 
 def get_shelf_parameters(context, shelf_id=0, settings=None):
-    """ Collects the parameters for a specific shelf
+    """Collects the parameters for a specific shelf
 
     Args:
         shelf_id (int, optional): The id of the shelf for which the parameters are collected. Defaults to 0.
@@ -173,13 +175,13 @@ def get_shelf_parameters(context, shelf_id=0, settings=None):
         "rndm_hinge_width_factor": properties.rndm_hinge_width_factor,
         "subsurf": properties.subsurf,
         "cover_material": properties.cover_material,
-        "page_material": properties.page_material
+        "page_material": properties.page_material,
     }
     return parameters
 
 
 def get_stack_parameters(context, shelf_id=0, settings=None):
-    """ Collects the parameters for a specific stack
+    """Collects the parameters for a specific stack
 
     Args:
         shelf_id (int, optional): The id of the shelf for which the parameters are collected. Defaults to 0.
@@ -215,13 +217,13 @@ def get_stack_parameters(context, shelf_id=0, settings=None):
         "subsurf": properties.subsurf,
         "cover_material": properties.cover_material,
         "page_material": properties.page_material,
-        "stack_top_face": properties.stack_top_face
+        "stack_top_face": properties.stack_top_face,
     }
     return parameters
 
 
 def ray_cast(context, mouse_x, mouse_y):
-    """ Shoots a ray from the cursor position into the scene and returns the closest intersection
+    """Shoots a ray from the cursor position into the scene and returns the closest intersection
 
     Args:
         mouse_x (float): x position of the cursor in pixels
@@ -246,7 +248,7 @@ def ray_cast(context, mouse_x, mouse_y):
     closest_face = None
 
     for obj, matrix in visible_objects_and_duplis(context):
-        if obj.type == 'MESH':
+        if obj.type == "MESH":
             hit, normal, face = obj_ray_cast(context, obj, matrix, ray_origin, ray_target)
             if hit is not None:
                 _, rot, _ = matrix.decompose()
@@ -288,7 +290,7 @@ def get_click_on_plane(context, mouse_x, mouse_y, position, normal):
 
 
 def get_click_face(context, mouse_x, mouse_y):
-    """ Shoots a ray from the cursor position into the scene and returns the closest intersection object and face id
+    """Shoots a ray from the cursor position into the scene and returns the closest intersection object and face id
 
     Args:
         mouse_x (float): x position of the cursor in pixels
@@ -302,7 +304,7 @@ def get_click_face(context, mouse_x, mouse_y):
 
 
 def get_click_position_on_object(context, mouse_x, mouse_y):
-    """ Shoots a ray from the cursor position into the scene and returns the closest intersection
+    """Shoots a ray from the cursor position into the scene and returns the closest intersection
 
     Args:
         mouse_x (float): x position of the cursor in pixels
@@ -317,7 +319,7 @@ def get_click_position_on_object(context, mouse_x, mouse_y):
 
 
 def vector_scale(vector_a, vector_b):
-    """ Multiply two vectors component-wise
+    """Multiply two vectors component-wise
 
     Args:
         vector_a (Vector): Vector a
@@ -356,10 +358,11 @@ def compose_grouping_name(context, grouping_type, grouping_id):
     Returns:
         str: the name of the grouping
     """
-    return grouping_type+"_"+str(grouping_id)+"_"+context.scene.name
+    return grouping_type + "_" + str(grouping_id) + "_" + context.scene.name
+
 
 def get_free_shelf_id(context):
-    """ Finds the next unused shelf id
+    """Finds the next unused shelf id
 
     Returns:
         int: the next unused shelf id
@@ -368,7 +371,7 @@ def get_free_shelf_id(context):
 
 
 def get_free_stack_id(context):
-    """ Finds the next unused stack id
+    """Finds the next unused stack id
 
     Returns:
         int: the next unused shelf id
@@ -377,7 +380,7 @@ def get_free_stack_id(context):
 
 
 def get_free_id(context, grouping_type: str):
-    """ Finds the next unused id of the given type
+    """Finds the next unused id of the given type
 
     Args:
         grouping_type (str) : the type of id to find
@@ -396,7 +399,7 @@ def get_free_id(context, grouping_type: str):
 
 
 def get_active_grouping(context, create=True):
-    """ Get the collection of the active grouping
+    """Get the collection of the active grouping
 
     Returns:
         bpy.types.Collection: the collection of the active grouping
@@ -406,7 +409,7 @@ def get_active_grouping(context, create=True):
 
 
 def get_active_settings(context, create=True):
-    """ Retrieve the currently active bookGen settings
+    """Retrieve the currently active bookGen settings
 
     Args:
         context (bpy.types.Context): the execution context
@@ -425,7 +428,7 @@ def get_active_settings(context, create=True):
 
 
 def get_settings_by_name(context, name):
-    """ Retrieve the bookGen settings by name
+    """Retrieve the bookGen settings by name
 
     Args:
         context (bpy.types.Context): the execution context
@@ -441,7 +444,7 @@ def get_settings_by_name(context, name):
 
 
 def get_settings_for_new_grouping(context):
-    """ Retrieve settings for a new grouping.
+    """Retrieve settings for a new grouping.
     If there are active settings return them.
     Otherwise select the first settings the list
     Otherwise create new default settings

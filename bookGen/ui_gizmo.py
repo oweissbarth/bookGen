@@ -13,7 +13,7 @@ from .data.gizmo_verts import bookstand_verts_start, bookstand_verts_end
 from .utils import vector_scale, bookGen_directory
 
 
-class BookGenShelfGizmo():
+class BookGenShelfGizmo:
     """
     Draws the shelf gizmo.
     """
@@ -31,19 +31,19 @@ class BookGenShelfGizmo():
         with open(bookGen_directory + "/shaders/dotted_line.frag") as fp:
             fragment_shader = fp.read()
 
-        self.bookstand_shader = gpu.shader.from_builtin('UNIFORM_COLOR')
+        self.bookstand_shader = gpu.shader.from_builtin("UNIFORM_COLOR")
         self.line_shader = gpu.types.GPUShader(vertex_shader, fragment_shader)
         self.bookstand_batch = None
         self.line_batch = None
 
-        self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, (self.context,), 'WINDOW', 'POST_VIEW')
+        self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, (self.context,), "WINDOW", "POST_VIEW")
 
         color_ref = context.preferences.themes[0].user_interface.gizmo_primary
-        #self.bookstand_color = [color_ref[0], color_ref[1], color_ref[2], 0.6]
+        # self.bookstand_color = [color_ref[0], color_ref[1], color_ref[2], 0.6]
         self.bookstand_color = [color_ref[0], color_ref[1], color_ref[2], 1.0]
 
     def draw(self, context):
-        """ Draws shelf gizmo based on the current configuration
+        """Draws shelf gizmo based on the current configuration
 
         Args:
             context (bpy.types.Context): the execution context
@@ -67,7 +67,7 @@ class BookGenShelfGizmo():
         gpu.state.depth_test_set("NONE")
 
     def update(self, start, end, nrm):
-        """ Updates the position and orientation of the shelf gizmo
+        """Updates the position and orientation of the shelf gizmo
 
         Args:
             start (Vector): the start position of the shelf gizmo
@@ -92,21 +92,16 @@ class BookGenShelfGizmo():
 
         bookstand_verts = verts_start + verts_end
 
-        self.bookstand_batch = batch_for_shader(self.bookstand_shader, 'TRIS', {"pos": bookstand_verts})
+        self.bookstand_batch = batch_for_shader(self.bookstand_shader, "TRIS", {"pos": bookstand_verts})
 
         offset = nrm * 0.0001 + start
 
-        lines = [rotation_matrix @ Vector((0, self.depth /
-                                           2, 0)) +
-                 offset, rotation_matrix @ Vector((width, self.depth /
-                                                   2, 0)) +
-                 offset, rotation_matrix @ Vector((0, -
-                                                   self.depth /
-                                                   2, 0)) +
-                 offset, rotation_matrix @ Vector((width, -
-                                                   self.depth /
-                                                   2, 0)) +
-                 offset]
+        lines = [
+            rotation_matrix @ Vector((0, self.depth / 2, 0)) + offset,
+            rotation_matrix @ Vector((width, self.depth / 2, 0)) + offset,
+            rotation_matrix @ Vector((0, -self.depth / 2, 0)) + offset,
+            rotation_matrix @ Vector((width, -self.depth / 2, 0)) + offset,
+        ]
 
         arc_length = [0, width, 0, width]
 
@@ -114,7 +109,8 @@ class BookGenShelfGizmo():
 
         if self.draw_handler is None:
             self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(
-                self.draw, (self.context,), 'WINDOW', 'POST_VIEW')
+                self.draw, (self.context,), "WINDOW", "POST_VIEW"
+            )
 
     def remove(self):
         """
@@ -122,30 +118,29 @@ class BookGenShelfGizmo():
         """
         self.log.debug("removing draw handler")
         if self.draw_handler is not None:
-            bpy.types.SpaceView3D.draw_handler_remove(self.draw_handler, 'WINDOW')
+            bpy.types.SpaceView3D.draw_handler_remove(self.draw_handler, "WINDOW")
             self.draw_handler = None
 
 
-class BookGenShelfFaceGizmo():
+class BookGenShelfFaceGizmo:
     """
-     A gizmo that highlights a faces
+    A gizmo that highlights a faces
     """
 
     log = logging.getLogger("bookGen.gizmo")
 
     def __init__(self, context):
-
-        self.shader = gpu.shader.from_builtin('UNIFORM_COLOR')
+        self.shader = gpu.shader.from_builtin("UNIFORM_COLOR")
         self.batch = None
         self.context = context
 
-        self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, (context, ), 'WINDOW', 'POST_VIEW')
+        self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, (context,), "WINDOW", "POST_VIEW")
 
         color_ref = context.preferences.themes[0].user_interface.gizmo_primary
         self.color = [color_ref[0], color_ref[1], color_ref[2], 0.6]
 
     def draw(self, _context):
-        """ Draws face gizmo based on the current configuration
+        """Draws face gizmo based on the current configuration
 
         Args:
             context (bpy.types.Context): the execution context
@@ -160,16 +155,17 @@ class BookGenShelfFaceGizmo():
         gpu.state.blend_set("NONE")
 
     def update(self, verts, _normal):
-        """ Updates the face gizmo based on the current configuration
+        """Updates the face gizmo based on the current configuration
 
         Args:
             context (bpy.types.Context): the execution context
         """
-        self.batch = batch_for_shader(self.shader, 'TRIS', {"pos": verts})
+        self.batch = batch_for_shader(self.shader, "TRIS", {"pos": verts})
 
         if self.draw_handler is None:
             self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(
-                self.draw, (self.context,), 'WINDOW', 'POST_VIEW')
+                self.draw, (self.context,), "WINDOW", "POST_VIEW"
+            )
 
     def remove(self):
         """
@@ -177,5 +173,5 @@ class BookGenShelfFaceGizmo():
         """
         self.log.debug("removing draw handler")
         if self.draw_handler is not None:
-            bpy.types.SpaceView3D.draw_handler_remove(self.draw_handler, 'WINDOW')
+            bpy.types.SpaceView3D.draw_handler_remove(self.draw_handler, "WINDOW")
             self.draw_handler = None

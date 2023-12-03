@@ -6,17 +6,17 @@ import logging
 import bpy
 
 from .shelf import Shelf
-from .utils import (compose_grouping_name,
-                    get_bookgen_collection,
-                    get_shelf_parameters,
-                    get_shelf_collection,
-                    get_click_position_on_object,
-                    get_free_shelf_id,
-                    get_active_settings,
-                    get_settings_by_name,
-                    get_settings_for_new_grouping,
-                    get_grouping_index_by_name,
-                    visible_objects_and_duplis)
+from .utils import (
+    compose_grouping_name,
+    get_shelf_parameters,
+    get_shelf_collection,
+    get_click_position_on_object,
+    get_free_shelf_id,
+    get_settings_by_name,
+    get_settings_for_new_grouping,
+    get_grouping_index_by_name,
+    visible_objects_and_duplis,
+)
 
 from .ui_gizmo import BookGenShelfGizmo
 from .ui_outline import BookGenShelfOutline
@@ -29,13 +29,15 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
     Click on a surface where the generation should start.
     Click again to set the end point
     """
+
     bl_idname = "bookgen.select_shelf"
     bl_label = "Select BookGen Shelf"
-    bl_options = {'REGISTER', 'UNDO'}
-    bl_description = ("Add a shelf of books to the scene.\n\n"
-                      "Click on a surface to position the start of the shelf.\n"
-                      "Click again to position the end"
-                      )
+    bl_options = {"REGISTER", "UNDO"}
+    bl_description = (
+        "Add a shelf of books to the scene.\n\n"
+        "Click on a surface to position the start of the shelf.\n"
+        "Click again to position the end"
+    )
     log = logging.getLogger("bookGen.select_shelf")
 
     def __init__(self):
@@ -52,7 +54,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        """ Check if we are in object mode before calling the operator
+        """Check if we are in object mode before calling the operator
 
         Args:
             context (bpy.types.Context): the execution context for the operator
@@ -60,7 +62,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         Returns:
             bool: True if the operator can be executed, otherwise false.
         """
-        if context.mode != 'OBJECT':
+        if context.mode != "OBJECT":
             return False
 
         objects = visible_objects_and_duplis(context)
@@ -70,7 +72,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         return False
 
     def modal(self, context, event):
-        """ Handle modal events
+        """Handle modal events
 
         Args:
             context (bpy.types.Context): the execution context of the operator
@@ -83,17 +85,17 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
             context.area.tag_redraw()
 
         mouse_x, mouse_y = event.mouse_region_x, event.mouse_region_y
-        if event.type == 'MOUSEMOVE':
+        if event.type == "MOUSEMOVE":
             return self.handle_mouse_move(context, mouse_x, mouse_y)
-        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
-            return {'PASS_THROUGH'}
-        if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
+        if event.type in {"MIDDLEMOUSE", "WHEELUPMOUSE", "WHEELDOWNMOUSE"}:
+            return {"PASS_THROUGH"}
+        if event.type == "LEFTMOUSE" and event.value == "RELEASE":
             return self.handle_confirm(context, mouse_x, mouse_y)
-        if event.type in {'RIGHTMOUSE', 'ESC'}:
+        if event.type in {"RIGHTMOUSE", "ESC"}:
             return self.handle_cancel(context)
-        if (event.type == 'X' or event.type == 'Y' or event.type == 'Z') and event.value == 'PRESS':
+        if (event.type == "X" or event.type == "Y" or event.type == "Z") and event.value == "PRESS":
             return self.handle_axis_constraint(context, event.type)
-        return {'RUNNING_MODAL'}
+        return {"RUNNING_MODAL"}
 
     def handle_mouse_move(self, context, mouse_x, mouse_y):
         """
@@ -112,7 +114,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
             else:
                 self.gizmo.remove()
                 self.outline.disable_outline()
-        return {'RUNNING_MODAL'}
+        return {"RUNNING_MODAL"}
 
     def handle_confirm(self, context, mouse_x, mouse_y):
         """
@@ -122,15 +124,15 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         """
 
         if self.start is None:
-            self.start, self.start_normal = get_click_position_on_object(context,
-                                                                         mouse_x, mouse_y)
+            self.start, self.start_normal = get_click_position_on_object(context, mouse_x, mouse_y)
             context.workspace.status_text_set(
-                "Move the mouse and click on a surface again to place the end of the shelf")
+                "Move the mouse and click on a surface again to place the end of the shelf"
+            )
 
-            return {'RUNNING_MODAL'}
+            return {"RUNNING_MODAL"}
 
         if self.end is None:
-            return {'RUNNING_MODAL'}
+            return {"RUNNING_MODAL"}
 
         shelf_id = get_free_shelf_id(context)
 
@@ -142,8 +144,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
 
         normal = (self.start_normal + self.end_normal) / 2
         shelf_name = compose_grouping_name(context, "shelf", shelf_id)
-        shelf = Shelf(shelf_name, self.start,
-                      self.end, normal, parameters)
+        shelf = Shelf(shelf_name, self.start, self.end, normal, parameters)
         shelf.clean(context)
         shelf.fill()
 
@@ -153,7 +154,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         shelf_props.end = self.end
         shelf_props.normal = normal
         shelf_props.id = shelf_id
-        shelf_props.grouping_type = 'SHELF'
+        shelf_props.grouping_type = "SHELF"
         shelf_props.settings_name = settings_name
         self.gizmo.remove()
         self.outline.disable_outline()
@@ -168,7 +169,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
 
         self.log.info("Added new shelf")
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
     def handle_cancel(self, context):
         """
@@ -180,7 +181,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         context.window.cursor_modal_restore()
         context.workspace.status_text_set(None)
 
-        return {'CANCELLED'}
+        return {"CANCELLED"}
 
     def handle_axis_constraint(self, context, axis):
         """
@@ -189,18 +190,18 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         Update preview and constraint lines.
         """
         if self.start is None:
-            return {'RUNNING_MODAL'}
+            return {"RUNNING_MODAL"}
 
         if self.axis_constraint == axis:
-            self.axis_constraint = 'None'
+            self.axis_constraint = "None"
         else:
             self.axis_constraint = axis
         self.apply_limits(context)
         self.refresh_preview(context)
-        return {'RUNNING_MODAL'}
+        return {"RUNNING_MODAL"}
 
     def invoke(self, context, _event):
-        """ Select shelf called from the UI
+        """Select shelf called from the UI
 
         Args:
             context (bpy.types.Context): the execution context for the operator
@@ -221,7 +222,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         context.window_manager.modal_handler_add(self)
         context.window.cursor_modal_set("CROSSHAIR")
         context.workspace.status_text_set("Click on a surface to start placing the shelf")
-        return {'RUNNING_MODAL'}
+        return {"RUNNING_MODAL"}
 
     def refresh_preview(self, context):
         """
@@ -241,8 +242,7 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
 
         shelf_name = compose_grouping_name(context, "shelf", shelf_id)
 
-        shelf = Shelf(shelf_name, self.start,
-                      self.end, normal, parameters)
+        shelf = Shelf(shelf_name, self.start, self.end, normal, parameters)
         shelf.fill()
         self.gizmo.update(self.start, self.end, normal)
 
@@ -257,17 +257,17 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
         if self.start is None:
             return
 
-        if self.axis_constraint == 'None' and self.end_original is not None:
+        if self.axis_constraint == "None" and self.end_original is not None:
             self.end = self.end_original.copy()
             return
 
         self.end = self.end_original.copy()
-        if self.axis_constraint == 'X':
+        if self.axis_constraint == "X":
             self.end[1] = self.start[1]
             self.end[2] = self.start[2]
-        if self.axis_constraint == 'Y':
+        if self.axis_constraint == "Y":
             self.end[0] = self.start[0]
             self.end[2] = self.start[2]
-        if self.axis_constraint == 'Z':
+        if self.axis_constraint == "Z":
             self.end[0] = self.start[0]
             self.end[1] = self.start[1]

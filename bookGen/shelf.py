@@ -36,6 +36,7 @@ class Shelf:
     """
     Describes a shelf-like grouping of books.
     """
+
     log = logging.getLogger("bookGen.Shelf")
     origin = Vector((0, 0, 0))
     direction = Vector((1, 0, 0))
@@ -58,7 +59,7 @@ class Shelf:
         self.align_offset = 0
 
     def add_book(self, book, offset, first=False):
-        """ Adds a single book at the given offset to the shelf
+        """Adds a single book at the given offset to the shelf
 
         Args:
             book (Book): the book to add
@@ -73,7 +74,7 @@ class Shelf:
 
         # book alignment
         offset_dir = -1 if self.parameters["alignment"] == "1" else 1
-        if(not first and not self.parameters["alignment"] == "2"):
+        if not first and not self.parameters["alignment"] == "2":
             # location alignment
             book.location += Vector((0, offset_dir * (book.depth / 2 - self.align_offset), 0))
 
@@ -84,19 +85,19 @@ class Shelf:
             book.location += Vector((book.width / 2, 0, 0))
         else:
             book.location += Vector((-book.width / 2, 0, 0))
-        book.location = Matrix.Rotation(book.lean_angle, 3, 'Y') @ book.location
+        book.location = Matrix.Rotation(book.lean_angle, 3, "Y") @ book.location
 
         # distribution
 
         book.location += Vector((offset, 0, 0))
         book.location = self.rotation_matrix @ book.location
 
-        book.rotation = self.rotation_matrix @ Matrix.Rotation(book.lean_angle, 3, 'Y')
+        book.rotation = self.rotation_matrix @ Matrix.Rotation(book.lean_angle, 3, "Y")
 
         book.location += self.origin
 
     def to_collection(self, context, with_uvs=False):
-        """ Converts the shelf to a blender collection and adds the books as blender objects
+        """Converts the shelf to a blender collection and adds the books as blender objects
 
         Args:
             with_uvs (bool, optional): Whether to generate UVs for the books. Defaults to False.
@@ -107,18 +108,19 @@ class Shelf:
             self.collection.objects.link(obj)
 
     def fill(self):
-        """ Fills the shelf with books
-        """
+        """Fills the shelf with books"""
         cur_width = 0
         cur_offset = 0
 
         random.seed(self.parameters["seed"])
 
         params = self.apply_parameters()
-        current = Book(**params,
-                       subsurf=self.parameters["subsurf"],
-                       cover_material=self.parameters["cover_material"],
-                       page_material=self.parameters["page_material"])
+        current = Book(
+            **params,
+            subsurf=self.parameters["subsurf"],
+            cover_material=self.parameters["cover_material"],
+            page_material=self.parameters["page_material"],
+        )
         if current.lean_angle >= 0:
             cur_offset = cos(current.lean_angle) * current.width
         else:
@@ -129,10 +131,12 @@ class Shelf:
             self.log.debug("remaining width to be filled: %.3f", (self.width - cur_width))
             params = self.apply_parameters()
             last = current
-            current = Book(**params,
-                           subsurf=self.parameters["subsurf"],
-                           cover_material=self.parameters["cover_material"],
-                           page_material=self.parameters["page_material"])
+            current = Book(
+                **params,
+                subsurf=self.parameters["subsurf"],
+                cover_material=self.parameters["cover_material"],
+                page_material=self.parameters["page_material"],
+            )
 
             # gathering parameters for the next book
 
@@ -148,32 +152,48 @@ class Shelf:
             if current.lean_angle < 0:
                 self.log.debug("case B")
                 current.corner_height_left = cos(current.lean_angle) * current.height
-                current.corner_height_right = cos(current.lean_angle) * current.height + \
-                    sin(abs(current.lean_angle)) * current.width
+                current.corner_height_right = (
+                    cos(current.lean_angle) * current.height + sin(abs(current.lean_angle)) * current.width
+                )
 
             else:
                 self.log.debug("case A")
-                current.corner_height_left = cos(current.lean_angle) * current.height + \
-                    sin(abs(current.lean_angle)) * current.width
+                current.corner_height_left = (
+                    cos(current.lean_angle) * current.height + sin(abs(current.lean_angle)) * current.width
+                )
                 current.corner_height_right = cos(current.lean_angle) * current.height
 
-            self.log.debug("last - angle: %.3f left: %.3f   right: %.3f",
-                           degrees(last.lean_angle), last.corner_height_left, last.corner_height_right)
+            self.log.debug(
+                "last - angle: %.3f left: %.3f   right: %.3f",
+                degrees(last.lean_angle),
+                last.corner_height_left,
+                last.corner_height_right,
+            )
 
-            self.log.debug("current - angle: %.3f left: %.3f   right: %.3f",
-                           degrees(current.lean_angle), current.corner_height_left, current.corner_height_right)
+            self.log.debug(
+                "current - angle: %.3f left: %.3f   right: %.3f",
+                degrees(current.lean_angle),
+                current.corner_height_left,
+                current.corner_height_right,
+            )
 
-            same_dir = (
-                last.lean_angle >= 0 and current.lean_angle >= 0) or (
-                last.lean_angle < 0 and current.lean_angle < 0)
+            same_dir = (last.lean_angle >= 0 and current.lean_angle >= 0) or (
+                last.lean_angle < 0 and current.lean_angle < 0
+            )
 
             self.log.debug("same dir: %r", same_dir)
 
             switched = False
 
             def switch(a, b):
-                a.corner_height_left, a.corner_height_right = a.corner_height_right, a.corner_height_left
-                b.corner_height_left, b.corner_height_right = b.corner_height_right, b.corner_height_left
+                a.corner_height_left, a.corner_height_right = (
+                    a.corner_height_right,
+                    a.corner_height_left,
+                )
+                b.corner_height_left, b.corner_height_right = (
+                    b.corner_height_right,
+                    b.corner_height_left,
+                )
                 return b, a
 
             # mirror everything both books lean to the left
@@ -185,34 +205,46 @@ class Shelf:
 
             offset = 0
 
-            if same_dir and abs(
-                    last.lean_angle) >= abs(
-                    current.lean_angle) and last.corner_height_right <= current.corner_height_left:
+            if (
+                same_dir
+                and abs(last.lean_angle) >= abs(current.lean_angle)
+                and last.corner_height_right <= current.corner_height_left
+            ):
                 self.log.debug("case 1")
-                offset = sin(abs(last.lean_angle)) * last.height - (tan(abs(current.lean_angle)) *
-                                                                    last.corner_height_right - current.width / cos(abs(current.lean_angle)))
-            elif same_dir and abs(last.lean_angle) >= abs(current.lean_angle) and \
-                    last.corner_height_right > current.corner_height_left:
+                offset = sin(abs(last.lean_angle)) * last.height - (
+                    tan(abs(current.lean_angle)) * last.corner_height_right
+                    - current.width / cos(abs(current.lean_angle))
+                )
+            elif (
+                same_dir
+                and abs(last.lean_angle) >= abs(current.lean_angle)
+                and last.corner_height_right > current.corner_height_left
+            ):
                 self.log.debug("case 2")
-                offset = current.corner_height_left / tan(radians(90) - abs(last.lean_angle)) - (
-                    current.corner_height_left / tan(radians(90) - abs(current.lean_angle))) + \
-                    current.width / cos(abs(current.lean_angle))
+                offset = (
+                    current.corner_height_left / tan(radians(90) - abs(last.lean_angle))
+                    - (current.corner_height_left / tan(radians(90) - abs(current.lean_angle)))
+                    + current.width / cos(abs(current.lean_angle))
+                )
             elif not same_dir and last.lean_angle > current.lean_angle:
                 self.log.debug("case 3")
                 if last.corner_height_right > current.corner_height_left:
                     switched = True
                     current, last = switch(current, last)
-                offset = cos(radians(90) - abs(last.lean_angle)) * last.height + \
-                    last.corner_height_right / tan(radians(90) - abs(current.lean_angle))
+                offset = cos(radians(90) - abs(last.lean_angle)) * last.height + last.corner_height_right / tan(
+                    radians(90) - abs(current.lean_angle)
+                )
             elif not same_dir and last.lean_angle < current.lean_angle:
                 self.log.debug("case 4")
-                offset = sin(radians(90) - abs(last.lean_angle)) * last.width - \
-                    (tan(abs(current.lean_angle)) * sin(abs(last.lean_angle)) *
-                     last.width - current.width / cos(abs(current.lean_angle)))
+                offset = sin(radians(90) - abs(last.lean_angle)) * last.width - (
+                    tan(abs(current.lean_angle)) * sin(abs(last.lean_angle)) * last.width
+                    - current.width / cos(abs(current.lean_angle))
+                )
             elif same_dir and abs(last.lean_angle) < abs(current.lean_angle):
                 self.log.debug("case 5")
-                offset = (cos(current.lean_angle) * current.width) + \
-                    (sin(current.lean_angle) * current.width / tan(radians(90) - last.lean_angle))
+                offset = (cos(current.lean_angle) * current.width) + (
+                    sin(current.lean_angle) * current.width / tan(radians(90) - last.lean_angle)
+                )
             else:
                 self.log.warning("leaning hit a unusual case. This should not happen")
                 return
@@ -237,8 +269,7 @@ class Shelf:
                 self.add_book(current, cur_offset)
 
     def clean(self, context):
-        """ Remove all object from the shelf and remove meshes from the scene
-        """
+        """Remove all object from the shelf and remove meshes from the scene"""
         col = None
         if self.collection is not None:
             col = self.collection
@@ -254,7 +285,7 @@ class Shelf:
             bpy.data.meshes.remove(obj.data)
 
     def get_geometry(self):
-        """ Returns the raw geometry of the shelf for previz
+        """Returns the raw geometry of the shelf for previz
 
         Returns:
             (List[Vector], List[Vector]): a tuple containing a list of vertices and a list of indices
@@ -271,8 +302,10 @@ class Shelf:
                     f[0] + index_offset,
                     f[1] + index_offset,
                     f[2] + index_offset,
-                    f[3] + index_offset],
-                b_faces)
+                    f[3] + index_offset,
+                ],
+                b_faces,
+            )
             faces += offset_faces
             index_offset = len(verts)
 
@@ -315,18 +348,20 @@ class Shelf:
 
         lean = p["lean_amount"] > random.random()
 
-        lean_dir_factor = 1 if random.random() > (.5 - p["lean_direction"] / 2) else -1
+        lean_dir_factor = 1 if random.random() > (0.5 - p["lean_direction"] / 2) else -1
 
         lean_angle = p["lean_angle"] * (1 + rndm_lean_angle) * lean_dir_factor if lean else 0
 
-        return {"cover_height": book_height,
-                "cover_thickness": cover_thickness,
-                "cover_depth": book_depth,
-                "page_height": textblock_height,
-                "page_depth": textblock_depth,
-                "page_thickness": textblock_thickness,
-                "spine_curl": spine_curl,
-                "hinge_inset": hinge_inset,
-                "hinge_width": hinge_width,
-                "lean": lean,
-                "lean_angle": lean_angle}
+        return {
+            "cover_height": book_height,
+            "cover_thickness": cover_thickness,
+            "cover_depth": book_depth,
+            "page_height": textblock_height,
+            "page_depth": textblock_depth,
+            "page_thickness": textblock_thickness,
+            "spine_curl": spine_curl,
+            "hinge_inset": hinge_inset,
+            "hinge_width": hinge_width,
+            "lean": lean,
+            "lean_angle": lean_angle,
+        }

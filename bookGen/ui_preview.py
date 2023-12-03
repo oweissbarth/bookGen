@@ -12,9 +12,8 @@ from mathutils import Vector
 from .utils import bookGen_directory
 
 
-class BookGenShelfPreview():
-    """ Draws a preview of a group of books
-    """
+class BookGenShelfPreview:
+    """Draws a preview of a group of books"""
 
     log = logging.getLogger("bookGen.preview")
 
@@ -33,7 +32,7 @@ class BookGenShelfPreview():
         self.color = [0.8, 0.8, 0.8]
 
     def draw(self, context):
-        """ Draws the preview based on the current configuration
+        """Draws the preview based on the current configuration
 
         Args:
             _op ([type]): [description]
@@ -55,7 +54,7 @@ class BookGenShelfPreview():
         gpu.state.depth_test_set("NONE")
 
     def update(self, verts, faces, context):
-        """ Updates the vertices and faces of the preview
+        """Updates the vertices and faces of the preview
 
         Args:
             verts (List[Vector]): vertices of the mesh to preview in world-space
@@ -75,8 +74,7 @@ class BookGenShelfPreview():
         self.batch = batch_for_shader(self.shader, "TRIS", {"pos": vertices, "nrm": normals})
 
         if self.draw_handler is None:
-            self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(
-                self.draw, (context, ), 'WINDOW', 'POST_VIEW')
+            self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, (context,), "WINDOW", "POST_VIEW")
 
     def remove(self):
         """
@@ -84,5 +82,5 @@ class BookGenShelfPreview():
         """
         self.log.debug("removing draw handler")
         if self.draw_handler is not None:
-            bpy.types.SpaceView3D.draw_handler_remove(self.draw_handler, 'WINDOW')
+            bpy.types.SpaceView3D.draw_handler_remove(self.draw_handler, "WINDOW")
             self.draw_handler = None

@@ -1,6 +1,6 @@
 # ====================== BEGIN GPL LICENSE BLOCK ======================
 #    This file is part of the  bookGen-addon for generating books in Blender
-#    Copyright (c) 2014 Oliver Weissbarth
+#    Copyright (c) 2023 Oliver Weissbarth
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -33,7 +33,8 @@ from .panel import (
     BOOKGEN_PT_ProportionsPanel,
     BOOKGEN_PT_DetailsPanel,
     BOOKGEN_PT_BookPanel,
-    BOOKGEN_PT_StackPanel)
+    BOOKGEN_PT_StackPanel,
+)
 
 from .generic_operators import (
     BOOKGEN_OT_Rebuild,
@@ -41,15 +42,11 @@ from .generic_operators import (
     BOOKGEN_OT_SetSettings,
     BOOKGEN_OT_RemoveSettings,
     BOOKGEN_OT_RemoveGrouping,
-    BOOKGEN_OT_UnlinkGrouping
+    BOOKGEN_OT_UnlinkGrouping,
 )
-from .shelf_operator import (
-    BOOKGEN_OT_SelectShelf
-)
+from .shelf_operator import BOOKGEN_OT_SelectShelf
 
-from .stack_operator import (
-    BOOKGEN_OT_SelectStack
-)
+from .stack_operator import BOOKGEN_OT_SelectStack
 
 from .preferences import BOOKGEN_AddonPreferences
 
@@ -63,7 +60,8 @@ bl_info = {
     "tracker_url": "https://github.com/oweissbarth/bookGen/issues",
     "support": "COMMUNITY",
     "wiki_url": "",
-    "category": "Add Mesh"}
+    "category": "Add Mesh",
+}
 
 
 classes = [
@@ -86,8 +84,7 @@ classes = [
     BOOKGEN_OT_CreateSettings,
     BOOKGEN_OT_SetSettings,
     BOOKGEN_OT_RemoveSettings,
-    BOOKGEN_PT_StackPanel
-
+    BOOKGEN_PT_StackPanel,
 ]
 
 
@@ -102,9 +99,9 @@ def register():
     bookgen_icons = previews.new()
     bpy.types.Scene.bookgen_icons = bookgen_icons
     icons_dir = os.path.join(os.path.dirname(__file__), "icons")
-    bookgen_icons.load("shelf", os.path.join(icons_dir, "shelf.png"), 'IMAGE')
-    bookgen_icons.load("stack", os.path.join(icons_dir, "stack.png"), 'IMAGE')
-    bookgen_icons.load("rebuild", os.path.join(icons_dir, "rebuild.png"), 'IMAGE')
+    bookgen_icons.load("shelf", os.path.join(icons_dir, "shelf.png"), "IMAGE")
+    bookgen_icons.load("stack", os.path.join(icons_dir, "stack.png"), "IMAGE")
+    bookgen_icons.load("rebuild", os.path.join(icons_dir, "rebuild.png"), "IMAGE")
 
     for cls in classes:
         register_class(cls)
@@ -116,7 +113,7 @@ def register():
     bpy.app.handlers.load_post.append(bookgen_startup)
     bpy.app.handlers.save_pre.append(bookgen_mark_version)
 
-    utils.bookgen_version = bl_info['version']
+    utils.bookgen_version = bl_info["version"]
 
 
 def unregister():
@@ -126,6 +123,7 @@ def unregister():
     """
     import bpy
     from bpy.utils import unregister_class
+
     for cls in reversed(classes):
         unregister_class(cls)
     bpy.app.handlers.load_post.remove(bookgen_startup)
@@ -135,10 +133,9 @@ def unregister():
 
 @persistent
 def bookgen_mark_version(_dummy):
-    """ Stores the version of bookgen in the properties
-
-    """
+    """Stores the version of bookgen in the properties"""
     import bpy
+
     for s in bpy.data.scenes:
         s.BookGenAddonProperties.version = get_bookgen_version()
 
@@ -154,6 +151,6 @@ def bookgen_startup(_dummy):
 
     if not bpy.context.scene.BookGenSettings:
         bpy.context.scene.BookGenSettings.add()
-    
+
     for s in bpy.data.scenes:
         handle_version_upgrade(s)

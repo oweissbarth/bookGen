@@ -22,7 +22,8 @@ from .utils import (
     get_settings_by_name,
     get_click_on_plane,
     get_grouping_index_by_name,
-    visible_objects_and_duplis)
+    visible_objects_and_duplis,
+)
 from .ui_outline import BookGenShelfOutline
 
 
@@ -32,14 +33,16 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
     Click on a surface where the generation should start.
     Click again to set the end point
     """
+
     bl_idname = "bookgen.select_stack"
     bl_label = "Select BookGen Stack"
-    bl_options = {'REGISTER', 'UNDO'}
-    bl_description = ("Add a stack of books to the scene.\n\n"
-                      "Click on a surface to position the stack.\n"
-                      "Move the cursor and click again to choose the direction the stack is facing.\n"
-                      "Move the cursor upwards and click to select the height of the stack"
-                      )
+    bl_options = {"REGISTER", "UNDO"}
+    bl_description = (
+        "Add a stack of books to the scene.\n\n"
+        "Click on a surface to position the stack.\n"
+        "Move the cursor and click again to choose the direction the stack is facing.\n"
+        "Move the cursor upwards and click to select the height of the stack"
+    )
     log = logging.getLogger("bookGen.select_stack")
 
     def __init__(self):
@@ -54,7 +57,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        """ Check if we are in object mode before calling the operator
+        """Check if we are in object mode before calling the operator
 
         Args:
             context (bpy.types.Context): the execution context for the operator
@@ -62,7 +65,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         Returns:
             bool: True if the operator can be executed, otherwise false.
         """
-        if context.mode != 'OBJECT':
+        if context.mode != "OBJECT":
             return False
 
         objects = visible_objects_and_duplis(context)
@@ -87,16 +90,16 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         context.window.cursor_modal_set("CROSSHAIR")
 
         mouse_x, mouse_y = event.mouse_region_x, event.mouse_region_y
-        if event.type == 'MOUSEMOVE':
+        if event.type == "MOUSEMOVE":
             return self.handle_mouse_move(context, mouse_x, mouse_y)
-        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
-            return {'PASS_THROUGH'}
-        if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
+        if event.type in {"MIDDLEMOUSE", "WHEELUPMOUSE", "WHEELDOWNMOUSE"}:
+            return {"PASS_THROUGH"}
+        if event.type == "LEFTMOUSE" and event.value == "RELEASE":
             return self.handle_confirm(context, mouse_x, mouse_y)
-        if event.type in {'RIGHTMOUSE', 'ESC'}:
+        if event.type in {"RIGHTMOUSE", "ESC"}:
             return self.handle_cancel(context)
 
-        return {'RUNNING_MODAL'}
+        return {"RUNNING_MODAL"}
 
     def handle_mouse_move(self, context, mouse_x, mouse_y):
         """
@@ -125,29 +128,31 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
             view_vector = bpy_extras.view3d_utils.region_2d_to_vector_3d(region, region_data, (p_x, p_y))
 
             epsilon = 1e-8
-            if( view_vector.cross(self.origin_normal).length_squared < epsilon):
+            if view_vector.cross(self.origin_normal).length_squared < epsilon:
                 self.disable_preview()
                 context.window.cursor_modal_restore()
                 context.workspace.status_text_set(None)
-                self.report({'ERROR'}, "The surface normal can not be co-linear to the view direction.\n"
-                                        "Rotate the view and try again.")
-                return {'CANCELLED'}
+                self.report(
+                    {"ERROR"},
+                    "The surface normal can not be co-linear to the view direction.\n" "Rotate the view and try again.",
+                )
+                return {"CANCELLED"}
 
             ray_origin = bpy_extras.view3d_utils.region_2d_to_origin_3d(region, region_data, (p_x, p_y))
             ray_target = ray_origin + view_vector
 
-
             points = mathutils.geometry.intersect_line_line(
-                self.origin, self.origin + self.origin_normal, ray_origin, ray_target)
+                self.origin, self.origin + self.origin_normal, ray_origin, ray_target
+            )
 
             self.height = (points[0] - self.origin).length
 
         self.refresh_preview(context, mouse_x, mouse_y)
 
-        return {'RUNNING_MODAL'}
+        return {"RUNNING_MODAL"}
 
     def handle_confirm(self, context, mouse_x, mouse_y):
-        """ If it is the first click and there is and object under the cursor set the stack origin.
+        """If it is the first click and there is and object under the cursor set the stack origin.
         If it is the second click and there is and object under the cursor set the stack forward.
         If it is the third click set the stack height.
 
@@ -160,17 +165,16 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
             Set[str]: the operator return code
         """
         if self.origin is None:
-            self.origin, self.origin_normal = get_click_position_on_object(context,
-                                                                           mouse_x, mouse_y)
+            self.origin, self.origin_normal = get_click_position_on_object(context, mouse_x, mouse_y)
             if self.origin is None:
-                return {'RUNNING_MODAL'}
+                return {"RUNNING_MODAL"}
 
             self.origin_2d = project_to_screen(context, self.origin)
             normal_offset_2d = project_to_screen(context, self.origin + self.origin_normal)
             self.origin_normal_2d = (normal_offset_2d - self.origin_2d).normalized()
             context.workspace.status_text_set("Move the mouse and click to select the forward direction of the stack.")
 
-            return {'RUNNING_MODAL'}
+            return {"RUNNING_MODAL"}
         if self.forward is None:
             front = get_click_on_plane(context, mouse_x, mouse_y, self.origin, self.origin_normal)
             original_direction = front - self.origin
@@ -179,7 +183,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
             self.forward = (projected_front - self.origin).normalized()
             context.workspace.status_text_set("Move the mouse upwards and click to select the height of the stack.")
 
-            return {'RUNNING_MODAL'}
+            return {"RUNNING_MODAL"}
 
         stack_id = get_free_stack_id(context)
         settings_name = get_settings_for_new_grouping(context).name
@@ -188,20 +192,18 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         parameters = get_stack_parameters(context, stack_id, settings)
 
         stack_name = compose_grouping_name(context, "stack", stack_id)
-        stack = Stack(stack_name, self.origin,
-                      self.forward, self.origin_normal, self.height, parameters)
+        stack = Stack(stack_name, self.origin, self.forward, self.origin_normal, self.height, parameters)
         stack.clean(context)
         stack.fill()
 
         # set properties for later rebuild
-        stack_props = get_shelf_collection(context,
-                                           stack.name).BookGenGroupingProperties
+        stack_props = get_shelf_collection(context, stack.name).BookGenGroupingProperties
         stack_props.origin = self.origin
         stack_props.forward = self.forward
         stack_props.normal = self.origin_normal
         stack_props.height = self.height
         stack_props.id = stack_id
-        stack_props.grouping_type = 'STACK'
+        stack_props.grouping_type = "STACK"
         stack_props.settings_name = settings_name
 
         self.disable_preview()
@@ -216,7 +218,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
 
         self.log.info("Added new stack")
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
     def handle_cancel(self, context):
         """
@@ -227,10 +229,10 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         context.window.cursor_modal_restore()
         context.workspace.status_text_set(None)
 
-        return {'CANCELLED'}
+        return {"CANCELLED"}
 
     def invoke(self, context, _event):
-        """ Select stack called from the UI
+        """Select stack called from the UI
 
         Args:
             _context (bpy.types.Context): the execution context for the operator
@@ -246,7 +248,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         context.window_manager.modal_handler_add(self)
         context.window.cursor_modal_set("CROSSHAIR")
         context.workspace.status_text_set("Click on a surface to start placing the stack")
-        return {'RUNNING_MODAL'}
+        return {"RUNNING_MODAL"}
 
     def disable_preview(self):
         """
@@ -265,8 +267,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
         """
 
         if self.origin is None:
-            origin, origin_normal = get_click_position_on_object(context,
-                                                                 mouse_x, mouse_y)
+            origin, origin_normal = get_click_position_on_object(context, mouse_x, mouse_y)
             if origin is None:
                 self.gizmo.remove()
             else:
@@ -291,8 +292,7 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
 
         parameters = get_stack_parameters(context, stack_id, settings)
         stack_name = compose_grouping_name(context, "stack", stack_id)
-        stack = Stack(stack_name, self.origin,
-                      self.forward, self.origin_normal, self.height, parameters)
+        stack = Stack(stack_name, self.origin, self.forward, self.origin_normal, self.height, parameters)
         stack.fill()
         self.outline.enable_outline(*stack.get_geometry(), context)
 

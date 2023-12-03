@@ -11,7 +11,7 @@ from gpu_extras.batch import batch_for_shader
 from mathutils import Vector, Matrix
 
 
-class BookGenStackGizmo():
+class BookGenStackGizmo:
     """
     Draws the stack gizmo.
     """
@@ -28,15 +28,25 @@ class BookGenStackGizmo():
         self.forward_batch = None
         self.up_batch = None
 
-        self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, (self.context,), 'WINDOW', 'POST_VIEW')
+        self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, (self.context,), "WINDOW", "POST_VIEW")
 
         primary_color_ref = context.preferences.themes[0].user_interface.gizmo_primary
-        self.origin_color = [primary_color_ref[0], primary_color_ref[1], primary_color_ref[2], 1]
+        self.origin_color = [
+            primary_color_ref[0],
+            primary_color_ref[1],
+            primary_color_ref[2],
+            1,
+        ]
         secondary_color_ref = context.preferences.themes[0].user_interface.gizmo_secondary
-        self.arrow_color = [secondary_color_ref[0], secondary_color_ref[1], secondary_color_ref[2], 1]
+        self.arrow_color = [
+            secondary_color_ref[0],
+            secondary_color_ref[1],
+            secondary_color_ref[2],
+            1,
+        ]
 
     def draw(self, _context):
-        """ Draws stack gizmo based on the current configuration
+        """Draws stack gizmo based on the current configuration
 
         Args:
             context (bpy.types.Context): the execution context
@@ -62,7 +72,7 @@ class BookGenStackGizmo():
         gpu.state.blend_set("NONE")
 
     def update(self, origin, forward, up, height):
-        """ Updates the position and orientation of the stack gizmo
+        """Updates the position and orientation of the stack gizmo
 
         Args:
             start (Vector): the start position of the shelf gizmo
@@ -74,7 +84,7 @@ class BookGenStackGizmo():
         self.log.debug("updating stack gizmo")
 
         # direction.normalize()
-        #rotation_matrix = Matrix([direction, direction.cross(nrm), nrm]).transposed()
+        # rotation_matrix = Matrix([direction, direction.cross(nrm), nrm]).transposed()
 
         RESOLUTION = 32
         INNER_RADIUS = 0.05
@@ -98,10 +108,9 @@ class BookGenStackGizmo():
             origin_verts.append(n_v_inner + origin)
             origin_verts.append(n_v_outer + origin)
 
-        self.origin_batch = batch_for_shader(self.shader, 'TRIS', {"pos": origin_verts})
+        self.origin_batch = batch_for_shader(self.shader, "TRIS", {"pos": origin_verts})
 
         if forward is not None:
-
             ARROW_LENGTH = 0.08
             ARROW_WIDTH = 0.007
             ARROW_HEAD_WIDTH = 0.015
@@ -121,7 +130,7 @@ class BookGenStackGizmo():
             forward_vertices.append(rotation_matrix @ Vector((-ARROW_HEAD_WIDTH / 2, ARROW_LENGTH, 0)) + origin)
             forward_vertices.append(rotation_matrix @ Vector((ARROW_HEAD_WIDTH / 2, ARROW_LENGTH, 0)) + origin)
             forward_vertices.append(rotation_matrix @ Vector((0, ARROW_LENGTH + ARROW_HEAD_LENGTH, 0)) + origin)
-            self.forward_batch = batch_for_shader(self.shader, 'TRIS', {"pos": forward_vertices})
+            self.forward_batch = batch_for_shader(self.shader, "TRIS", {"pos": forward_vertices})
 
         if height is not None:
             RESOLUTION = 32
@@ -139,11 +148,12 @@ class BookGenStackGizmo():
                 height_verts.append(n_v + origin + up * height)
                 height_verts.append(c_v + origin + up * height)
 
-            self.up_batch = batch_for_shader(self.shader, 'TRIS', {"pos": height_verts})
+            self.up_batch = batch_for_shader(self.shader, "TRIS", {"pos": height_verts})
 
         if self.draw_handler is None:
             self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(
-                self.draw, (self.context,), 'WINDOW', 'POST_VIEW')
+                self.draw, (self.context,), "WINDOW", "POST_VIEW"
+            )
 
     def remove(self):
         """
@@ -151,5 +161,5 @@ class BookGenStackGizmo():
         """
         self.log.debug("removing draw handler")
         if self.draw_handler is not None:
-            bpy.types.SpaceView3D.draw_handler_remove(self.draw_handler, 'WINDOW')
+            bpy.types.SpaceView3D.draw_handler_remove(self.draw_handler, "WINDOW")
             self.draw_handler = None

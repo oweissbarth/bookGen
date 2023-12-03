@@ -53,7 +53,7 @@ class Book:
         lean_angle=0,
         subsurf=False,
         cover_material=None,
-        page_material=None
+        page_material=None,
     ):
         self.height = cover_height
         self.width = page_thickness + 2 * cover_thickness
@@ -86,13 +86,15 @@ class Book:
             page_depth,
             hinge_inset,
             hinge_width,
-            spine_curl)
+            spine_curl,
+        )
         self.faces = get_faces()
 
     def to_object(self, with_uvs=False):
         """
         Exports the book as a blender object
         """
+
         def index_to_vert(face):
             lst = []
             for i in face:
@@ -113,7 +115,8 @@ class Book:
                 self.page_depth,
                 self.hinge_inset,
                 self.hinge_width,
-                self.spine_curl)
+                self.spine_curl,
+            )
 
         self.obj = bpy.data.objects.new("book", mesh)
 
@@ -140,8 +143,8 @@ class Book:
 
         if with_uvs:
             uv_layer = bm.loops.layers.uv.verify()
-            for (face, face_uvs) in zip(bm.faces, uvs):
-                for (loop, uv) in zip(face.loops, face_uvs):
+            for face, face_uvs in zip(bm.faces, uvs):
+                for loop, uv in zip(face.loops, face_uvs):
                     loop_uv = loop[uv_layer]
                     loop_uv.uv.x = uv[0]
                     loop_uv.uv.y = uv[1]
@@ -159,8 +162,8 @@ class Book:
         mesh.auto_smooth_angle = normal_angle
 
         if self.subsurf:
-            self.obj.modifiers.new("Subdivision Surface", type='SUBSURF')
-            self.obj.modifiers['Subdivision Surface'].levels = 1
+            self.obj.modifiers.new("Subdivision Surface", type="SUBSURF")
+            self.obj.modifiers["Subdivision Surface"].levels = 1
 
         if self.cover_material:
             if self.obj.data.materials:

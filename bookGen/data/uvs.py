@@ -4,16 +4,17 @@ Contains the parameterized uvs of a single book.
 
 
 def get_uvs(
-        page_thickness,
-        page_height,
-        cover_depth,
-        cover_height,
-        cover_thickness,
-        page_depth,
-        hinge_inset,
-        hinge_width,
-        spine_curl,
-        margin=0.02):
+    page_thickness,
+    page_height,
+    cover_depth,
+    cover_height,
+    cover_thickness,
+    page_depth,
+    hinge_inset,
+    hinge_width,
+    spine_curl,
+    margin=0.02,
+):
     """
     Returns the parameterized uvs of a single book.
     """
@@ -27,224 +28,238 @@ def get_uvs(
     right_face = 3
     right = [[0, 0], [page_depth, 0], [page_depth, page_thickness], [0, page_thickness]]
 
-    exterior_faces = [4, 37, 7, 8, 9, 13, 15, 16, 10, 14, 17, 35,
-                      12, 31, 32, 26, 27, 30, 28, 23, 29, 24, 21, 34, 22, 19]
+    exterior_faces = [
+        4,
+        37,
+        7,
+        8,
+        9,
+        13,
+        15,
+        16,
+        10,
+        14,
+        17,
+        35,
+        12,
+        31,
+        32,
+        26,
+        27,
+        30,
+        28,
+        23,
+        29,
+        24,
+        21,
+        34,
+        22,
+        19,
+    ]
     exterior = [
         [
             [cover_thickness, 0],
             [cover_thickness + cover_height, 0],
             [cover_thickness + cover_height, cover_thickness],
-            [cover_thickness, cover_thickness]
+            [cover_thickness, cover_thickness],
         ],
         [
             [cover_thickness, cover_thickness],
             [cover_thickness + cover_height, cover_thickness],
             [cover_thickness + cover_height, cover_thickness + cover_depth],
-            [cover_thickness, cover_thickness + cover_depth]
+            [cover_thickness, cover_thickness + cover_depth],
         ],
         [
-
             [cover_thickness, cover_thickness],
             [cover_thickness, cover_thickness + cover_depth],
             [0, cover_thickness + cover_depth],
-            [0, cover_thickness]
+            [0, cover_thickness],
         ],
         [
             [cover_thickness + cover_height, cover_thickness + cover_depth],
             [cover_thickness + cover_height, cover_thickness],
             [cover_thickness * 2 + cover_height, cover_thickness],
-            [cover_thickness * 2 + cover_height, cover_thickness + cover_depth]
-
+            [cover_thickness * 2 + cover_height, cover_thickness + cover_depth],
         ],
         [
             [0, cover_thickness + cover_depth],
             [cover_thickness, cover_thickness + cover_depth],
             [cover_thickness, cover_thickness + cover_depth + hinge_width / 2],
-            [0, cover_thickness + cover_depth + hinge_width / 2]
+            [0, cover_thickness + cover_depth + hinge_width / 2],
         ],
         [
             [0, cover_thickness + cover_depth + hinge_width / 2],
             [cover_thickness, cover_thickness + cover_depth + hinge_width / 2],
             [cover_thickness, cover_thickness + cover_depth + hinge_width],
-            [0, cover_thickness + cover_depth + hinge_width]
+            [0, cover_thickness + cover_depth + hinge_width],
         ],
         [
             [cover_thickness, cover_thickness + cover_depth],
             [cover_thickness + cover_height, cover_thickness + cover_depth],
             [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width / 2],
-            [cover_thickness, cover_thickness + cover_depth + hinge_width / 2]
+            [cover_thickness, cover_thickness + cover_depth + hinge_width / 2],
         ],
         [
             [cover_thickness, cover_thickness + cover_depth + hinge_width / 2],
             [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width / 2],
             [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width],
-            [cover_thickness, cover_thickness + cover_depth + hinge_width]
+            [cover_thickness, cover_thickness + cover_depth + hinge_width],
         ],
         [
             [cover_thickness + cover_height, cover_thickness + cover_depth],
             [2 * cover_thickness + cover_height, cover_thickness + cover_depth],
             [2 * cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width / 2],
-            [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width / 2]
+            [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width / 2],
         ],
         [
             [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width / 2],
             [2 * cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width / 2],
             [2 * cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width],
-            [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width]
+            [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width],
         ],
         [
             [0, cover_thickness + cover_depth + hinge_width],
             [cover_thickness, cover_thickness + cover_depth + hinge_width],
             [cover_thickness, cover_thickness + cover_depth + hinge_width + page_thickness / 2],
-            [0, cover_thickness + cover_depth + hinge_width + page_thickness / 2]
+            [0, cover_thickness + cover_depth + hinge_width + page_thickness / 2],
         ],
         [
             [cover_thickness, cover_thickness + cover_depth + hinge_width],
             [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width],
             [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width + page_thickness / 2],
-            [cover_thickness, cover_thickness + cover_depth + hinge_width + page_thickness / 2]
+            [cover_thickness, cover_thickness + cover_depth + hinge_width + page_thickness / 2],
         ],
         [
             [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width],
             [2 * cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width],
             [2 * cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width + page_thickness / 2],
-            [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width + page_thickness / 2]
+            [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width + page_thickness / 2],
         ],
         [
             [0, cover_thickness + cover_depth + hinge_width + page_thickness / 2],
             [cover_thickness, cover_thickness + cover_depth + hinge_width + page_thickness / 2],
             [cover_thickness, cover_thickness + cover_depth + hinge_width + page_thickness],
-            [0, cover_thickness + cover_depth + hinge_width + page_thickness]
+            [0, cover_thickness + cover_depth + hinge_width + page_thickness],
         ],
         [
             [cover_thickness, cover_thickness + cover_depth + hinge_width + page_thickness],
             [cover_thickness, cover_thickness + cover_depth + hinge_width + page_thickness / 2],
             [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width + page_thickness / 2],
-            [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width + page_thickness]
-
+            [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width + page_thickness],
         ],
         [
             [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width + page_thickness],
             [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width + page_thickness / 2],
             [2 * cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width + page_thickness / 2],
-            [2 * cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width + page_thickness]
-
+            [2 * cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width + page_thickness],
         ],
         [
             [0, cover_thickness + cover_depth + hinge_width + page_thickness],
             [cover_thickness, cover_thickness + cover_depth + hinge_width + page_thickness],
             [cover_thickness, cover_thickness + cover_depth + 1.5 * hinge_width + page_thickness],
-            [0, cover_thickness + cover_depth + 1.5 * hinge_width + page_thickness]
+            [0, cover_thickness + cover_depth + 1.5 * hinge_width + page_thickness],
         ],
         [
             [cover_thickness, cover_thickness + cover_depth + 1.5 * hinge_width + page_thickness],
             [cover_thickness, cover_thickness + cover_depth + hinge_width + page_thickness],
             [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width + page_thickness],
-            [cover_thickness + cover_height, cover_thickness + cover_depth + 1.5 * hinge_width + page_thickness]
-
+            [cover_thickness + cover_height, cover_thickness + cover_depth + 1.5 * hinge_width + page_thickness],
         ],
         [
             [cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width + page_thickness],
             [2 * cover_thickness + cover_height, cover_thickness + cover_depth + hinge_width + page_thickness],
             [2 * cover_thickness + cover_height, cover_thickness + cover_depth + 1.5 * hinge_width + page_thickness],
-            [cover_thickness + cover_height, cover_thickness + cover_depth + 1.5 * hinge_width + page_thickness]
+            [cover_thickness + cover_height, cover_thickness + cover_depth + 1.5 * hinge_width + page_thickness],
         ],
         [
             [0, cover_thickness + cover_depth + 1.5 * hinge_width + page_thickness],
             [cover_thickness, cover_thickness + cover_depth + 1.5 * hinge_width + page_thickness],
             [cover_thickness, cover_thickness + cover_depth + 2 * hinge_width + page_thickness],
-            [0, cover_thickness + cover_depth + 2 * hinge_width + page_thickness]
+            [0, cover_thickness + cover_depth + 2 * hinge_width + page_thickness],
         ],
         [
             [cover_thickness, cover_thickness + cover_depth + 2 * hinge_width + page_thickness],
             [cover_thickness, cover_thickness + cover_depth + 1.5 * hinge_width + page_thickness],
             [cover_thickness + cover_height, cover_thickness + cover_depth + 1.5 * hinge_width + page_thickness],
-            [cover_thickness + cover_height, cover_thickness + cover_depth + 2 * hinge_width + page_thickness]
-
+            [cover_thickness + cover_height, cover_thickness + cover_depth + 2 * hinge_width + page_thickness],
         ],
         [
             [cover_thickness + cover_height, cover_thickness + cover_depth + 1.5 * hinge_width + page_thickness],
             [2 * cover_thickness + cover_height, cover_thickness + cover_depth + 1.5 * hinge_width + page_thickness],
             [2 * cover_thickness + cover_height, cover_thickness + cover_depth + 2 * hinge_width + page_thickness],
-            [cover_thickness + cover_height, cover_thickness + cover_depth + 2 * hinge_width + page_thickness]
+            [cover_thickness + cover_height, cover_thickness + cover_depth + 2 * hinge_width + page_thickness],
         ],
         [
             [cover_thickness, cover_thickness + 2 * cover_depth + 2 * hinge_width + page_thickness],
             [0, cover_thickness + 2 * cover_depth + 2 * hinge_width + page_thickness],
             [0, cover_thickness + cover_depth + 2 * hinge_width + page_thickness],
-            [cover_thickness, cover_thickness + cover_depth + 2 * hinge_width + page_thickness]
+            [cover_thickness, cover_thickness + cover_depth + 2 * hinge_width + page_thickness],
         ],
         [
             [cover_thickness, cover_thickness + 2 * cover_depth + 2 * hinge_width + page_thickness],
             [cover_thickness, cover_thickness + cover_depth + 2 * hinge_width + page_thickness],
             [cover_thickness + cover_height, cover_thickness + cover_depth + 2 * hinge_width + page_thickness],
-            [cover_thickness + cover_height, cover_thickness + 2 * cover_depth + 2 * hinge_width + page_thickness]
-
+            [cover_thickness + cover_height, cover_thickness + 2 * cover_depth + 2 * hinge_width + page_thickness],
         ],
         [
             [cover_thickness + cover_height, cover_thickness + cover_depth + 2 * hinge_width + page_thickness],
             [2 * cover_thickness + cover_height, cover_thickness + cover_depth + 2 * hinge_width + page_thickness],
             [2 * cover_thickness + cover_height, cover_thickness + 2 * cover_depth + 2 * hinge_width + page_thickness],
-            [cover_thickness + cover_height, cover_thickness + 2 * cover_depth + 2 * hinge_width + page_thickness]
+            [cover_thickness + cover_height, cover_thickness + 2 * cover_depth + 2 * hinge_width + page_thickness],
         ],
         [
             [cover_thickness, cover_thickness + 2 * cover_depth + 2 * hinge_width + page_thickness],
             [cover_thickness + cover_height, cover_thickness + 2 * cover_depth + 2 * hinge_width + page_thickness],
             [cover_thickness + cover_height, 2 * cover_thickness + 2 * cover_depth + 2 * hinge_width + page_thickness],
-            [cover_thickness, 2 * cover_thickness + 2 * cover_depth + 2 * hinge_width + page_thickness]
-        ]
+            [cover_thickness, 2 * cover_thickness + 2 * cover_depth + 2 * hinge_width + page_thickness],
+        ],
     ]
 
     interior_faces = [33, 20, 25, 5, 18, 11, 6, 36]
     interior = [
-        [
-            [0, 0],
-            [cover_height, 0],
-            [cover_height, cover_depth],
-            [0, cover_depth]
-        ],
+        [[0, 0], [cover_height, 0], [cover_height, cover_depth], [0, cover_depth]],
         [
             [0, cover_depth],
             [cover_height, cover_depth],
             [cover_height, cover_depth + hinge_width / 2],
-            [0, cover_depth + hinge_width / 2]
+            [0, cover_depth + hinge_width / 2],
         ],
         [
             [0, cover_depth + hinge_width / 2],
             [cover_height, cover_depth + hinge_width / 2],
             [cover_height, cover_depth + hinge_width],
-            [0, cover_depth + hinge_width]
+            [0, cover_depth + hinge_width],
         ],
         [
             [0, cover_depth + hinge_width],
             [cover_height, cover_depth + hinge_width],
             [cover_height, cover_depth + hinge_width + page_thickness / 2],
-            [0, cover_depth + hinge_width + page_thickness / 2]
+            [0, cover_depth + hinge_width + page_thickness / 2],
         ],
         [
             [0, cover_depth + hinge_width + page_thickness / 2],
             [cover_height, cover_depth + hinge_width + page_thickness / 2],
             [cover_height, cover_depth + hinge_width + page_thickness],
-            [0, cover_depth + hinge_width + page_thickness]
+            [0, cover_depth + hinge_width + page_thickness],
         ],
         [
             [0, cover_depth + hinge_width + page_thickness],
             [cover_height, cover_depth + hinge_width + page_thickness],
             [cover_height, cover_depth + 1.5 * hinge_width + page_thickness],
-            [0, cover_depth + 1.5 * hinge_width + page_thickness]
+            [0, cover_depth + 1.5 * hinge_width + page_thickness],
         ],
         [
             [0, cover_depth + 1.5 * hinge_width + page_thickness],
             [cover_height, cover_depth + 1.5 * hinge_width + page_thickness],
             [cover_height, cover_depth + 2 * hinge_width + page_thickness],
-            [0, cover_depth + 2 * hinge_width + page_thickness]
+            [0, cover_depth + 2 * hinge_width + page_thickness],
         ],
         [
             [0, cover_depth + 2 * hinge_width + page_thickness],
             [cover_height, cover_depth + 2 * hinge_width + page_thickness],
             [cover_height, 2 * cover_depth + 2 * hinge_width + page_thickness],
-            [0, 2 * cover_depth + 2 * hinge_width + page_thickness]
-        ]
+            [0, 2 * cover_depth + 2 * hinge_width + page_thickness],
+        ],
     ]
 
     islands = [top, bottom, left, right, exterior, interior]

@@ -9,7 +9,7 @@ import gpu
 from gpu_extras.batch import batch_for_shader
 
 
-class BookGenLimitLine():
+class BookGenLimitLine:
     """
     Draws a visualization of the axis constraint
     """
@@ -17,13 +17,13 @@ class BookGenLimitLine():
     log = logging.getLogger("bookGen.limit_line")
 
     def __init__(self, direction, context):
-        self.shader = gpu.shader.from_builtin('UNIFORM_COLOR')
+        self.shader = gpu.shader.from_builtin("UNIFORM_COLOR")
 
-        if direction == 'X':
+        if direction == "X":
             self.line_color = (1.0, 0.0, 0.0, 0.1)
-        elif direction == 'Y':
+        elif direction == "Y":
             self.line_color = (0.0, 1.0, 0.0, 0.1)
-        elif direction == 'Z':
+        elif direction == "Z":
             self.line_color = (0.0, 0.0, 1.0, 0.1)
         self.batch = None
 
@@ -48,31 +48,32 @@ class BookGenLimitLine():
         gpu.state.line_width_set(1)
 
     def update(self, start, direction):
-        """ Updates the axis constraint visualization based on the current configuration
+        """Updates the axis constraint visualization based on the current configuration
 
         Args:
             start (mathutils.Vector): the starting position of the axis constraint line
             direction (mathutils.Vector): the direction of the axis constraint line
         """
-        if direction == 'None':
+        if direction == "None":
             self.batch = None
             return
 
-        if direction == 'X':
+        if direction == "X":
             self.line_color = (1.0, 0.0, 0.0, 0.1)
             verts = [(-self.limit, start[1], start[2]), (self.limit, start[1], start[2])]
-        elif direction == 'Y':
+        elif direction == "Y":
             self.line_color = (0.0, 1.0, 0.0, 0.1)
             verts = [(start[0], -self.limit, start[2]), (start[0], self.limit, start[2])]
-        elif direction == 'Z':
+        elif direction == "Z":
             self.line_color = (0.0, 0.0, 1.0, 0.1)
             verts = [(start[0], start[1], -self.limit), (start[0], start[1], self.limit)]
 
-        self.batch = batch_for_shader(self.shader, 'LINES', {"pos": verts})
+        self.batch = batch_for_shader(self.shader, "LINES", {"pos": verts})
 
         if self.draw_handler is None:
             self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(
-                self.draw, (self.context,), 'WINDOW', 'POST_VIEW')
+                self.draw, (self.context,), "WINDOW", "POST_VIEW"
+            )
 
     def remove(self):
         """
@@ -80,5 +81,5 @@ class BookGenLimitLine():
         """
         self.log.debug("removing draw handler")
         if self.draw_handler is not None:
-            bpy.types.SpaceView3D.draw_handler_remove(self.draw_handler, 'WINDOW')
+            bpy.types.SpaceView3D.draw_handler_remove(self.draw_handler, "WINDOW")
             self.draw_handler = None

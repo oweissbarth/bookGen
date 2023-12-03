@@ -36,6 +36,7 @@ class Stack:
     """
     Describes a stack of books.
     """
+
     log = logging.getLogger("bookGen.Shelf")
     origin = Vector((0, 0, 0))
     forward = Vector((1, 0, 0))
@@ -61,7 +62,7 @@ class Stack:
         self.cur_offset = 0
 
     def add_book(self, book, first):
-        """ Adds a single book to a stack
+        """Adds a single book to a stack
 
         Args:
             book (Book): the book that is added
@@ -74,23 +75,26 @@ class Stack:
             self.align_offset = book.depth / 2
 
         # book alignment
-        #offset_dir = -1 if self.parameters["alignment"] == "1" else 1
+        # offset_dir = -1 if self.parameters["alignment"] == "1" else 1
 
         # if(not first and not self.parameters["alignment"] == "2"):
-            # location alignment
+        # location alignment
         #    book.location += Vector((0, offset_dir * (book.depth / 2 - self.align_offset), 0))
 
         # distribution
 
-        z_rotation_rnd = (random.random()-0.5) * self.parameters["rotation"] * 180
-        z_rotation = radians(180) if(self.parameters["stack_top_face"] == "1") else 0
+        z_rotation_rnd = (random.random() - 0.5) * self.parameters["rotation"] * 180
+        z_rotation = radians(180) if (self.parameters["stack_top_face"] == "1") else 0
         y_rotation = int(self.parameters["stack_top_face"]) * radians(-90)
-
 
         book.location += Vector((0, 0, self.cur_offset))
         book.location = self.rotation_matrix @ book.location
-        book.rotation = Matrix.Rotation(
-            radians(z_rotation_rnd), 3, 'Z') @ Matrix.Rotation(z_rotation, 3, 'Z') @ self.rotation_matrix  @ Matrix.Rotation(y_rotation, 3, 'Y')
+        book.rotation = (
+            Matrix.Rotation(radians(z_rotation_rnd), 3, "Z")
+            @ Matrix.Rotation(z_rotation, 3, "Z")
+            @ self.rotation_matrix
+            @ Matrix.Rotation(y_rotation, 3, "Y")
+        )
 
         book.location += self.origin
 
@@ -115,10 +119,12 @@ class Stack:
         first = True
 
         params = self.apply_parameters()
-        current = Book(**params,
-                       subsurf=self.parameters["subsurf"],
-                       cover_material=self.parameters["cover_material"],
-                       page_material=self.parameters["page_material"])
+        current = Book(
+            **params,
+            subsurf=self.parameters["subsurf"],
+            cover_material=self.parameters["cover_material"],
+            page_material=self.parameters["page_material"],
+        )
         self.cur_offset += current.width / 2
         self.add_book(current, first)
 
@@ -126,10 +132,12 @@ class Stack:
             self.log.debug("remaining height to be filled: %.3f", (self.height - self.cur_height))
             params = self.apply_parameters()
             last = current
-            current = Book(**params,
-                           subsurf=self.parameters["subsurf"],
-                           cover_material=self.parameters["cover_material"],
-                           page_material=self.parameters["page_material"])
+            current = Book(
+                **params,
+                subsurf=self.parameters["subsurf"],
+                cover_material=self.parameters["cover_material"],
+                page_material=self.parameters["page_material"],
+            )
 
             self.cur_height = self.cur_offset + current.width
 
@@ -159,7 +167,7 @@ class Stack:
             bpy.data.meshes.remove(obj.data)
 
     def get_geometry(self):
-        """ Returns the raw geometry of the stack for previz
+        """Returns the raw geometry of the stack for previz
 
         Returns:
             (List[Vector], List[Vector]): a tuple containing a list of vertices and a list of indices
@@ -172,12 +180,8 @@ class Stack:
             b_verts, b_faces = book.get_geometry()
             verts += b_verts
             offset_faces = map(
-                lambda f: [
-                    f[0] + index_offset,
-                    f[1] + index_offset,
-                    f[2] + index_offset,
-                    f[3] + index_offset],
-                b_faces)
+                lambda f: [f[0] + index_offset, f[1] + index_offset, f[2] + index_offset, f[3] + index_offset], b_faces
+            )
             faces += offset_faces
             index_offset = len(verts)
 
@@ -216,13 +220,14 @@ class Stack:
         hinge_inset = p["scale"] * p["hinge_inset"] * (1 + rndm_hinge_inset)
         hinge_width = p["scale"] * p["hinge_width"] * (1 + rndm_hinge_width)
 
-        return {"cover_height": book_height,
-                "cover_thickness": cover_thickness,
-                "cover_depth": book_depth,
-                "page_height": textblock_height,
-                "page_depth": textblock_depth,
-                "page_thickness": textblock_thickness,
-                "spine_curl": spine_curl,
-                "hinge_inset": hinge_inset,
-                "hinge_width": hinge_width
-                }
+        return {
+            "cover_height": book_height,
+            "cover_thickness": cover_thickness,
+            "cover_depth": book_depth,
+            "page_height": textblock_height,
+            "page_depth": textblock_depth,
+            "page_thickness": textblock_thickness,
+            "spine_curl": spine_curl,
+            "hinge_inset": hinge_inset,
+            "hinge_width": hinge_width,
+        }

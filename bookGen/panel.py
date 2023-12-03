@@ -16,9 +16,10 @@ class BOOKGEN_PT_ShelfPanel(bpy.types.Panel):
     """
     Draws the main shelf settings panel.
     """
+
     bl_label = "Shelf"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
     bl_category = "BookGen"
     bl_options = set()
 
@@ -30,7 +31,7 @@ class BOOKGEN_PT_ShelfPanel(bpy.types.Panel):
         return bool(properties)
 
     def draw(self, context):
-        """ Draws the shelf settings panel
+        """Draws the shelf settings panel
 
         Args:
             context (bpy.types.Context): the execution context
@@ -53,9 +54,10 @@ class BOOKGEN_PT_StackPanel(bpy.types.Panel):
     """
     Draws the main stack settings panel.
     """
+
     bl_label = "Stack"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
     bl_category = "BookGen"
     bl_options = set()
 
@@ -67,7 +69,7 @@ class BOOKGEN_PT_StackPanel(bpy.types.Panel):
         return bool(properties)
 
     def draw(self, context):
-        """ Draws the stack settings panel
+        """Draws the stack settings panel
 
         Args:
             context (bpy.types.Context): the execution context
@@ -92,14 +94,15 @@ class BOOKGEN_PT_LeaningPanel(bpy.types.Panel):
     """
     Draws the leaning settings panel.
     """
+
     bl_label = "Leaning"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
     bl_category = "BookGen"
-    bl_options = {'DEFAULT_CLOSED'}
+    bl_options = {"DEFAULT_CLOSED"}
     bl_parent_id = "BOOKGEN_PT_ShelfPanel"
 
-    @ classmethod
+    @classmethod
     def poll(self, context):
         if not has_bookgen_collection(context):
             return False
@@ -107,7 +110,7 @@ class BOOKGEN_PT_LeaningPanel(bpy.types.Panel):
         return bool(properties)
 
     def draw(self, context):
-        """ Draws the leaning settings panel.
+        """Draws the leaning settings panel.
 
         Args:
             context (bpy.types.Context): the execution context
@@ -130,9 +133,10 @@ class BOOKGEN_PT_ProportionsPanel(bpy.types.Panel):
     """
     Draws book proportions panel.
     """
+
     bl_label = "Proportions"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
     bl_category = "BookGen"
     bl_options = set()
     bl_parent_id = "BOOKGEN_PT_BookPanel"
@@ -145,7 +149,7 @@ class BOOKGEN_PT_ProportionsPanel(bpy.types.Panel):
         return bool(properties)
 
     def draw(self, context):
-        """ Draws the proportion settings panel
+        """Draws the proportion settings panel
 
         Args:
             context (bpy.types.Context): the execution context
@@ -178,9 +182,10 @@ class BOOKGEN_PT_BookPanel(bpy.types.Panel):
     """
     Draws the book  panel
     """
+
     bl_label = "Book"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
     bl_category = "BookGen"
 
     @classmethod
@@ -198,11 +203,12 @@ class BOOKGEN_PT_DetailsPanel(bpy.types.Panel):
     """
     Draws the book details panel
     """
+
     bl_label = "Details"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
     bl_category = "BookGen"
-    bl_options = {'DEFAULT_CLOSED'}
+    bl_options = {"DEFAULT_CLOSED"}
     bl_parent_id = "BOOKGEN_PT_BookPanel"
 
     @classmethod
@@ -213,7 +219,7 @@ class BOOKGEN_PT_DetailsPanel(bpy.types.Panel):
         return bool(properties)
 
     def draw(self, context):
-        """ Draws the detail settings panel
+        """Draws the detail settings panel
 
         Args:
             context (bpy.types.Context): the execution context
@@ -255,6 +261,7 @@ class BOOKGEN_PT_MainPanel(bpy.types.Panel):
     """
     Draws the main bookgen panel
     """
+
     bl_label = "Main"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -262,7 +269,7 @@ class BOOKGEN_PT_MainPanel(bpy.types.Panel):
     bl_options = set()
 
     def draw(self, context):
-        """ Draws the main panel
+        """Draws the main panel
 
         Args:
             context (bpy.types.Context): the execution context
@@ -289,21 +296,33 @@ class BOOKGEN_PT_MainPanel(bpy.types.Panel):
 
         layout.label(text="Book Groupings")
         row = layout.row()
-        row.template_list("BOOKGEN_UL_Shelves", "", get_bookgen_collection(context), "children",
-                          context.scene.BookGenAddonProperties, "active_shelf")
+        row.template_list(
+            "BOOKGEN_UL_Shelves",
+            "",
+            get_bookgen_collection(context),
+            "children",
+            context.scene.BookGenAddonProperties,
+            "active_shelf",
+        )
         col = row.column(align=True)
         col.operator("bookgen.remove_grouping", icon="X", text="")
-        col.prop(properties, "outline_active", toggle=True, icon="SHADING_BBOX", icon_only=True)
+        col.prop(
+            properties,
+            "outline_active",
+            toggle=True,
+            icon="SHADING_BBOX",
+            icon_only=True,
+        )
         col.operator("bookgen.unlink_grouping", icon="UNLINKED", text="")
 
         active_shelf = get_active_grouping(context)
         layout = self.layout
         row = layout.row(align=True)
-        row.operator('bookgen.set_settings', text="", icon='PRESET')
+        row.operator("bookgen.set_settings", text="", icon="PRESET")
         if active_shelf and active_shelf.BookGenGroupingProperties.settings_name:
             settings = get_active_settings(context)
             row.prop(settings, "name", text="", expand=True)
-            row.operator('bookgen.create_settings', text="", icon='ADD')
+            row.operator("bookgen.create_settings", text="", icon="ADD")
         else:
-            row.operator('bookgen.create_settings', text="", icon='ADD', emboss=True)
-        row.operator('bookgen.remove_settings', text="", icon='X')
+            row.operator("bookgen.create_settings", text="", icon="ADD", emboss=True)
+        row.operator("bookgen.remove_settings", text="", icon="X")
