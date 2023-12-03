@@ -289,6 +289,7 @@ class BOOKGEN_PT_MainPanel(bpy.types.Panel):
         col = row.column(align=True)
         col.operator("bookgen.remove_grouping", icon="X", text="")
         col.prop(properties, "outline_active", toggle=True, icon="SHADING_BBOX", icon_only=True)
+        col.operator("bookgen.unlink_grouping", icon="UNLINKED", text="")
 
         active_shelf = get_active_grouping(context)
         layout = self.layout

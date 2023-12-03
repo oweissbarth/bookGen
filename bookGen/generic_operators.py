@@ -360,3 +360,78 @@ class BOOKGEN_OT_RemoveGrouping(bpy.types.Operator):
 
         if active != len(parent.children):
             context.scene.BookGenAddonProperties.active_shelf += 1
+
+
+class BOOKGEN_OT_UnlinkGrouping(bpy.types.Operator):
+    """Unlink the selected grouping"""
+    bl_idname = "bookgen.unlink_grouping"
+    bl_label = "Unlink Grouping"
+    bl_description = "Unlink active grouping and move to root collection. The grouping will no longer be affected by the settings"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    log = logging.getLogger("bookGen.operator")
+
+    def invoke(self, context, _event):
+        """ Unlink shelves called from the UI
+
+        Args:
+            _context (bpy.types.Context): the execution context for the operator
+            _event (bpy.type.Event): the invocation event
+
+        Returns:
+            Set[str]: operator return code
+        """
+        self.run(context)
+        return {'FINISHED'}
+
+    def execute(self, context):
+        """ Unlink shelves called from a script
+
+        Args:
+            _context (bpy.types.Context): the execution context for the operator
+
+        Returns:
+            Set[str]: operator return code
+        """
+        self.run(context)
+        return {'FINISHED'}
+
+    @classmethod
+    def poll(cls, context):
+        """ Check if we are in object mode before calling the operator
+
+        Args:
+            context (bpy.types.Context): the execution context for the operator
+
+        Returns:
+            bool: True if the operator can be executed, otherwise false.
+        """
+        if context.mode != 'OBJECT':
+            return False
+
+        objects = visible_objects_and_duplis(context)
+        for obj in objects:
+            if obj[0].type == "MESH":
+                return True
+        return False
+
+    def run(self, context):
+        """
+        Move the grouping collection to the scene root.
+        Remove the grouping settings
+        """
+        parent = get_bookgen_collection(context)
+        active = context.scene.BookGenAddonProperties.active_shelf
+        if active < 0 or active >= len(parent.children):
+            return
+        active_grouping = parent.children[active]
+
+        parent = get_bookgen_collection(context)
+        parent.children.unlink(active_grouping)
+        context.scene.collection.children.link(active_grouping)
+        active_grouping.name = "unlinked_" + active_grouping.name
+
+        context.scene.BookGenAddonProperties.active_shelf -= 1
+
+        if active != len(parent.children):
+            context.scene.BookGenAddonProperties.active_shelf += 1
