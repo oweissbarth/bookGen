@@ -2,7 +2,6 @@
 This file contains all operators to add, update, and remove book shelves
 """
 import logging
-import time
 
 import bpy
 

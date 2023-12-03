@@ -4,7 +4,12 @@ This file contains the UI panels.
 
 import bpy
 
-from .utils import get_bookgen_collection, get_shelf_collection_by_index, get_active_settings, get_active_grouping, has_bookgen_collection
+from .utils import (
+    get_bookgen_collection,
+    get_active_settings,
+    get_active_grouping,
+    has_bookgen_collection,
+)
 
 
 class BOOKGEN_PT_ShelfPanel(bpy.types.Panel):

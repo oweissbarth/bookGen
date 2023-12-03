@@ -23,7 +23,7 @@ BookGen is a add-on for the 3D graphics software Blender. It allows to procedura
 from bpy.app.handlers import persistent
 
 from .properties import BookGenProperties, BookGenGroupingProperties, BookGenAddonProperties
-from .utils import get_bookgen_collection, get_bookgen_version
+from .utils import get_bookgen_version
 from .shelf_list import BOOKGEN_UL_Shelves
 from .versioning import handle_version_upgrade
 from .panel import (

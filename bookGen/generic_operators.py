@@ -7,7 +7,6 @@ import logging
 
 import bpy
 from bpy.props import EnumProperty, StringProperty, BoolProperty
-from mathutils import Vector
 
 from .utils import (
     get_shelf_parameters,
