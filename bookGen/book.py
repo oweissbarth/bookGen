@@ -126,7 +126,7 @@ class Book:
         bm.verts.index_update()
         bm.verts.ensure_lookup_table()
 
-        crease_layer = bm.edges.layers.crease.verify()
+        crease_layer = bm.edges.layers.float.new("crease_edge")
         for crease in creases:
             edge = bm.edges.new((bm.verts[crease[0]], bm.verts[crease[1]]))
             edge[crease_layer] = 1.0
