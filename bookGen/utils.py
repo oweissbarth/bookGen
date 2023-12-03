@@ -8,6 +8,7 @@ import bpy
 import bpy_extras.view3d_utils
 from mathutils import Vector
 
+bookgen_version = None
 
 def get_bookgen_version():
     """Returns the version number of bookgen
@@ -16,6 +17,15 @@ def get_bookgen_version():
         (int, int, int): the version of bookgen
     """
     return bookgen_version
+
+def set_bookgen_version(version):
+    """Sets the version number of bookgen
+
+    Args:
+        version (int, int, int): the version of bookgen
+    """
+    global bookgen_version
+    bookgen_version = version
 
 
 def has_bookgen_collection(context):
