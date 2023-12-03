@@ -7,7 +7,6 @@ from math import sin, cos, pi
 
 import bpy
 import gpu
-import bgl
 from gpu_extras.batch import batch_for_shader
 from mathutils import Vector, Matrix
 
@@ -24,7 +23,7 @@ class BookGenStackGizmo():
         self.depth = depth
         self.context = context
 
-        self.shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
+        self.shader = gpu.shader.from_builtin("UNIFORM_COLOR")
         self.origin_batch = None
         self.forward_batch = None
         self.up_batch = None
@@ -48,7 +47,7 @@ class BookGenStackGizmo():
         self.log.debug("drawing stack gizmo")
 
         self.shader.bind()
-        bgl.glEnable(bgl.GL_BLEND)
+        gpu.state.blend_set("ALPHA")
         self.shader.uniform_float("color", self.origin_color)
         self.origin_batch.draw(self.shader)
 
@@ -60,7 +59,7 @@ class BookGenStackGizmo():
             self.shader.uniform_float("color", self.arrow_color)
             self.up_batch.draw(self.shader)
 
-        bgl.glDisable(bgl.GL_BLEND)
+        gpu.state.blend_set("NONE")
 
     def update(self, origin, forward, up, height):
         """ Updates the position and orientation of the stack gizmo

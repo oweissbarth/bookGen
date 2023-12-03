@@ -6,7 +6,6 @@ import logging
 
 import bpy
 import gpu
-import bgl
 from gpu_extras.batch import batch_for_shader
 from mathutils import Vector, Matrix
 
@@ -32,7 +31,7 @@ class BookGenShelfGizmo():
         with open(bookGen_directory + "/shaders/dotted_line.frag") as fp:
             fragment_shader = fp.read()
 
-        self.bookstand_shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
+        self.bookstand_shader = gpu.shader.from_builtin('UNIFORM_COLOR')
         self.line_shader = gpu.types.GPUShader(vertex_shader, fragment_shader)
         self.bookstand_batch = None
         self.line_batch = None
@@ -53,20 +52,19 @@ class BookGenShelfGizmo():
             return
 
         self.bookstand_shader.bind()
-        # bgl.glEnable(bgl.GL_BLEND)
-        bgl.glEnable(bgl.GL_DEPTH_TEST)
+
+        gpu.state.depth_test_set("LESS_EQUAL")
 
         self.bookstand_shader.uniform_float("color", self.bookstand_color)
         self.bookstand_batch.draw(self.bookstand_shader)
-        # bgl.glDisable(bgl.GL_BLEND)
 
-        bgl.glLineWidth(3)
+        gpu.state.line_width_set(3)
         matrix = context.region_data.perspective_matrix
         self.line_shader.bind()
         self.line_shader.uniform_float("u_ViewProjectionMatrix", matrix)
         self.line_shader.uniform_float("u_Scale", 100)
         self.line_batch.draw(self.line_shader)
-        bgl.glDisable(bgl.GL_DEPTH_TEST)
+        gpu.state.depth_test_set("NONE")
 
     def update(self, start, end, nrm):
         """ Updates the position and orientation of the shelf gizmo
@@ -137,7 +135,7 @@ class BookGenShelfFaceGizmo():
 
     def __init__(self, context):
 
-        self.shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
+        self.shader = gpu.shader.from_builtin('UNIFORM_COLOR')
         self.batch = None
         self.context = context
 
@@ -156,10 +154,10 @@ class BookGenShelfFaceGizmo():
             return
 
         self.shader.bind()
-        bgl.glEnable(bgl.GL_BLEND)
+        gpu.state.blend_set("ALPHA")
         self.shader.uniform_float("color", self.color)
         self.batch.draw(self.shader)
-        bgl.glDisable(bgl.GL_BLEND)
+        gpu.state.blend_set("NONE")
 
     def update(self, verts, _normal):
         """ Updates the face gizmo based on the current configuration

@@ -6,7 +6,6 @@ import logging
 
 import bpy
 import gpu
-import bgl
 from gpu_extras.batch import batch_for_shader
 from mathutils import Vector
 
@@ -48,13 +47,12 @@ class BookGenShelfPreview():
         normal_matrix = context.region_data.view_matrix.inverted().transposed()
 
         self.shader.bind()
-        bgl.glEnable(bgl.GL_DEPTH_TEST)
-        bgl.glDepthFunc(bgl.GL_LESS)
+        gpu.state.depth_test_set("LESS")
         self.shader.uniform_float("color", self.color)
         self.shader.uniform_float("modelviewprojection_mat", view_projection_matrix)
         self.shader.uniform_float("normal_mat", normal_matrix)
         self.batch.draw(self.shader)
-        bgl.glDisable(bgl.GL_DEPTH_TEST)
+        gpu.state.depth_test_set("NONE")
 
     def update(self, verts, faces, context):
         """ Updates the vertices and faces of the preview

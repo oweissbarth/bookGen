@@ -6,7 +6,6 @@ import logging
 
 import bpy
 import gpu
-import bgl
 from gpu_extras.batch import batch_for_shader
 
 
@@ -18,7 +17,7 @@ class BookGenLimitLine():
     log = logging.getLogger("bookGen.limit_line")
 
     def __init__(self, direction, context):
-        self.shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
+        self.shader = gpu.shader.from_builtin('UNIFORM_COLOR')
 
         if direction == 'X':
             self.line_color = (1.0, 0.0, 0.0, 0.1)
@@ -43,10 +42,10 @@ class BookGenLimitLine():
             return
 
         self.shader.bind()
-        bgl.glLineWidth(2)
+        gpu.state.line_width_set(2)
         self.shader.uniform_float("color", self.line_color)
         self.batch.draw(self.shader)
-        bgl.glLineWidth(1)
+        gpu.state.line_width_set(1)
 
     def update(self, start, direction):
         """ Updates the axis constraint visualization based on the current configuration

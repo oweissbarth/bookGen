@@ -5,8 +5,6 @@ Contains a class for drawing a transparent shelf overlay
 import bpy
 import gpu
 from gpu_extras.batch import batch_for_shader
-import bgl
-
 
 class BookGenShelfOutline:
     """
@@ -30,7 +28,7 @@ class BookGenShelfOutline:
         """
         col_ref = context.preferences.themes[0].view_3d.face_select
         self.outline_color = (col_ref[0], col_ref[1], col_ref[2], 0.3)
-        self.shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
+        self.shader = gpu.shader.from_builtin('UNIFORM_COLOR')
         indices = []
         for face in faces:
             indices.append((face[0], face[1], face[2]))
@@ -68,12 +66,12 @@ class BookGenShelfOutline:
         if self.batch is None:
             return
         self.shader.bind()
-        bgl.glEnable(bgl.GL_BLEND)
+        gpu.state.blend_set("ALPHA")
         if self.check_depth:
-            bgl.glEnable(bgl.GL_DEPTH_TEST)
+            gpu.state.depth_test_set("LESS_EQUAL")
 
-        bgl.glBlendFunc(bgl.GL_SRC_ALPHA, bgl.GL_ONE_MINUS_SRC_ALPHA)
+
         self.shader.uniform_float("color", self.outline_color)
         self.batch.draw(self.shader)
-        bgl.glDisable(bgl.GL_BLEND)
-        bgl.glDisable(bgl.GL_DEPTH_TEST)
+        gpu.state.blend_set("NONE")
+        gpu.state.depth_test_set("NONE")
