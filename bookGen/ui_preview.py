@@ -6,6 +6,7 @@ import logging
 
 import bpy
 import gpu
+from gpu.types import GPUShaderCreateInfo, GPUStageInterfaceInfo
 from gpu_extras.batch import batch_for_shader
 from mathutils import Vector
 
@@ -19,12 +20,28 @@ class BookGenShelfPreview:
 
     def __init__(self):
         with open(bookGen_directory + "/shaders/simple_flat.vert") as file:
-            vertex_shader = file.read()
+            vertex_shader_source = file.read()
 
         with open(bookGen_directory + "/shaders/simple_flat.frag") as file:
-            fragment_shader = file.read()
+            fragment_shader_source = file.read()
 
-        self.shader = gpu.types.GPUShader(vertex_shader, fragment_shader)
+        shader_interface = GPUStageInterfaceInfo("preview_interface")
+        shader_interface.smooth("VEC3", "vNormal")
+        shader_interface.smooth("VEC3", "vLighting")
+        shader_info = GPUShaderCreateInfo()
+        shader_info.vertex_in(0, "VEC3", "pos")
+        shader_info.vertex_in(1, "VEC3", "nrm")
+        shader_info.vertex_out(shader_interface)
+        shader_info.fragment_out(0, "VEC4", "fragColor")
+        shader_info.push_constant("MAT4", "modelviewprojection_mat")
+        shader_info.push_constant("MAT4", "normal_mat")
+        shader_info.push_constant("VEC3", "color")
+        shader_info.vertex_source(vertex_shader_source)
+        shader_info.fragment_source(fragment_shader_source)
+
+        self.shader = gpu.shader.create_from_info(shader_info)
+        del shader_info
+        del shader_interface
 
         self.batch = None
 

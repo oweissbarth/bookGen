@@ -5,6 +5,7 @@ Contains a class to draw the shelf gizmo
 import logging
 
 import bpy
+from gpu.types import GPUShaderCreateInfo, GPUStageInterfaceInfo
 import gpu
 from gpu_extras.batch import batch_for_shader
 from mathutils import Vector, Matrix
@@ -26,15 +27,30 @@ class BookGenShelfGizmo:
         self.context = context
 
         with open(bookGen_directory + "/shaders/dotted_line.vert") as fp:
-            vertex_shader = fp.read()
+            vertex_shader_source = fp.read()
 
         with open(bookGen_directory + "/shaders/dotted_line.frag") as fp:
-            fragment_shader = fp.read()
+            fragment_shader_source = fp.read()
+
+        line_shader_info = GPUShaderCreateInfo()
+        line_shader_info.vertex_in(0, "VEC3", "pos")
+        line_shader_info.vertex_in(1, "FLOAT", "arcLength")
+        line_shader_interface = GPUStageInterfaceInfo("lineshader_interface")
+        line_shader_interface.smooth("FLOAT", "v_ArcLength")
+        line_shader_info.vertex_out(line_shader_interface)
+        line_shader_info.fragment_out(0, "VEC4", "fragColor")
+        line_shader_info.push_constant("MAT4", "u_ViewProjectionMatrix")
+        line_shader_info.push_constant("FLOAT", "u_Scale")
+        line_shader_info.vertex_source(vertex_shader_source)
+        line_shader_info.fragment_source(fragment_shader_source)
+
+        self.line_shader = gpu.shader.create_from_info(line_shader_info)
+        del line_shader_info
+        del line_shader_interface
+        self.line_batch = None
 
         self.bookstand_shader = gpu.shader.from_builtin("UNIFORM_COLOR")
-        self.line_shader = gpu.types.GPUShader(vertex_shader, fragment_shader)
         self.bookstand_batch = None
-        self.line_batch = None
 
         self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, (self.context,), "WINDOW", "POST_VIEW")
 

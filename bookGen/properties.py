@@ -31,7 +31,7 @@ from .stack import Stack
 from .ui_outline import BookGenShelfOutline
 from .ui_preview import BookGenShelfPreview
 
-partial = None
+callback = None
 
 
 def remove_previews(previews):
@@ -124,7 +124,8 @@ class BookGenProperties(bpy.types.PropertyGroup):
     """
 
     log = logging.getLogger("bookGen.properties")
-    previews = {}
+    shelf_previews = {}
+    stack_previews = {}
     f = None
 
     def update(self, context):
@@ -158,7 +159,7 @@ class BookGenProperties(bpy.types.PropertyGroup):
         Sets up a timer to update the scene after a delay of 1 second
         """
 
-        global partial
+        global callback
         time_start = time.time()
         properties = context.scene.BookGenAddonProperties
 
@@ -173,6 +174,7 @@ class BookGenProperties(bpy.types.PropertyGroup):
 
             bpy.ops.bookgen.rebuild(clear=True)
 
+            preview_collection = None
             if grouping_props.grouping_type == "SHELF":
                 parameters = get_shelf_parameters(context, grouping_props.id, settings)
 
@@ -185,6 +187,9 @@ class BookGenProperties(bpy.types.PropertyGroup):
                 )
                 # grouping.clean(context)
                 grouping.fill()
+                
+                preview_collection = self.shelf_previews
+
 
             else:
                 parameters = get_stack_parameters(context, grouping_props.id, settings)
@@ -199,21 +204,24 @@ class BookGenProperties(bpy.types.PropertyGroup):
                 # grouping.clean(context)
                 grouping.fill()
 
-            if grouping_props.id not in self.previews.keys():
-                preview = BookGenShelfPreview()
-                self.previews.update({grouping_props.id: preview})
-            else:
-                preview = self.previews[grouping_props.id]
+                preview_collection = self.stack_previews
 
-            preview.update(*grouping.get_geometry(), context)
+            if grouping_props.id not in preview_collection.keys():
+                preview = BookGenShelfPreview()
+                preview_collection.update({grouping_props.id: preview})
+            else:
+                preview = preview_collection[grouping_props.id]
+            if preview:
+                preview.update(*grouping.get_geometry(), context)
 
         self.log.info("Finished populating shelf in %.4f secs", (time.time() - time_start))
+        
+        if callback is not None and bpy.app.timers.is_registered(callback):
+            bpy.app.timers.unregister(callback)
 
-        if partial is not None and bpy.app.timers.is_registered(partial):
-            bpy.app.timers.unregister(partial)
-
-        partial = functools.partial(remove_previews, self.previews.values())
-        bpy.app.timers.register(partial, first_interval=1.0)
+        active_previews = list(self.stack_previews.values()) + list(self.shelf_previews.values())
+        callback = lambda: remove_previews(active_previews)
+        bpy.app.timers.register(callback, first_interval=1.0)
 
     def get_name(self):
         return self.get("name", "BookGenSettings")

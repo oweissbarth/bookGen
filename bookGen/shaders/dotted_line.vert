@@ -1,10 +1,3 @@
-uniform mat4 u_ViewProjectionMatrix;
-
-in vec3 pos;
-in float arcLength;
-
-out float v_ArcLength;
-
 void main()
 {
     v_ArcLength = arcLength;
