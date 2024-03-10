@@ -54,7 +54,7 @@ bl_info = {
     "name": "BookGen",
     "description": "Generate books to fill shelves",
     "author": "Oliver Weissbarth, Seojin Sim",
-    "version": (1, 0, 3),
+    "version": (1, 0, 4),
     "blender": (3, 60, 0),
     "location": "View3D > Toolshelf > BookGen",
     "tracker_url": "https://github.com/oweissbarth/bookGen/issues",
