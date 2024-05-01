@@ -17,7 +17,11 @@ class BookGenLimitLine:
     log = logging.getLogger("bookGen.limit_line")
 
     def __init__(self, direction, context):
-        self.shader = gpu.shader.from_builtin("UNIFORM_COLOR")
+
+        if bpy.app.version < (3, 6, 0):
+            self.shader = gpu.shader.from_builtin("3D_UNIFORM_COLOR")
+        else:
+            self.shader = gpu.shader.from_builtin("UNIFORM_COLOR")
 
         if direction == "X":
             self.line_color = (1.0, 0.0, 0.0, 0.1)

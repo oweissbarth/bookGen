@@ -25,6 +25,10 @@ class BookGenShelfGizmo:
         self.height = height
         self.depth = depth
         self.context = context
+        if bpy.app.version < (3, 6, 0):
+            self.uniform_shader_name = "3D_UNIFORM_COLOR"
+        else:
+            self.uniform_shader_name = "UNIFORM_COLOR"
 
         with open(bookGen_directory + "/shaders/dotted_line.vert") as fp:
             vertex_shader_source = fp.read()
@@ -49,7 +53,10 @@ class BookGenShelfGizmo:
         del line_shader_interface
         self.line_batch = None
 
-        self.bookstand_shader = gpu.shader.from_builtin("UNIFORM_COLOR")
+        if bpy.app.version < (3, 6, 0):
+            self.bookstand_shader = gpu.shader.from_builtin("3D_UNIFORM_COLOR")
+        else:
+            self.bookstand_shader = gpu.shader.from_builtin("UNIFORM_COLOR")
         self.bookstand_batch = None
 
         self.draw_handler = bpy.types.SpaceView3D.draw_handler_add(self.draw, (self.context,), "WINDOW", "POST_VIEW")

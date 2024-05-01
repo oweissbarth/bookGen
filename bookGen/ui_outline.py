@@ -20,6 +20,10 @@ class BookGenShelfOutline:
         self.shader = None
         self.check_depth = check_depth
         self.outline_color = None
+        if bpy.app.version < (3, 6, 0):
+            self.shader = gpu.shader.from_builtin("3D_UNIFORM_COLOR")
+        else:
+            self.shader = gpu.shader.from_builtin("UNIFORM_COLOR")
 
     def update(self, vertices, faces, context):
         """Updates the axis constraint visualization based on the current configuration
@@ -30,7 +34,6 @@ class BookGenShelfOutline:
         """
         col_ref = context.preferences.themes[0].view_3d.face_select
         self.outline_color = (col_ref[0], col_ref[1], col_ref[2], 0.3)
-        self.shader = gpu.shader.from_builtin("UNIFORM_COLOR")
         indices = []
         for face in faces:
             indices.append((face[0], face[1], face[2]))

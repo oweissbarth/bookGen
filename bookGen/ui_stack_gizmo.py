@@ -23,7 +23,11 @@ class BookGenStackGizmo:
         self.depth = depth
         self.context = context
 
-        self.shader = gpu.shader.from_builtin("UNIFORM_COLOR")
+        if bpy.app.version < (3, 6, 0):
+            self.shader = gpu.shader.from_builtin("3D_UNIFORM_COLOR")
+        else:
+            self.shader = gpu.shader.from_builtin("UNIFORM_COLOR")
+
         self.origin_batch = None
         self.forward_batch = None
         self.up_batch = None
