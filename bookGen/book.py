@@ -151,16 +151,6 @@ class Book:
 
         bm.normal_update()
 
-        # calculate auto smooth angle based on spine
-        center = self.vertices[-1]
-        side = self.vertices[-5]
-        curl = abs(center[1] - side[1])
-        width = abs(center[0] - side[0])
-        spine_angle = atan(width / curl) * 2
-        normal_angle = radians(180) - spine_angle + radians(1)  # add 1 deg to account for fp
-        mesh.use_auto_smooth = True
-        mesh.auto_smooth_angle = normal_angle
-
         if self.subsurf:
             self.obj.modifiers.new("Subdivision Surface", type="SUBSURF")
             self.obj.modifiers["Subdivision Surface"].levels = 1
@@ -183,6 +173,20 @@ class Book:
 
         bm.to_mesh(mesh)
         bm.free()
+
+        # calculate auto smooth angle based on spine
+        center = self.vertices[-1]
+        side = self.vertices[-5]
+        curl = abs(center[1] - side[1])
+        width = abs(center[0] - side[0])
+        spine_angle = atan(width / curl) * 2
+        normal_angle = radians(180) - spine_angle + radians(1)  # add 1 deg to account for fp
+
+        if bpy.app.version >= (4,1,0):
+            mesh.set_sharp_from_angle(angle=normal_angle)
+        else:
+            mesh.use_auto_smooth = True
+            mesh.auto_smooth_angle = normal_angle
 
         return self.obj
 
