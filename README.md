@@ -1,10 +1,8 @@
-# If you are a user: Do not dowload the zip here. It will not work. Download from https://ow3d.de/bookGen
 
-# bookGen
+![readme_header](https://github.com/oweissbarth/bookGen/assets/3808481/ea2ac245-f6fb-4259-bde3-dcf988338812)
 
-
-BookGen is a free  book-generation addon for the open-source 3D-package Blender.
-It allows you to fill shelves or cupboards with books – fast and easily.
+BookGen is a free  book-generation addon for Blender.
+It allows you to fill shelves with books – Quickly and easily.
 
 ## Features
 
@@ -15,7 +13,7 @@ It allows you to fill shelves or cupboards with books – fast and easily.
 
 ## Installation
 
-  - Download the .zip
+  - ![Download the .zip](https://www.oweissbarth.de/software/bookgen/)
   - Open Blender, click on "Edit" and open the "Preferences"
   - Switch to the addons-tab  and click on "install from File"
   - Choose the .zip and click "install"
@@ -65,8 +63,8 @@ The "Details" panel changes the smaller features of the generated books:
 
 ## License
 
-© Copyright Oliver Weissbarth 2014-2019. This addon is licensed under GPLv3.
+© Copyright Oliver Weissbarth 2014-2024. This addon is licensed under GPLv3.
 
 ## Issues
 
-As this is still in Beta state serious issues are possible. If you do find any bugs please use the issue tracker, email me at mail@oweissbarth.de or use the contact form at www.oweissbarth.de/contact.
+If you do find any bugs please use the issue tracker, email me at mail@oweissbarth.de or use the contact form at www.oweissbarth.de/contact.
