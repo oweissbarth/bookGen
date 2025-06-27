@@ -40,7 +40,8 @@ class BOOKGEN_OT_SelectShelf(bpy.types.Operator):
     )
     log = logging.getLogger("bookGen.select_shelf")
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.start = None
         self.end = None
         self.end_original = None

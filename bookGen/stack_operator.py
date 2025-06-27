@@ -45,7 +45,8 @@ class BOOKGEN_OT_SelectStack(bpy.types.Operator):
     )
     log = logging.getLogger("bookGen.select_stack")
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.origin = None
         self.origin_normal = None
         self.forward = None
