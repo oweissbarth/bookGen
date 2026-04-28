@@ -135,7 +135,7 @@ class BookGenProperties(bpy.types.PropertyGroup):
             context (bpy.types.Context): the execution context
         """
         preferences = context.preferences.addons["bookGen"].preferences
-        if "lazy_update" in preferences.keys() and preferences["lazy_update"]:
+        if getattr(preferences, "lazy_update", False):
             self.update_delayed(context)
         else:
             self.update_immediate(context)
