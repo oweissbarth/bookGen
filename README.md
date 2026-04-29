@@ -1,5 +1,6 @@
 
 ![readme_header](https://github.com/oweissbarth/bookGen/assets/3808481/ea2ac245-f6fb-4259-bde3-dcf988338812)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/U7U41YNCNV)
 
 BookGen is a free  book-generation addon for Blender.
 It allows you to fill shelves with books – Quickly and easily.
@@ -63,7 +64,7 @@ The "Details" panel changes the smaller features of the generated books:
 
 ## License
 
-© Copyright Oliver Weissbarth 2014-2024. This addon is licensed under GPLv3.
+© Copyright Oliver Weissbarth 2014-2026. This addon is licensed under GPLv3.
 
 ## Issues
 
